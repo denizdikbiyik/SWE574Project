@@ -3,3 +3,4 @@ psycopg2
 django-crispy-forms>=1.7.2
 django-allauth
 Django-static-fontawesome==5.14.0.0
+Pillow

@@ -7,8 +7,18 @@
             <h1 class="display-2">Connect With Community!</h1>
             <p class="mt-3 lead">Follow people who interests you, stay up to date on the latest services and join events!</p>
             <div class="d-flex justify-content-center mt-5">
+                {% if user.is_authenticated %}
+                {% else %}
                 <a href="{% url 'account_login' %}" class="btn btn-light mr-2">Login</a>
-                <a href="{% url 'account_signup' %}" class="btn btn-dark">Register</a>
+                <a href="{% url 'account_signup' %}" class="btn btn-dark">Register</a>  
+                {% endif %}                         
+            </div>
+            <div class="d-flex justify-content-center mt-5">
+                {% if user.is_authenticated %}
+                <a class="navbar-brand" href="{% url 'service-list' %}">Services</a>
+                <a class="navbar-brand" href="{% url 'event-list' %}">Events</a>
+                {% else %}
+                {% endif %}
             </div>
         </div>
     </div>

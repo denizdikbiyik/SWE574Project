@@ -1,0 +1,28 @@
+{% extends 'landing/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="container">
+        <div class="row mt-5">
+            <div class="col-md-5 col-sm-6">
+                <a href="{% url 'event-list' %}" class="btn btn-light">Back To Events</a>
+            </div>
+        <div class="row justify-content-center mt-3">
+            <div class="col-md-5 col-sm-12 border-bottom">
+                <p>
+                    <img src="{{ event.eventpicture.url }}"/>
+                    <strong>{{ event.eventcreater }}</strong> {{ event.ceventreateddate}}</p>
+                    {% if request.user == event.eventcreater %}
+                        <a href="{% url 'event-edit' event.pk %}" style="color: #333;">Edit</a>
+                        <a href="{% url 'event-delete' event.pk %}" style="color: #333;">Delete</a>
+                    {% endif %}
+                <p>{{ event.eventname }}</p>
+                <p>{{ event.eventdescription }}</p>
+                <p>{{ event.eventlocation }}</p>
+                <p>{{ event.eventdate }}</p>
+                <p>{{ event.eventcapacity }}</p>
+            </div>
+        </div>
+
+    </div>
+{% endblock content %}
