@@ -1,5 +1,5 @@
 from django import forms
-from .models import Service
+from .models import Service, Feedback
 
 class ServiceForm(forms.ModelForm):
     description = forms.CharField(
@@ -9,15 +9,25 @@ class ServiceForm(forms.ModelForm):
             'placeholder': 'Create a service...'
         })
     )
-
+    
     servicedate = forms.DateTimeField(
-        label = '',
-        widget = forms.DateInput(attrs={
-            'class': 'timepicker',
-            'placeholder': '2022-12-12 00:00:00'
-        })
+        input_formats = ['%Y-%m-%d %H:%M:%S'], 
+        widget = forms.DateTimeInput(
+            format='%Y-%m-%d %H:%M:%S'),
     )
 
     class Meta:
         model = Service
         fields = ['description', 'servicedate']
+
+class FeedbackForm(forms.ModelForm):
+    feedback = forms.CharField(
+        label='',
+        widget=forms.Textarea(
+            attrs={'rows': '3',
+                   'placeholder': 'Give Feedback...'}
+        ))
+
+    class Meta:
+        model = Feedback
+        fields = ['feedback']

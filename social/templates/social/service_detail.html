@@ -1,0 +1,56 @@
+{% extends 'landing/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="container">
+        <div class="row mt-5">
+            <div class="col-md-5 col-sm-6">
+                <a href="{% url 'service-list' %}" class="btn btn-light">Back To Services</a>
+            </div>
+        </div>
+
+        <div class="row justify-content-center mt-3">
+            <div class="col-md-5 col-sm-12 border-bottom">
+                <p>
+                    <strong>{{ service.creater }}</strong> {{ service.createddate}}</p>
+                    {% if request.user == service.creater %}
+                        <a href="{% url 'service-edit' service.pk %}" style="color: #333;">Edit</a>
+                        <a href="{% url 'service-delete' service.pk %}" style="color: #333;">Delete</a>
+                    {% endif %}
+                <p>{{ service.description }}</p>
+                <p>{{ service.servicedate }}</p>
+            </div>
+        </div>
+
+        <!--
+        <div class="row justify-content-center mt-3 mb-5">
+            <div class="col-md-5 col-sm-12">
+                <form method="POST">
+                    {% csrf_token %}
+                    {{ form | crispy}}
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-success mt-3">Submit!</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        -->
+
+        <!--
+        {% for feedback in feedbacks %}
+        <div class="row justify-content-center mt-3 mb-5">
+            <div class="col-md-5 col-sm-12 border-bottom">
+                <p>
+                    <strong>{{ feedback.creater }}</strong> {{ feedback.createddate }}
+                    {% if request.user == feedback.creater %}
+                    <a href="{% url 'feedback-delete' service.pk feedback.pk %}" style="color: #333;">Delete</a>
+                    {% endif %}
+                </p>
+                <p>{{ feedback.feedback }}</p>
+            </div>
+        </div>
+        {% endfor %}
+        -->
+
+    </div>
+{% endblock content %}

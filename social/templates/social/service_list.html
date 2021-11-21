@@ -21,9 +21,11 @@
         </div>
         {% for service in service_list %}
         <div class="row justify-content-center mt-3">
-            <div class="col-md-5 col-sm-12 border-bottom">
+            <div class="col-md-5 col-sm-12 border-bottom position-relative">
                 <p><strong>{{ service.creater }}</strong> {{ service.createddate }}</p>
                 <p>{{ service.description }}</p>
+                <p>{{ service.servicedate }}</p>
+                <a href="{% url 'service-detail' service.pk %}" class="stretched-link"></a>
             </div>
         </div>
         {% endfor %}
