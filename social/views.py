@@ -1,10 +1,11 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.views import View
-from .models import Service, Feedback, UserProfile, Event
-from .forms import ServiceForm, EventForm, FeedbackForm
+from .models import Service, Feedback, UserProfile, Event, ServiceApplication
+from .forms import ServiceForm, EventForm, FeedbackForm, ServiceApplicationForm
 from django.views.generic.edit import UpdateView, DeleteView
+from django.http import HttpResponseRedirect
 
 class ServiceListView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
@@ -37,13 +38,28 @@ class ServiceListView(LoginRequiredMixin, View):
 class ServiceDetailView(View):
     def get(self, request, pk, *args, **kwargs):
         service = Service.objects.get(pk=pk)
-        form = ServiceForm()
+        #form = ServiceForm()
         #form = FeedbackForm()
+        applications = ServiceApplication.objects.filter(service=pk).order_by('-date')
+        applications_this = applications.filter(applicant=request.user)
+        number_of_accepted = len(applications.filter(approved=True))
+        if len(applications) == 0:
+            is_applied = False
+        for application in applications:
+            if application.applicant == request.user:
+                is_applied = True
+                break
+            else:
+                is_applied = False
 
         context = {
             'service': service,
-            'form': form,
+            #'form': form,
             #'feedbacks': feedbacks,
+            'applications': applications,
+            'number_of_accepted': number_of_accepted,
+            'is_applied': is_applied,
+            'applications_this': applications_this,
         }
 
         return render(request, 'social/service_detail.html', context)
@@ -71,6 +87,65 @@ class ServiceDetailView(View):
 
         return render(request, 'social/service_detail.html', context)
     """
+    def post(self, request, pk, *args, **kwargs):
+        service = Service.objects.get(pk=pk)
+        form = ServiceApplicationForm(request.POST)
+        applications = ServiceApplication.objects.filter(service=pk).order_by('-date')
+        applications_this = applications.filter(applicant=request.user)
+        number_of_accepted = len(applications.filter(approved=True))
+        if len(applications) == 0:
+            is_applied = False
+        for application in applications:
+            if application.applicant == request.user:
+                is_applied = True
+                break
+            else:
+                is_applied = False
+
+        if form.is_valid():
+            if is_applied == False:
+                new_application = form.save(commit=False)
+                new_application.applicant = request.user
+                new_application.service = service
+                new_application.approved = False
+                new_application.save()
+
+        context = {
+            'service': service,
+            'form': form,
+            'applications': applications,
+            'number_of_accepted': number_of_accepted,
+            'is_applied': is_applied,
+            'applications_this': applications_this,
+        }
+
+        #return render(request, 'social/service_detail.html', context)
+        return redirect('service-detail', pk=service.pk)
+
+class ApplicationDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = ServiceApplication
+    template_name = 'social/application_delete.html'
+
+    def get_success_url(self):
+        pk = self.kwargs['service_pk']
+        return reverse_lazy('service-detail', kwargs={'pk': pk})
+    
+    def test_func(self):
+        application = self.get_object()
+        return self.request.user == application.applicant
+
+class ApplicationEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = ServiceApplication
+    fields = ['approved']
+    template_name = 'social/application_edit.html'
+    
+    def get_success_url(self):
+        pk = self.kwargs['service_pk']
+        return reverse_lazy('service-detail', kwargs={'pk': pk})
+    
+    def test_func(self):
+        application = self.get_object()
+        return self.request.user == application.service.creater
 
 class ServiceEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Service
@@ -178,11 +253,22 @@ class ProfileView(View):
         profile = UserProfile.objects.get(pk=pk)
         user = profile.user
         services = Service.objects.filter(creater=user).order_by('-createddate')
-
+        followers = profile.followers.all()
+        if len(followers) == 0:
+            is_following = False
+        for follower in followers:
+            if follower == request.user:
+                is_following = True
+                break
+            else:
+                is_following = False
+        number_of_followers = len(followers)
         context = {
             'user': user,
             'profile': profile,
             'services': services,
+            'number_of_followers': number_of_followers,
+            'is_following': is_following
         }
         return render(request, 'social/profile.html', context)
 
@@ -198,3 +284,36 @@ class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def test_func(self):
         profile = self.get_object()
         return self.request.user == profile.user
+
+class AddFollower(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        profile = UserProfile.objects.get(pk=pk)
+        profile.followers.add(request.user)
+        return redirect('profile', pk=profile.pk)
+
+class RemoveFollower(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        profile = UserProfile.objects.get(pk=pk)
+        profile.followers.remove(request.user)
+        return redirect('profile', pk=profile.pk)
+
+class RemoveMyFollower(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        follower_pk = self.kwargs['follower_pk']
+        follower = UserProfile.objects.get(pk=follower_pk).user
+        profile = UserProfile.objects.get(pk=request.user.pk)
+        profile.followers.remove(follower)
+        return redirect('followers', pk=request.user.pk)
+
+class FollowersListView(LoginRequiredMixin, View):
+    def get(self, request, pk, *args, **kwargs):
+        profile = UserProfile.objects.get(pk=pk)
+        followers = profile.followers.all()
+
+        context = {
+            'followers': followers,
+            'profile': profile,
+        }
+
+        return render(request, 'social/followers_list.html', context)
+

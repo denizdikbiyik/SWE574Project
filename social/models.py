@@ -10,6 +10,12 @@ class Service(models.Model):
     description = models.TextField()
     servicedate = models.DateTimeField(default=timezone.now)
 
+class ServiceApplication(models.Model):
+    date = models.DateTimeField(default=timezone.now)
+    applicant = models.ForeignKey(User, on_delete=models.CASCADE)
+    service = models.ForeignKey('Service', on_delete=models.CASCADE)
+    approved = models.BooleanField(default=True)
+
 class Event(models.Model):
     eventcreater = models.ForeignKey(User, on_delete=models.CASCADE)
     eventcreateddate = models.DateTimeField(default=timezone.now)
@@ -33,6 +39,7 @@ class UserProfile(models.Model):
     birth_date = models.DateField(null=True, blank=True)
     location = models.CharField(max_length=100, blank=True, null=True)
     picture = models.ImageField(upload_to='uploads/profile_pictures/', default='uploads/profile_pictures/default.png', blank=True)
+    followers = models.ManyToManyField(User, blank=True, related_name='followers')
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):

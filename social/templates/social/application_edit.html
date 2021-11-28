@@ -1,4 +1,5 @@
 {% extends 'landing/base.html' %}
+{% load crispy_forms_tags %}
 
 {% block content %}
 <div class="container">
@@ -7,17 +8,21 @@
             <a href="{% url 'service-detail' object.pk %}" class="btn btn-light">Back to Service</a>
         </div>
     </div>
-    <div class="row justify-content-center mt-5">
+    <div class="row justify-content-center mt-3">
+        <div class="col-md-5 col-sm-12 border-bottom">
+            <h5>Update Application</h5>
+        </div>
+    </div>
+    <div class="row justify-content-center mt-3 mb-5">
         <div class="col-md-5 col-sm-12 border-bottom">
             <form method="POST">
                 {% csrf_token %}
-                <h5>Are You Sure?</h5>
-                <p>You are about to delete this service, this cannot be undone.</p>
+                {{ form | crispy }}
                 <div class="d-grid gap-2">
-                    <button class="btn btn-danger mt-3">Delete</button>
+                    <button class="btn btn-success mt-3">Submit!</button>
                 </div>
             </form>
-    </div>
+        </div>
     </div>
 </div>
 {% endblock content %}

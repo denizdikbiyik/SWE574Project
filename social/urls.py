@@ -1,6 +1,6 @@
 from django.urls import path
-from .views import ServiceListView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventListView, EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView
-#from .views import ServiceListView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventListView, EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, FeedbackDeleteView
+from .views import ServiceListView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventListView, EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, AddFollower, RemoveFollower, ApplicationDeleteView, ApplicationEditView, FollowersListView, RemoveMyFollower
+#from .views import ServiceListView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventListView, EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, FeedbackDeleteView, AddFollower, RemoveFollower, ApplicationDeleteView, ApplicationEditView, FollowersListView, RemoveMyFollower
 
 urlpatterns = [
     path('service', ServiceListView.as_view(), name='service-list'),
@@ -14,4 +14,10 @@ urlpatterns = [
     path('event/<int:pk>', EventDetailView.as_view(), name='event-detail'),
     path('event/edit/<int:pk>', EventEditView.as_view(), name='event-edit'),
     path('event/delete/<int:pk>', EventDeleteView.as_view(), name='event-delete'),
+    path('profile/<int:pk>/followers/add', AddFollower.as_view(), name='add-follower'),
+    path('profile/<int:pk>/followers/remove', RemoveFollower.as_view(), name='remove-follower'),
+    path('followers/remove/<int:follower_pk>', RemoveMyFollower.as_view(), name='remove-my-follower'),
+    path('service/<int:service_pk>/application/delete/<int:pk>', ApplicationDeleteView.as_view(), name='application-delete'),
+    path('service/<int:service_pk>/application/edit/<int:pk>/', ApplicationEditView.as_view(), name='application-edit'),
+    path('profile/<int:pk>/followers/', FollowersListView.as_view(), name='followers'),
 ]

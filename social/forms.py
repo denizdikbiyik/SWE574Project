@@ -1,5 +1,5 @@
 from django import forms
-from .models import Service, Event, Feedback
+from .models import Service, Event, Feedback, ServiceApplication
 
 class ServiceForm(forms.ModelForm):
     description = forms.CharField(
@@ -62,3 +62,9 @@ class FeedbackForm(forms.ModelForm):
     class Meta:
         model = Feedback
         fields = ['feedback']
+
+class ServiceApplicationForm(forms.ModelForm):    
+
+    class Meta:
+        model = ServiceApplication
+        fields = []
