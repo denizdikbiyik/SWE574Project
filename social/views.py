@@ -320,3 +320,36 @@ class FollowersListView(LoginRequiredMixin, View):
 
         return render(request, 'social/followers_list.html', context)
 
+
+class TimeLine(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        profile = UserProfile.objects.get(pk=request.user.pk)
+        allUsers = UserProfile.objects.all()
+        followedOnes = []
+        services2 = []
+        events2 = []
+        for auser in allUsers:
+            thisFollowers = UserProfile.objects.get(pk=auser.pk).followers.all()
+            if request.user in thisFollowers:
+                followedOnes.append(auser)
+        services = Service.objects.all().order_by('-createddate')
+        events = Event.objects.all().order_by('-eventcreateddate')
+        for one in followedOnes:
+            for service in services:
+                if service.creater == one.user :
+                    services2.append(service)
+            for event in events:
+                if event.eventcreater == one.user :
+                    events2.append(event)
+        events_count = len(events2)
+        services_count = len(services2)
+
+        context = {
+            'services': services2,
+            'events': events2,
+            'services_count': services_count,
+            'events_count': events_count
+        }
+
+        return render(request, 'social/timeline.html', context)
+    

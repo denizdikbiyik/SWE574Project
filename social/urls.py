@@ -1,6 +1,6 @@
 from django.urls import path
-from .views import ServiceListView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventListView, EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, AddFollower, RemoveFollower, ApplicationDeleteView, ApplicationEditView, FollowersListView, RemoveMyFollower
-#from .views import ServiceListView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventListView, EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, FeedbackDeleteView, AddFollower, RemoveFollower, ApplicationDeleteView, ApplicationEditView, FollowersListView, RemoveMyFollower
+from .views import ServiceListView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventListView, EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, AddFollower, RemoveFollower, ApplicationDeleteView, ApplicationEditView, FollowersListView, RemoveMyFollower, TimeLine
+#from .views import ServiceListView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventListView, EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, FeedbackDeleteView, AddFollower, RemoveFollower, ApplicationDeleteView, ApplicationEditView, FollowersListView, RemoveMyFollower, TimeLine
 
 urlpatterns = [
     path('service', ServiceListView.as_view(), name='service-list'),
@@ -20,4 +20,5 @@ urlpatterns = [
     path('service/<int:service_pk>/application/delete/<int:pk>', ApplicationDeleteView.as_view(), name='application-delete'),
     path('service/<int:service_pk>/application/edit/<int:pk>/', ApplicationEditView.as_view(), name='application-edit'),
     path('profile/<int:pk>/followers/', FollowersListView.as_view(), name='followers'),
+    path('timeline', TimeLine.as_view(), name='timeline'),
 ]

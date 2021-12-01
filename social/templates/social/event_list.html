@@ -22,7 +22,7 @@
         {% for event in event_list %}
         <div class="row justify-content-center mt-3">
             <div class="col-md-5 col-sm-12 border-bottom position-relative">
-                <img src="{{ event.eventpicture.url }}" class="rounded-circle" width="100" height="100" />
+                <img src="{{ event.eventpicture.url }}" width="100" height="100" />
                 <p><strong>{{ event.eventcreater }}</strong> {{ event.eventcreateddate }}</p>
                 <p>{{ event.eventname }}</p>
                 <p>{{ event.eventdescription }}</p>
