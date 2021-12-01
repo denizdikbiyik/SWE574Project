@@ -14,7 +14,7 @@ class ServiceForm(forms.ModelForm):
         label = '',
         widget = forms.Textarea(attrs={
             'rows': '3',
-            'placeholder': 'Create a service...'
+            'placeholder': 'Create a service (description)...'
         })
     )
     
