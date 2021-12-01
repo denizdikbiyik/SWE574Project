@@ -15,11 +15,12 @@
           >CommUnity</a>
           -->
 
-          <a class="navbar-brand" href="{% url 'index' %}">CommUnity</a>
+          <a class="navbar-brand" href="{% url 'index' %}" style="font-weight: bold;">CommUnity</a>
 
           <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-              
+              <a class="navbar-brand" href="{% url 'service-list' %}">Services</a>
+              <a class="navbar-brand" href="{% url 'event-list' %}">Events</a>
             </ul>
             <form class="d-flex">
                 <div class="input-group">
