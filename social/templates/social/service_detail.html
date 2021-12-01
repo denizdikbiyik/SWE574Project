@@ -12,55 +12,61 @@
         <div class="row justify-content-center mt-3">
             <div class="col-md-5 col-sm-12 border-bottom">
                 <p>
+                    <img src="{{ service.picture.url }}"/>
                     <p><a style="text-decoration: none;" class="text-primary" href="{% url 'profile' service.creater.profile.pk %}">@{{ service.creater }}</a> {{ service.createddate }}</p>
                     {% if request.user == service.creater %}
                         <a href="{% url 'service-edit' service.pk %}" class="btn btn-primary">Edit</a>
                         <a href="{% url 'service-delete' service.pk %}" class="btn btn-danger">Delete</a>
                     {% endif %}
+                <p>{{ service.name }}</p>
                 <p>{{ service.description }}</p>
+                <p>{{ service.location }}</p>
                 <p>{{ service.servicedate }}</p>
+                <p>{{ service.capacity }}</p>
+
+                <div class="row justify-content-center mt-3 mb-5">
+                    <p>Accepted Participant Count: {{ number_of_accepted }}</p>
+                    {% if service.creater == request.user %}
+                    {% for application_done in applications %}
+                    <div class="row justify-content-center mt-3 mb-5">
+                        <div class="col-md-5 col-sm-12 border-bottom">
+                            <p>
+                                <strong>{{ application_done.applicant }}</strong> {{ application_done.date }}
+                                {% if application_done.approved %}
+                                <a href="{% url 'application-edit' service.pk application_done.pk %}" class="btn btn-danger">Remove</a>
+                                {% else %}
+                                <a href="{% url 'application-edit' service.pk application_done.pk %}" class="btn btn-success">Approve</a>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    {% if is_applied %}
+                    {% for application in applications_this %}
+                    <div class="col-md-5 col-sm-12">
+                        <div class="d-grid gap-2">
+                            <a class="btn btn-danger mt-3" href="{% url 'application-delete' service.pk application.pk %}">Cancel Application</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="col-md-5 col-sm-12">
+                        <form method="POST">
+                            {% csrf_token %}
+                            {{ form | crispy}}
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-success mt-3">Apply</button>
+                            </div>
+                        </form>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+                </div>
             </div>
         </div>
 
-        <div class="row justify-content-center mt-3 mb-5">
-            <p>Accepted Participant Count: {{ number_of_accepted }}</p>
-            {% if service.creater == request.user %}
-            {% for application_done in applications %}
-            <div class="row justify-content-center mt-3 mb-5">
-                <div class="col-md-5 col-sm-12 border-bottom">
-                    <p>
-                        <strong>{{ application_done.applicant }}</strong> {{ application_done.date }}
-                        {% if application_done.approved %}
-                        <a href="{% url 'application-edit' service.pk application_done.pk %}" class="btn btn-danger">Remove</a>
-                        {% else %}
-                        <a href="{% url 'application-edit' service.pk application_done.pk %}" class="btn btn-success">Approve</a>
-                        {% endif %}
-                    </p>
-                </div>
-            </div>
-            {% endfor %}
-            {% else %}
-            {% if is_applied %}
-            {% for application in applications_this %}
-            <div class="col-md-5 col-sm-12">
-                <div class="d-grid gap-2">
-                    <a class="btn btn-danger mt-3" href="{% url 'application-delete' service.pk application.pk %}">Cancel Application</a>
-                </div>
-            </div>
-            {% endfor %}
-            {% else %}
-            <div class="col-md-5 col-sm-12">
-                <form method="POST">
-                    {% csrf_token %}
-                    {{ form | crispy}}
-                    <div class="d-grid gap-2">
-                        <button class="btn btn-success mt-3">Apply</button>
-                    </div>
-                </form>
-            </div>
-            {% endif %}
-            {% endif %}
-        </div>
+        
 
         <!--
         <div class="row justify-content-center mt-3 mb-5">

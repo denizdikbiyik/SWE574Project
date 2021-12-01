@@ -1,11 +1,6 @@
 from django import forms
 from .models import Service, Event, Feedback, ServiceApplication
 
-# class DefFor_DateTimeInput(forms.DateTimeInput):
-#     input_type = "datetime-local"
-#     def __init__(self, **kwargs):
-#         super().__init__(**kwargs)
-
 class DateTimeLocalInput(forms.DateTimeInput):
     input_type = "datetime-local"
  
@@ -44,8 +39,6 @@ class ServiceForm(forms.ModelForm):
         model = Service
         fields = ['picture', 'name', 'description', 'servicedate', 'location', 'capacity']
 
-
-
 class EventForm(forms.ModelForm):
     eventname = forms.CharField(
         label = '',
@@ -62,12 +55,6 @@ class EventForm(forms.ModelForm):
             'placeholder': 'Create an event (description)...'
         })
     )
-    
-    # eventdate = forms.DateTimeField(
-    #     input_formats = ['%Y-%m-%d %H:%M:%S'], 
-    #     widget = forms.DateTimeInput(
-    #         format='%Y-%m-%d %H:%M:%S'),
-    # )
 
     eventdate = DateTimeLocalField()
 
