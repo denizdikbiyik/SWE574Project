@@ -287,15 +287,17 @@ class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
 class AddFollower(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
-        profile = UserProfile.objects.get(pk=pk)
+        follow_pk = self.kwargs['followpk']
+        profile = UserProfile.objects.get(pk=follow_pk)
         profile.followers.add(request.user)
-        return redirect('profile', pk=profile.pk)
+        return redirect('profile', pk=follow_pk)
 
 class RemoveFollower(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
-        profile = UserProfile.objects.get(pk=pk)
+        follow_pk = self.kwargs['followpk']
+        profile = UserProfile.objects.get(pk=follow_pk)
         profile.followers.remove(request.user)
-        return redirect('profile', pk=profile.pk)
+        return redirect('profile', pk=follow_pk)
 
 class RemoveMyFollower(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
@@ -309,10 +311,11 @@ class FollowersListView(LoginRequiredMixin, View):
     def get(self, request, pk, *args, **kwargs):
         profile = UserProfile.objects.get(pk=pk)
         followers = profile.followers.all()
-
+        number_of_followers = len(followers)
         context = {
             'followers': followers,
             'profile': profile,
+            'number_of_followers': number_of_followers
         }
 
         return render(request, 'social/followers_list.html', context)

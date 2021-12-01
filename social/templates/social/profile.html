@@ -2,14 +2,32 @@
 
 {% block content %}
 <div class="container">
-    <div class="row mt-5">
-        <div class="col-md-3 col-sm-6">
-            <a href="{% url 'service-list' %}" class="btn btn-light">Back to Services</a>
-        </div>
-    </div>
     <div class="row justify-content-center mt-5">
         <div class="card shadow-sm col-md-8 col-sm-12 border-bottom px-5 pt-3">
-            <img src="{{ profile.picture.url }}" class="rounded-circle" width="100" height="100" />
+
+            <div class="row">
+
+                <div class="col"><img src="{{ profile.picture.url }}" class="rounded-circle" width="100" height="100" /></div>
+            
+                <div class="col">
+                    {% if user == request.user %}
+                    {% else %}
+                    {% if is_following %}
+                        <form method="POST" action="{% url 'remove-follower' request.user.pk profile.pk %}">
+                            {% csrf_token %}
+                            <button class="btn btn-outline-danger" type=submit>UnFollow</button>
+                        </form>
+                    {% else %}
+                        <form method="POST" action="{% url 'add-follower' request.user.pk profile.pk %}">
+                            {% csrf_token %}
+                            <button class="btn btn-outline-success" type=submit>Follow</button>
+                        </form>
+                    {% endif %}
+                    {% endif %}
+                </div>
+
+            </div>
+
             {% if profile.name %}
             <h3 class="py-4">{{ profile.name }}             
                 <span>
@@ -40,20 +58,6 @@
 
             <div class="mb-3">
                 <a href="{% url 'followers' profile.pk %}">Followers: {{ number_of_followers }}</a>
-                {% if user == request.user %}
-                {% else %}
-                {% if is_following %}
-                <form method="POST" action="{% url 'remove-follower' profile.pk %}">
-                    {% csrf_token %}
-                    <button class="btn btn-outline-danger" type=submit>UnFollow</button>
-                </form>
-                {% else %}
-                <form method="POST" action="{% url 'add-follower' profile.pk %}">
-                    {% csrf_token %}
-                    <button class="btn btn-outline-success" type=submit>Follow</button>
-                </form>
-                {% endif %}
-                {% endif %}
             </div>
         </div>
     </div>

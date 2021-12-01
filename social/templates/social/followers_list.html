@@ -5,22 +5,38 @@
     <div class="container">
         <div class="row justify-content-center mt-3">
             <div class="col-md-5 col-sm-12">
-                <h5>Followers</h5>
+                <h5>Followers of {{ profile.user.username }}</h5>
             </div>
         </div>
-        {% for follower in followers %}
+        {% if number_of_followers == 0 %}
         <div class="row justify-content-center mt-3">
             <div class="col-md-5 col-sm-12 border-bottom position-relative">
-                <p><a style="text-decoration: none;" class="text-primary" href="{% url 'profile' follower.pk %}">@{{ follower.username }}</a></p>
-                {% if profile.user == request.user %}
-                <form method="POST" action="{% url 'remove-my-follower' follower.pk %}">
-                    {% csrf_token %}
-                    <button class="btn btn-outline-danger" type=submit>Remove</button>
-                </form>
-                {% else %}
-                {% endif %}
+                <p>No followers found.</p>
             </div>
         </div>
-        {% endfor %}
+        {% else %}
+            {% for follower in followers %}
+            <div class="row justify-content-center mt-3">
+                <div class="col-md-5 col-sm-12 border-bottom position-relative">
+
+                    <div class="row">
+                        <div class="col">
+                            <p><a style="text-decoration: none;" class="text-primary" href="{% url 'profile' follower.pk %}">@{{ follower.username }}</a></p>
+                        </div>
+                        <div class="col">
+                            {% if profile.user == request.user %}
+                                <form method="POST" action="{% url 'remove-my-follower' follower.pk %}">
+                                    {% csrf_token %}
+                                    <button class="btn btn-outline-danger" type=submit>Remove</button>
+                                </form>
+                            {% else %}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            {% endfor %}
+        {% endif %}
     </div>
 {% endblock content %}
