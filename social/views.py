@@ -149,7 +149,7 @@ class ApplicationEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
 class ServiceEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Service
-    fields = ['description']
+    fields = ['picture', 'name', 'description', 'servicedate', 'location', 'capacity']
     template_name = 'social/service_edit.html'
     
     def get_success_url(self):
