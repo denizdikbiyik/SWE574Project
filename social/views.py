@@ -19,7 +19,7 @@ class ServiceCreateView(LoginRequiredMixin, View):
     
     def post(self, request, *args, **kwargs):
         services = Service.objects.all().order_by('-createddate')
-        form = ServiceForm(request.POST)
+        form = ServiceForm(request.POST, request.FILES)
 
         if form.is_valid():
             new_service = form.save(commit=False)
@@ -204,7 +204,7 @@ class EventCreateView(LoginRequiredMixin, View):
     
     def post(self, request, *args, **kwargs):
         events = Event.objects.all().order_by('-eventcreateddate')
-        form = EventForm(request.POST)
+        form = EventForm(request.POST, request.FILES)
 
         if form.is_valid():
             new_event = form.save(commit=False)
