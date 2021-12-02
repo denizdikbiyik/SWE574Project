@@ -14,22 +14,22 @@ class DateTimeLocalField(forms.DateTimeField):
 
 class ServiceForm(forms.ModelForm):
     name = forms.CharField(
-        label = '',
         widget = forms.Textarea(attrs={
-            'rows': '3',
+            'rows': '1',
             'placeholder': 'Create a service (name)...'
         })
     )
 
     description = forms.CharField(
-        label = '',
         widget = forms.Textarea(attrs={
             'rows': '3',
             'placeholder': 'Create a service (description)...'
         })
     )
     
-    servicedate = DateTimeLocalField()
+    servicedate = DateTimeLocalField(
+        label = 'Date Time',
+    )
 
     capacity = forms.IntegerField(
         
@@ -45,29 +45,35 @@ class ServiceForm(forms.ModelForm):
 
 class EventForm(forms.ModelForm):
     eventname = forms.CharField(
-        label = '',
+        label = 'Name',
         widget = forms.Textarea(attrs={
-            'rows': '3',
+            'rows': '1',
             'placeholder': 'Create an event (name)...'
         })
     )
     
     eventdescription = forms.CharField(
-        label = '',
+        label = 'Description',
         widget = forms.Textarea(attrs={
             'rows': '3',
             'placeholder': 'Create an event (description)...'
         })
     )
 
-    eventdate = DateTimeLocalField()
+    eventdate = DateTimeLocalField(
+        label = 'Date Time',
+    )
 
     eventcapacity = forms.IntegerField(
-        
+        label = 'Capacity',
     )
 
     eventduration = forms.IntegerField(
-        
+        label = 'Duration',
+    )
+
+    eventpicture = forms.ImageField(
+        label = 'Image',
     )
 
     class Meta:
