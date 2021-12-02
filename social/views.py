@@ -172,7 +172,7 @@ class ServiceEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 class ServiceDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Service
     template_name = 'social/service_delete.html'
-    success_url = reverse_lazy('service-list')
+    success_url = reverse_lazy('allservices')
 
     def test_func(self):
         service = self.get_object()
@@ -260,7 +260,7 @@ class EventEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 class EventDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Event
     template_name = 'social/event_delete.html'
-    success_url = reverse_lazy('event-list')
+    success_url = reverse_lazy('allevents')
 
     def test_func(self):
         event = self.get_object()
