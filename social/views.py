@@ -7,17 +7,15 @@ from .forms import ServiceForm, EventForm, FeedbackForm, ServiceApplicationForm
 from django.views.generic.edit import UpdateView, DeleteView
 from django.http import HttpResponseRedirect
 
-class ServiceListView(LoginRequiredMixin, View):
+class ServiceCreateView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        services = Service.objects.all().order_by('-createddate')
         form = ServiceForm()
 
         context = {
-            'service_list': services,
             'form': form,
         }
 
-        return render(request, 'social/service_list.html', context)
+        return render(request, 'social/service_create.html', context)
     
     def post(self, request, *args, **kwargs):
         services = Service.objects.all().order_by('-createddate')
@@ -33,7 +31,18 @@ class ServiceListView(LoginRequiredMixin, View):
             'form': form,
         }
 
-        return render(request, 'social/service_list.html', context)
+        return redirect('allservices')
+
+class AllServicesView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        services = Service.objects.all().order_by('-createddate')
+        form = ServiceForm()
+
+        context = {
+            'services': services,
+        }
+
+        return render(request, 'social/allservices.html', context)
 
 class ServiceDetailView(View):
     def get(self, request, pk, *args, **kwargs):
@@ -183,17 +192,15 @@ class FeedbackDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         return self.request.user == service.creater
 """
 
-class EventListView(LoginRequiredMixin, View):
+class EventCreateView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        events = Event.objects.all().order_by('-eventcreateddate')
         form = EventForm()
 
         context = {
-            'event_list': events,
             'form': form,
         }
 
-        return render(request, 'social/event_list.html', context)
+        return render(request, 'social/event_create.html', context)
     
     def post(self, request, *args, **kwargs):
         events = Event.objects.all().order_by('-eventcreateddate')
@@ -209,7 +216,18 @@ class EventListView(LoginRequiredMixin, View):
             'form': form,
         }
 
-        return render(request, 'social/event_list.html', context)
+        return redirect('allevents')
+
+class AllEventsView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        events = Event.objects.all().order_by('-eventcreateddate')
+        form = EventForm()
+
+        context = {
+            'events': events,
+        }
+
+        return render(request, 'social/allevents.html', context)
 
 class EventDetailView(View):
     def get(self, request, pk, *args, **kwargs):

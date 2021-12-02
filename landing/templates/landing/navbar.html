@@ -11,8 +11,10 @@
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
               {% if user.is_authenticated %}
               <a style="color: white;" class="navbar-brand" href="{% url 'timeline' %}">TimeLine</a>
-              <a style="color: white;" class="navbar-brand" href="{% url 'service-list' %}">Services</a>
-              <a style="color: white;" class="navbar-brand" href="{% url 'event-list' %}">Events</a>
+              <a style="color: white;" class="navbar-brand" href="{% url 'service-create' %}">Create Service</a>
+              <a style="color: white;" class="navbar-brand" href="{% url 'event-create' %}">Create Event</a>
+              <a style="color: white;" class="navbar-brand" href="{% url 'allservices' %}">Services</a>
+              <a style="color: white;" class="navbar-brand" href="{% url 'allevents' %}">Events</a>
               {% else %}
               <a href="{% url 'account_login' %}" class="btn btn-light mr-2">Login</a>
               <a style="color: white;" href="{% url 'account_signup' %}" class="btn btn-dark">Register</a>  
