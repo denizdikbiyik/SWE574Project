@@ -158,7 +158,7 @@ class ApplicationEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
 class ServiceEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Service
-    fields = ['picture', 'name', 'description', 'servicedate', 'location', 'capacity']
+    fields = ['picture', 'name', 'description', 'servicedate', 'location', 'capacity', 'duration']
     template_name = 'social/service_edit.html'
     
     def get_success_url(self):
@@ -246,7 +246,7 @@ class EventDetailView(View):
 
 class EventEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Event
-    fields = ['eventpicture', 'eventname', 'eventdescription', 'eventdate', 'eventlocation', 'eventcapacity']
+    fields = ['eventpicture', 'eventname', 'eventdescription', 'eventdate', 'eventlocation', 'eventcapacity', 'eventduration']
     template_name = 'social/event_edit.html'
     
     def get_success_url(self):

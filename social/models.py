@@ -13,6 +13,7 @@ class Service(models.Model):
     location = models.CharField(max_length=100, blank=True, null=True)
     servicedate = models.DateTimeField(default=timezone.now)
     capacity = models.IntegerField(default=1)
+    duration = models.IntegerField(default=1)
 
 class ServiceApplication(models.Model):
     date = models.DateTimeField(default=timezone.now)
@@ -29,6 +30,7 @@ class Event(models.Model):
     eventlocation = models.CharField(max_length=100, blank=True, null=True)
     eventdate = models.DateTimeField(default=timezone.now)
     eventcapacity = models.IntegerField(default=1)
+    eventduration = models.IntegerField(default=1)
 
 class Feedback(models.Model):
     feedback = models.TextField()

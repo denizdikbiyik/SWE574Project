@@ -35,9 +35,13 @@ class ServiceForm(forms.ModelForm):
         
     )
 
+    duration = forms.IntegerField(
+        
+    )
+
     class Meta:
         model = Service
-        fields = ['picture', 'name', 'description', 'servicedate', 'location', 'capacity']
+        fields = ['picture', 'name', 'description', 'servicedate', 'location', 'capacity', 'duration']
 
 class EventForm(forms.ModelForm):
     eventname = forms.CharField(
@@ -62,9 +66,13 @@ class EventForm(forms.ModelForm):
         
     )
 
+    eventduration = forms.IntegerField(
+        
+    )
+
     class Meta:
         model = Event
-        fields = ['eventpicture', 'eventname', 'eventdescription', 'eventdate', 'eventlocation', 'eventcapacity']
+        fields = ['eventpicture', 'eventname', 'eventdescription', 'eventdate', 'eventlocation', 'eventcapacity', 'eventduration']
 
 class FeedbackForm(forms.ModelForm):
     feedback = forms.CharField(
