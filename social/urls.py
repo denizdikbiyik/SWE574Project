@@ -1,6 +1,6 @@
 from django.urls import path
-from .views import ServiceCreateView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventCreateView, EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, AddFollower, RemoveFollower, ApplicationDeleteView, ApplicationEditView, FollowersListView, RemoveMyFollower, TimeLine, AllServicesView, AllEventsView, CreatedServicesView
-#from .views import ServiceCreateView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventCreateView, EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, FeedbackDeleteView, AddFollower, RemoveFollower, ApplicationDeleteView, ApplicationEditView, FollowersListView, RemoveMyFollower, TimeLine, AllServicesView, AllEventsView, CreatedServicesView
+from .views import ServiceCreateView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventCreateView, EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, AddFollower, RemoveFollower, ApplicationDeleteView, ApplicationEditView, FollowersListView, RemoveMyFollower, TimeLine, AllServicesView, AllEventsView, CreatedServicesView, CreatedEventsView
+#from .views import ServiceCreateView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventCreateView, EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, FeedbackDeleteView, AddFollower, RemoveFollower, ApplicationDeleteView, ApplicationEditView, FollowersListView, RemoveMyFollower, TimeLine, AllServicesView, AllEventsView, CreatedServicesView, CreatedEventsView
 
 urlpatterns = [
     path('service/create', ServiceCreateView.as_view(), name='service-create'),
@@ -14,6 +14,7 @@ urlpatterns = [
     path('profile/edit/<int:pk>/', ProfileEditView.as_view(), name='profile-edit'),
     path('event/create', EventCreateView.as_view(), name='event-create'),
     path('event', AllEventsView.as_view(), name='allevents'),
+    path('event/createdevents', CreatedEventsView.as_view(), name='createdevents'),
     path('event/<int:pk>', EventDetailView.as_view(), name='event-detail'),
     path('event/edit/<int:pk>', EventEditView.as_view(), name='event-edit'),
     path('event/delete/<int:pk>', EventDeleteView.as_view(), name='event-delete'),

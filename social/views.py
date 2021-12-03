@@ -240,6 +240,17 @@ class AllEventsView(LoginRequiredMixin, View):
 
         return render(request, 'social/allevents.html', context)
 
+class CreatedEventsView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        events = Event.objects.filter(eventcreater=request.user).order_by('-eventcreateddate')
+        form = EventForm()
+
+        context = {
+            'events': events,
+        }
+
+        return render(request, 'social/createdevents.html', context)
+
 class EventDetailView(View):
     def get(self, request, pk, *args, **kwargs):
         event = Event.objects.get(pk=pk)
