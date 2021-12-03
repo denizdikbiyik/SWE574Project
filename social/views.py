@@ -252,6 +252,7 @@ class EventCreateView(LoginRequiredMixin, View):
             new_event = form.save(commit=False)
             new_event.eventcreater = request.user
             new_event.save()
+            messages.success(request, 'Event creation is successful.')
 
         context = {
             'event_list': events,

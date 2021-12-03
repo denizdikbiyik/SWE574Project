@@ -12,9 +12,9 @@
         <div class="row justify-content-center mt-3 mb-5">
             {% if messages %}
                 <ul class="messages">
-                {% for message in messages %}
-                    <p style="text-align: center;"  {% if message.tags %} class=" {{ message.tags }} " {% endif %}> {{ message }} </p>
-                {% endfor %}
+                    {% for message in messages %}
+                        <p style="text-align: center; color:darkgreen;"  {% if message.tags %} class=" {{ message.tags }} " {% endif %}> {{ message }} </p>
+                    {% endfor %}
                 </ul>
             {% endif %}
             <div class="col-md-5 col-sm-12">
