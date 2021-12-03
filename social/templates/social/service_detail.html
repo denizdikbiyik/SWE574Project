@@ -36,7 +36,10 @@
                                 {% if application_done.approved %}
                                 <a href="{% url 'application-edit' service.pk application_done.pk %}" class="btn btn-danger">Remove</a>
                                 {% else %}
-                                <a href="{% url 'application-edit' service.pk application_done.pk %}" class="btn btn-success">Approve</a>
+                                {% if service.capacity ==  number_of_accepted %}
+                                {% else %}
+                                    <a href="{% url 'application-edit' service.pk application_done.pk %}" class="btn btn-success">Approve</a>
+                                {% endif %}
                                 {% endif %}
                             </p>
                         </div>
