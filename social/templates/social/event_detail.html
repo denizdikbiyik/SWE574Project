@@ -7,23 +7,29 @@
             <div class="col-md-5 col-sm-6">
                 <a onClick="javascript:history.go(-1);" class="btn btn-light">Back</a>
             </div>
+        </div>
         <div class="row justify-content-center mt-3">
             <div class="col-md-5 col-sm-12 border-bottom">
-                <p>
-                    <img src="{{ event.eventpicture.url }}"/>
-                    <strong>{{ event.eventcreater }}</strong> {{ event.ceventreateddate}}</p>
-                    {% if request.user == event.eventcreater %}
-                        <a href="{% url 'event-edit' event.pk %}" style="color: #333;">Edit</a>
-                        <a href="{% url 'event-delete' event.pk %}" style="color: #333;">Delete</a>
-                    {% endif %}
-                <p>{{ event.eventname }}</p>
-                <p>{{ event.eventdescription }}</p>
-                <p>{{ event.eventlocation }}</p>
-                <p>{{ event.eventdate }}</p>
-                <p>{{ event.eventcapacity }}</p>
-                <p>{{ event.eventduration }}</p>
+                <div class="row">
+                    <div class="col">
+                        <img width="150" height="150" src="{{ event.eventpicture.url }}"/>
+                    </div>
+                    <div class="col">
+                        {% if request.user == event.eventcreater %}
+                            <a href="{% url 'event-edit' event.pk %}" class="btn btn-primary">Edit</a>
+                            <a href="{% url 'event-delete' event.pk %}" class="btn btn-danger">Delete</a>
+                        {% endif %}
+                    </div>                  
+                </div>
+                </br>
+                <p><a style="text-decoration: none;" class="text-primary" href="{% url 'profile' event.eventcreater.profile.pk %}">@{{ event.eventcreater }}</a> created on {{ event.eventcreateddate}}</p>
+                <p><a style="font-weight: bolder;">Event Name: </a>{{ event.eventname }}</p>
+                <p><a style="font-weight: bolder;">Description: </a>{{ event.eventdescription }}</p>
+                <p><a style="font-weight: bolder;">Datetime: </a>{{ event.eventdate }}</p>
+                <p><a style="font-weight: bolder;">Duration: </a>{{ event.eventduration }}</p>
+                <p><a style="font-weight: bolder;">Location: </a>{{ event.eventlocation }}</p>
+                <p><a style="font-weight: bolder;">Capacity: </a>{{ event.eventcapacity }}</p>
             </div>
         </div>
-
     </div>
 {% endblock content %}

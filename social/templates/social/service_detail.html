@@ -8,68 +8,68 @@
                 <a onClick="javascript:history.go(-1);" class="btn btn-light">Back</a>
             </div>
         </div>
-
         <div class="row justify-content-center mt-3">
             <div class="col-md-5 col-sm-12 border-bottom">
-                <p>
-                    <img src="{{ service.picture.url }}"/>
-                    <p><a style="text-decoration: none;" class="text-primary" href="{% url 'profile' service.creater.profile.pk %}">@{{ service.creater }}</a> {{ service.createddate }}</p>
-                    {% if request.user == service.creater %}
-                        <a href="{% url 'service-edit' service.pk %}" class="btn btn-primary">Edit</a>
-                        <a href="{% url 'service-delete' service.pk %}" class="btn btn-danger">Delete</a>
-                    {% endif %}
-                <p>{{ service.name }}</p>
-                <p>{{ service.description }}</p>
-                <p>{{ service.location }}</p>
-                <p>{{ service.servicedate }}</p>
-                <p>{{ service.capacity }}</p>
-                <p>{{ service.duration }}</p>
-
+                <div class="row">
+                    <div class="col">
+                        <img width="150" height="150" src="{{ service.picture.url }}"/>
+                    </div>
+                    <div class="col">
+                        {% if request.user == service.creater %}
+                            <a href="{% url 'service-edit' service.pk %}" class="btn btn-primary">Edit</a>
+                            <a href="{% url 'service-delete' service.pk %}" class="btn btn-danger">Delete</a>
+                        {% endif %}
+                    </div>                  
+                </div>
+                </br>
+                <p><a style="text-decoration: none;" class="text-primary" href="{% url 'profile' service.creater.profile.pk %}">@{{ service.creater }}</a> created on {{ service.createddate }}</p>
+                <p><a style="font-weight: bolder;">Service Name: </a>{{ service.name }}</p>
+                <p><a style="font-weight: bolder;">Description: </a>{{ service.description }}</p>
+                <p><a style="font-weight: bolder;">Datetime: </a>{{ service.servicedate }}</p>
+                <p><a style="font-weight: bolder;">Duration: </a>{{ service.duration }}</p>
+                <p><a style="font-weight: bolder;">Location: </a>{{ service.location }}</p>
+                <p><a style="font-weight: bolder;">Capacity: </a>{{ service.capacity }}</p>
                 <div class="row justify-content-center mt-3 mb-5">
-                    <p>Accepted Participant Count: {{ number_of_accepted }}</p>
+                    <p><a style="font-weight: bolder;">Accepted Participant Count: </a>{{ number_of_accepted }}</p>
                     {% if service.creater == request.user %}
-                    {% for application_done in applications %}
-                    <div class="row justify-content-center mt-3 mb-5">
-                        <div class="col-md-5 col-sm-12 border-bottom">
-                            <p>
-                                <strong>{{ application_done.applicant }}</strong> {{ application_done.date }}
+                        <p></p>
+                        <p style="font-weight: bolder;">Applicants</p>
+                        {% for application_done in applications %}
+                        <div class="row justify-content-center">
+                            <div class="border-bottom">
+                                <strong>{{ application_done.applicant }}</strong> applied on {{ application_done.date }}  
                                 {% if application_done.approved %}
-                                <a href="{% url 'application-edit' service.pk application_done.pk %}" class="btn btn-danger">Remove</a>
+                                    <a href="{% url 'application-edit' service.pk application_done.pk %}" class="btn btn-danger">Remove</a>
                                 {% else %}
-                                {% if service.capacity ==  number_of_accepted %}
-                                {% else %}
-                                    <a href="{% url 'application-edit' service.pk application_done.pk %}" class="btn btn-success">Approve</a>
+                                    {% if service.capacity ==  number_of_accepted %}
+                                    {% else %}
+                                        <a href="{% url 'application-edit' service.pk application_done.pk %}" class="btn btn-success">Approve</a>
+                                    {% endif %}
                                 {% endif %}
-                                {% endif %}
-                            </p>
-                        </div>
-                    </div>
-                    {% endfor %}
-                    {% else %}
-                    {% if is_applied %}
-                    {% if is_accepted %}
-                        <p>Your application is accepted.</p>
-                    {% else %}
-                        <p>Your application is not accepted yet.</p>
-                    {% endif %}
-                    {% for application in applications_this %}
-                    <div class="col-md-5 col-sm-12">
-                        <div class="d-grid gap-2">
-                            <a class="btn btn-danger mt-3" href="{% url 'application-delete' service.pk application.pk %}">Cancel Application</a>
-                        </div>
-                    </div>
-                    {% endfor %}
-                    {% else %}
-                    <div class="col-md-5 col-sm-12">
-                        <form method="POST">
-                            {% csrf_token %}
-                            {{ form | crispy}}
-                            <div class="d-grid gap-2">
-                                <button class="btn btn-success mt-3">Apply</button>
                             </div>
-                        </form>
-                    </div>
-                    {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        {% if is_applied %}
+                            {% if is_accepted %}
+                                <p>Your application is accepted.</p>
+                            {% else %}
+                                <p>Your application is not accepted yet.</p>
+                            {% endif %}
+                            {% for application in applications_this %}
+                                <div class="d-grid gap-2">
+                                    <a class="btn btn-danger mt-3" href="{% url 'application-delete' service.pk application.pk %}">Cancel Application</a>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <form method="POST">
+                                {% csrf_token %}
+                                {{ form | crispy}}
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-success mt-3">Apply</button>
+                                </div>
+                            </form>
+                        {% endif %}
                     {% endif %}
                 </div>
             </div>
