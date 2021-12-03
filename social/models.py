@@ -3,6 +3,11 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.core.exceptions import ValidationError
+
+def validate_date(date):
+    if date < timezone.now():
+        raise ValidationError("Date cannot be in the past.")
 
 class Service(models.Model):
     creater = models.ForeignKey(User, on_delete=models.CASCADE)

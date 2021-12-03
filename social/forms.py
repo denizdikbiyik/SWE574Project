@@ -1,5 +1,11 @@
 from django import forms
 from .models import Service, Event, Feedback, ServiceApplication
+from django.utils import timezone
+from django.core.exceptions import ValidationError
+
+def validate_date(date):
+    if date < timezone.now():
+        raise ValidationError("Date cannot be in the past.")
 
 class DateTimeLocalInput(forms.DateTimeInput):
     input_type = "datetime-local"
@@ -29,6 +35,7 @@ class ServiceForm(forms.ModelForm):
     
     servicedate = DateTimeLocalField(
         label = 'Date Time',
+        validators=[validate_date],
     )
 
     capacity = forms.IntegerField(
@@ -62,6 +69,7 @@ class EventForm(forms.ModelForm):
 
     eventdate = DateTimeLocalField(
         label = 'Date Time',
+        validators=[validate_date],
     )
 
     eventcapacity = forms.IntegerField(

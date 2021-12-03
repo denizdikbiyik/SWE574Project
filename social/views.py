@@ -6,6 +6,7 @@ from .models import Service, Feedback, UserProfile, Event, ServiceApplication
 from .forms import ServiceForm, EventForm, FeedbackForm, ServiceApplicationForm
 from django.views.generic.edit import UpdateView, DeleteView
 from django.http import HttpResponseRedirect
+from django.contrib import messages
 
 class ServiceCreateView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
@@ -25,13 +26,15 @@ class ServiceCreateView(LoginRequiredMixin, View):
             new_service = form.save(commit=False)
             new_service.creater = request.user
             new_service.save()
+            messages.success(request, 'Service creation is successful.')
 
         context = {
             'service_list': services,
             'form': form,
         }
 
-        return redirect('allservices')
+        #return redirect('allservices')
+        return render(request, 'social/service_create.html', context)
 
 class AllServicesView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
@@ -255,7 +258,8 @@ class EventCreateView(LoginRequiredMixin, View):
             'form': form,
         }
 
-        return redirect('allevents')
+        #return redirect('allevents')
+        return render(request, 'social/event_create.html', context)
 
 class AllEventsView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
