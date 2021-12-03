@@ -65,12 +65,15 @@ class ServiceDetailView(View):
         number_of_accepted = len(applications.filter(approved=True))
         if len(applications) == 0:
             is_applied = False
+            is_accepted = False
         for application in applications:
             if application.applicant == request.user:
                 is_applied = True
+                is_accepted = application.approved
                 break
             else:
                 is_applied = False
+                is_accepted = False
 
         context = {
             'service': service,
@@ -80,6 +83,7 @@ class ServiceDetailView(View):
             'number_of_accepted': number_of_accepted,
             'is_applied': is_applied,
             'applications_this': applications_this,
+            'is_accepted': is_accepted,
         }
 
         return render(request, 'social/service_detail.html', context)

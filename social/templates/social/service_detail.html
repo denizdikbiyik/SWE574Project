@@ -44,6 +44,11 @@
                     {% endfor %}
                     {% else %}
                     {% if is_applied %}
+                    {% if is_accepted %}
+                        <p>Your application is accepted.</p>
+                    {% else %}
+                        <p>Your application is not accepted yet.</p>
+                    {% endif %}
                     {% for application in applications_this %}
                     <div class="col-md-5 col-sm-12">
                         <div class="d-grid gap-2">
