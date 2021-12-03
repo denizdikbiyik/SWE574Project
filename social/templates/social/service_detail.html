@@ -24,7 +24,9 @@
                 </br>
                 <p><a style="text-decoration: none;" class="text-primary" href="{% url 'profile' service.creater.profile.pk %}">@{{ service.creater }}</a> created on {{ service.createddate }}</p>
                 <p><a style="font-weight: bolder;">Service Name: </a>{{ service.name }}</p>
-                <p><a style="font-weight: bolder;">Description: </a>{{ service.description }}</p>
+                {% if service.description %}
+                    <p><a style="font-weight: bolder;">Description: </a>{{ service.description }}</p>
+                {% endif %}
                 <p><a style="font-weight: bolder;">Datetime: </a>{{ service.servicedate }}</p>
                 <p><a style="font-weight: bolder;">Duration: </a>{{ service.duration }}</p>
                 <p><a style="font-weight: bolder;">Location: </a>{{ service.location }}</p>

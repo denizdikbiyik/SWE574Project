@@ -24,7 +24,9 @@
                 </br>
                 <p><a style="text-decoration: none;" class="text-primary" href="{% url 'profile' event.eventcreater.profile.pk %}">@{{ event.eventcreater }}</a> created on {{ event.eventcreateddate}}</p>
                 <p><a style="font-weight: bolder;">Event Name: </a>{{ event.eventname }}</p>
-                <p><a style="font-weight: bolder;">Description: </a>{{ event.eventdescription }}</p>
+                {% if event.eventdescription %}
+                    <p><a style="font-weight: bolder;">Description: </a>{{ event.eventdescription }}</p>
+                {% endif %}
                 <p><a style="font-weight: bolder;">Datetime: </a>{{ event.eventdate }}</p>
                 <p><a style="font-weight: bolder;">Duration: </a>{{ event.eventduration }}</p>
                 <p><a style="font-weight: bolder;">Location: </a>{{ event.eventlocation }}</p>
