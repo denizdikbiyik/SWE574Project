@@ -44,6 +44,17 @@ class AllServicesView(LoginRequiredMixin, View):
 
         return render(request, 'social/allservices.html', context)
 
+class CreatedServicesView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        services = Service.objects.filter(creater=request.user).order_by('-createddate')
+        form = ServiceForm()
+
+        context = {
+            'services': services,
+        }
+
+        return render(request, 'social/createdservices.html', context)
+
 class ServiceDetailView(View):
     def get(self, request, pk, *args, **kwargs):
         service = Service.objects.get(pk=pk)
@@ -270,7 +281,6 @@ class ProfileView(View):
     def get(self, request, pk, *args, **kwargs):
         profile = UserProfile.objects.get(pk=pk)
         user = profile.user
-        services = Service.objects.filter(creater=user).order_by('-createddate')
         followers = profile.followers.all()
         if len(followers) == 0:
             is_following = False
@@ -284,7 +294,6 @@ class ProfileView(View):
         context = {
             'user': user,
             'profile': profile,
-            'services': services,
             'number_of_followers': number_of_followers,
             'is_following': is_following
         }
