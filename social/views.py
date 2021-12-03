@@ -55,6 +55,26 @@ class CreatedServicesView(LoginRequiredMixin, View):
 
         return render(request, 'social/createdservices.html', context)
 
+class AppliedServicesView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        services = Service.objects.all()
+        serviceapplications = ServiceApplication.objects.all()
+        servicesapplied = []
+        for serviceapplication in serviceapplications:
+            for service in services:
+                if serviceapplication.service == service:
+                    if serviceapplication.applicant == request.user:
+                        servicesapplied.append(service)
+
+        form = ServiceForm()
+
+        context = {
+            'services': services,
+            'serviceapplied': servicesapplied,
+        }
+
+        return render(request, 'social/appliedservices.html', context)
+
 class ServiceDetailView(View):
     def get(self, request, pk, *args, **kwargs):
         service = Service.objects.get(pk=pk)
