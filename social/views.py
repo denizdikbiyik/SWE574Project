@@ -48,9 +48,11 @@ class CreatedServicesView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         services = Service.objects.filter(creater=request.user).order_by('-createddate')
         form = ServiceForm()
+        number_of_createdservice = len(services)
 
         context = {
             'services': services,
+            'number_of_createdservice': number_of_createdservice,
         }
 
         return render(request, 'social/createdservices.html', context)
@@ -65,12 +67,14 @@ class AppliedServicesView(LoginRequiredMixin, View):
                 if serviceapplication.service == service:
                     if serviceapplication.applicant == request.user:
                         servicesapplied.append(service)
+        number_of_appliedservice = len(servicesapplied)
 
         form = ServiceForm()
 
         context = {
             'services': services,
             'serviceapplied': servicesapplied,
+            'number_of_appliedservice': number_of_appliedservice,
         }
 
         return render(request, 'social/appliedservices.html', context)
@@ -267,10 +271,12 @@ class AllEventsView(LoginRequiredMixin, View):
 class CreatedEventsView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         events = Event.objects.filter(eventcreater=request.user).order_by('-eventcreateddate')
+        number_of_createdevent = len(events)
         form = EventForm()
 
         context = {
             'events': events,
+            'number_of_createdevent': number_of_createdevent,
         }
 
         return render(request, 'social/createdevents.html', context)

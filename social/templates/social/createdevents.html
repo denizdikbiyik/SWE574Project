@@ -6,7 +6,11 @@
         <br/>
         <div class="row">
             <h5 style="text-align:center;">Events Created By You</h5>
-                <br/>
+            </br>
+            {% if number_of_createdevent == 0 %}
+            </br>
+            <p style="text-align:center;">No events found that you created.</p>
+            {% else %}
                 {% for event in events %}
                     <div class="row justify-content-center mt-3">
                         <div class="card col-md-12 col-sm-12 border-bottom position-relative" style="padding:3%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
@@ -24,6 +28,7 @@
                         </div>
                     </div>
                 {% endfor %}
+            {% endif %} 
         </div>
         
     </div>
