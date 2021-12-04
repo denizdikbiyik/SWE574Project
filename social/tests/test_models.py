@@ -14,8 +14,14 @@ class ServiceModelTest(TestCase):
         self.service = Service.objects.create(
             creater=self.u1,
             createddate=datetime.now,
-            description="ServiceTest",
-            servicedate=datetime.now
+            name="ServiceTest",
+            picture='uploads/service_pictures/default.png',
+            description="ServiceTestDescription",   
+            servicedate=datetime.now,
+            capacity=1,
+            duration=1,
+            is_given=False,
+            is_taken=False
         ) 
 
     def test_it_has_information_fields(self):                   

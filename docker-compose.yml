@@ -18,7 +18,7 @@ services:
    container_name: core_communitysocial
    build: .
    restart: always
-   env_file: .env
+   env_file: ./CommUnitySocial/.env
    command: python manage.py runserver 0.0.0.0:8000
    volumes:
      - .:/CommUnitySocial
@@ -33,7 +33,7 @@ services:
   db:
     container_name: core_db
     image: postgres:14.0-alpine
-    env_file: .env
+    env_file: ./CommUnitySocial/.env
     volumes:
       - postgres_data:/var/lib/postgresql/data/
 
