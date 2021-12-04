@@ -16,8 +16,10 @@
                     </div>
                     <div class="col">
                         {% if request.user == event.eventcreater %}
-                            <a href="{% url 'event-edit' event.pk %}" class="btn btn-primary">Edit</a>
-                            <a href="{% url 'event-delete' event.pk %}" class="btn btn-danger">Delete</a>
+                            {% if is_active %}
+                                <a href="{% url 'event-edit' event.pk %}" class="btn btn-primary">Edit</a>
+                                <a href="{% url 'event-delete' event.pk %}" class="btn btn-danger">Delete</a>
+                            {% endif %}         
                         {% endif %}
                     </div>                  
                 </div>

@@ -7,6 +7,7 @@ from .forms import ServiceForm, EventForm, FeedbackForm, ServiceApplicationForm
 from django.views.generic.edit import UpdateView, DeleteView
 from django.http import HttpResponseRedirect
 from django.contrib import messages
+from django.utils import timezone
 
 class ServiceCreateView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
@@ -90,6 +91,9 @@ class ServiceDetailView(View):
         applications = ServiceApplication.objects.filter(service=pk).order_by('-date')
         applications_this = applications.filter(applicant=request.user)
         number_of_accepted = len(applications.filter(approved=True))
+        is_active = True
+        if service.servicedate <= timezone.now():
+            is_active = False
         if len(applications) == 0:
             is_applied = False
             is_accepted = False
@@ -111,6 +115,7 @@ class ServiceDetailView(View):
             'is_applied': is_applied,
             'applications_this': applications_this,
             'is_accepted': is_accepted,
+            'is_active': is_active,
         }
 
         return render(request, 'social/service_detail.html', context)
@@ -290,10 +295,14 @@ class EventDetailView(View):
     def get(self, request, pk, *args, **kwargs):
         event = Event.objects.get(pk=pk)
         form = EventForm()
+        is_active = True
+        if event.eventdate <= timezone.now():
+            is_active = False
 
         context = {
             'event': event,
             'form': form,
+            'is_active': is_active,
         }
 
         return render(request, 'social/event_detail.html', context)

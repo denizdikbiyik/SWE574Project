@@ -16,8 +16,10 @@
                     </div>
                     <div class="col">
                         {% if request.user == service.creater %}
-                            <a href="{% url 'service-edit' service.pk %}" class="btn btn-primary">Edit</a>
-                            <a href="{% url 'service-delete' service.pk %}" class="btn btn-danger">Delete</a>
+                            {% if is_active %}
+                                <a href="{% url 'service-edit' service.pk %}" class="btn btn-primary">Edit</a>
+                                <a href="{% url 'service-delete' service.pk %}" class="btn btn-danger">Delete</a>
+                            {% endif %}
                         {% endif %}
                     </div>                  
                 </div>
