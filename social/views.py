@@ -203,6 +203,35 @@ class ApplicationEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         application = self.get_object()
         return self.request.user == application.service.creater
 
+class ConfirmServiceTaken(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        service = Service.objects.get(pk=pk)
+        service.is_taken = True
+        service.save()
+        CreditExchange(service)
+        return redirect('service-detail', pk=pk)
+
+class ConfirmServiceGiven(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        service = Service.objects.get(pk=pk)
+        service.is_given = True
+        service.save()
+        CreditExchange(service)
+        return redirect('service-detail', pk=pk)
+    
+def CreditExchange(service):
+    applications = ServiceApplication.objects.filter(service=service.pk).filter(approved=True)
+    if service.is_taken == True:
+        if service.is_given == True:
+            service_giver = UserProfile.objects.get(pk=service.creater.pk)
+            service_giver.credithour = service_giver.credithour + service.duration
+            service_giver.save()
+            for application in applications:
+                service_taker = UserProfile.objects.get(pk=application.applicant.pk)
+                service_taker.credithour = service_taker.credithour - service.duration
+                service_taker.save()
+    return redirect('service-detail', pk=service.pk)
+
 class ServiceEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Service
     fields = ['picture', 'name', 'description', 'servicedate', 'location', 'capacity', 'duration']

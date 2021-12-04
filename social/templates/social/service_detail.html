@@ -55,10 +55,41 @@
                             </div>
                         </div>
                         {% endfor %}
+
+                        {% if is_active == False %}  
+                            {% if number_of_accepted > 0 %} 
+                                {% if service.is_given == False %}
+                                    <form method="POST" action="{% url 'confirm-service-given' service.pk %}">
+                                        {% csrf_token %}
+                                        <div class="d-grid gap-2">
+                                            <button class="btn btn-success mt-3" type=submit>Confirm Service Given</button>
+                                        </div>
+                                    </form>
+                                {% else %}
+                                    <p></p>
+                                    <p>You confirmed application is given.</p>
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
+
                     {% else %}
                         {% if is_applied %}
                             {% if is_accepted %}
                                 <p>Your application is accepted.</p>
+
+                                {% if is_active == False %}
+                                    {% if service.is_taken == False %}
+                                        <form method="POST" action="{% url 'confirm-service-taken' service.pk %}">
+                                            {% csrf_token %}
+                                            <div class="d-grid gap-2">
+                                                <button class="btn btn-success mt-3" type=submit>Confirm Service Taken</button>
+                                            </div>
+                                        </form>
+                                    {% else %}
+                                        <p>You confirmed application is taken.</p>
+                                    {% endif %}
+                                {% endif %}
+
                             {% else %}
                                 <p>Your application is not accepted yet.</p>
                             {% endif %}

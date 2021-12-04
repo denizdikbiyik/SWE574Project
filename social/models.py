@@ -20,12 +20,14 @@ class Service(models.Model):
     servicedate = models.DateTimeField(default=timezone.now)
     capacity = models.IntegerField(default=1)
     duration = models.IntegerField(default=1)
+    is_given = models.BooleanField(default=False)
+    is_taken = models.BooleanField(default=False)
 
 class ServiceApplication(models.Model):
     date = models.DateTimeField(default=timezone.now)
     applicant = models.ForeignKey(User, on_delete=models.CASCADE)
     service = models.ForeignKey('Service', on_delete=models.CASCADE)
-    approved = models.BooleanField(default=True)
+    approved = models.BooleanField(default=False)
 
 class Event(models.Model):
     eventcreater = models.ForeignKey(User, on_delete=models.CASCADE)
