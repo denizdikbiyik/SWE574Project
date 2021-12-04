@@ -31,7 +31,9 @@
             {% else %}
                 <h3 class="py-4">{{ user.username }}</h3>
             {% endif %}
-            <p><a style="font-weight: bolder;">Credit Hour: </a>{{ profile.credithour }}</p>
+            {% if request.user == user %}
+                <p><a style="font-weight: bolder;">Credit Hour: </a>{{ profile.credithour }}</p>
+            {% endif %}
             {% if profile.location %}
             <p><a style="font-weight: bolder;">Location: </a>{{ profile.location }}</p>
             {% endif %}
