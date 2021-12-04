@@ -35,7 +35,7 @@
                     <p><a style="font-weight: bolder;">Accepted Participant Count: </a>{{ number_of_accepted }}</p>
                     {% if service.creater == request.user %}
                         <p></p>
-                        <p style="font-weight: bolder;">Applicants</p>
+                        <p style="font-weight: bolder;">Applicants:</p>
                         {% for application_done in applications %}
                         <div class="row justify-content-center">
                             <div class="border-bottom">
