@@ -55,6 +55,7 @@ class UserProfile(models.Model):
     picture = models.ImageField(upload_to='uploads/profile_pictures/', default='uploads/profile_pictures/default.png')
     followers = models.ManyToManyField(User, blank=True, related_name='followers')
     credithour = models.IntegerField(default=5)
+    reservehour = models.IntegerField(default=0)
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):

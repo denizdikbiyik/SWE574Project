@@ -21,20 +21,26 @@ class ServiceCreateView(LoginRequiredMixin, View):
     
     def post(self, request, *args, **kwargs):
         services = Service.objects.all().order_by('-createddate')
+        creater_user_profile = UserProfile.objects.get(pk=request.user)
         form = ServiceForm(request.POST, request.FILES)
 
         if form.is_valid():
+            totalcredit = creater_user_profile.reservehour + creater_user_profile.credithour
             new_service = form.save(commit=False)
-            new_service.creater = request.user
-            new_service.save()
-            messages.success(request, 'Service creation is successful.')
+            if totalcredit + new_service.duration <= 15:
+                new_service.creater = request.user
+                creater_user_profile.reservehour = creater_user_profile.reservehour + new_service.duration
+                creater_user_profile.save()
+                new_service.save()
+                messages.success(request, 'Service creation is successful.')
+            else:
+                messages.warning(request, 'You cannot create this service which causes credit hours exceed 15.')
 
         context = {
             'service_list': services,
             'form': form,
         }
 
-        #return redirect('allservices')
         return render(request, 'social/service_create.html', context)
 
 class AllServicesView(LoginRequiredMixin, View):
@@ -91,6 +97,8 @@ class ServiceDetailView(View):
         applications = ServiceApplication.objects.filter(service=pk).order_by('-date')
         applications_this = applications.filter(applicant=request.user)
         number_of_accepted = len(applications.filter(approved=True))
+        accepted_applications = applications.filter(approved=True)
+        application_number = len(applications)
         is_active = True
         if service.servicedate <= timezone.now():
             is_active = False
@@ -116,6 +124,8 @@ class ServiceDetailView(View):
             'applications_this': applications_this,
             'is_accepted': is_accepted,
             'is_active': is_active,
+            'application_number': application_number,
+            'accepted_applications': accepted_applications
         }
 
         return render(request, 'social/service_detail.html', context)
@@ -149,6 +159,7 @@ class ServiceDetailView(View):
         applications = ServiceApplication.objects.filter(service=pk).order_by('-date')
         applications_this = applications.filter(applicant=request.user)
         number_of_accepted = len(applications.filter(approved=True))
+        applicant_user_profile = UserProfile.objects.get(pk=request.user)
         if len(applications) == 0:
             is_applied = False
         for application in applications:
@@ -160,11 +171,17 @@ class ServiceDetailView(View):
 
         if form.is_valid():
             if is_applied == False:
-                new_application = form.save(commit=False)
-                new_application.applicant = request.user
-                new_application.service = service
-                new_application.approved = False
-                new_application.save()
+                totalcredit = applicant_user_profile.reservehour + applicant_user_profile.credithour
+                if totalcredit > service.duration:
+                    new_application = form.save(commit=False)
+                    new_application.applicant = request.user
+                    new_application.service = service
+                    new_application.approved = False
+                    new_application.save()
+                    applicant_user_profile.reservehour = applicant_user_profile.reservehour - service.duration
+                    applicant_user_profile.save()
+                else:
+                    messages.warning(request, 'You do not have enough credit to apply.')
 
         context = {
             'service': service,
@@ -175,7 +192,6 @@ class ServiceDetailView(View):
             'applications_this': applications_this,
         }
 
-        #return render(request, 'social/service_detail.html', context)
         return redirect('service-detail', pk=service.pk)
 
 class ApplicationDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
@@ -183,12 +199,22 @@ class ApplicationDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView)
     template_name = 'social/application_delete.html'
 
     def get_success_url(self):
-        pk = self.kwargs['service_pk']
-        return reverse_lazy('service-detail', kwargs={'pk': pk})
+        service_pk = self.kwargs['service_pk']
+        service = Service.objects.get(pk=service_pk)
+        application = self.get_object()
+        applicant_user_profile = UserProfile.objects.get(pk=application.applicant.pk)
+        applicant_user_profile.reservehour = applicant_user_profile.reservehour + service.duration
+        applicant_user_profile.save()
+        return reverse_lazy('service-detail', kwargs={'pk': service_pk})
     
     def test_func(self):
         application = self.get_object()
-        return self.request.user == application.applicant
+        isOK = False
+        if self.request.user == application.applicant:
+            isOK = True
+        if self.request.user == application.service.creater:
+            isOK = True
+        return isOK
 
 class ApplicationEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = ServiceApplication
@@ -225,34 +251,140 @@ def CreditExchange(service):
         if service.is_given == True:
             service_giver = UserProfile.objects.get(pk=service.creater.pk)
             service_giver.credithour = service_giver.credithour + service.duration
+            service_giver.reservehour = service_giver.reservehour - service.duration
             service_giver.save()
             for application in applications:
                 service_taker = UserProfile.objects.get(pk=application.applicant.pk)
                 service_taker.credithour = service_taker.credithour - service.duration
+                service_taker.reservehour = service_taker.reservehour + service.duration
                 service_taker.save()
     return redirect('service-detail', pk=service.pk)
 
-class ServiceEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    model = Service
-    fields = ['picture', 'name', 'description', 'servicedate', 'location', 'capacity', 'duration']
-    template_name = 'social/service_edit.html'
-    
-    def get_success_url(self):
-        pk = self.kwargs['pk']
-        return reverse_lazy('service-detail', kwargs={'pk': pk})
-    
-    def test_func(self):
-        service = self.get_object()
-        return self.request.user == service.creater
+class ServiceEditView(LoginRequiredMixin, View):
+    def get(self, request, *args, pk, **kwargs):
+        service = Service.objects.get(pk=pk)
 
-class ServiceDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
-    model = Service
-    template_name = 'social/service_delete.html'
-    success_url = reverse_lazy('allservices')
+        if service.creater == request.user:
+            if service.servicedate > timezone.now():
+                form = ServiceForm(instance = service)
+                context = {
+                    'form': form,
+                }
 
-    def test_func(self):
-        service = self.get_object()
-        return self.request.user == service.creater
+                return render(request, 'social/service_edit.html', context)
+            else:
+                return redirect('service-detail', pk=service.pk)
+        
+        else:
+            return redirect('service-detail', pk=service.pk)
+
+    def post(self, request, *args, pk, **kwargs):
+        form = ServiceForm(request.POST, request.FILES)
+        service = Service.objects.get(pk=pk)
+
+        if form.is_valid():
+            service_creater_profile = UserProfile.objects.get(pk=service.creater)
+            applications = ServiceApplication.objects.filter(service=service)
+            totalcredit = service_creater_profile.reservehour + service_creater_profile.credithour - service.duration
+            edit_service = form.save(commit=False)
+            if totalcredit + edit_service.duration <= 15:
+
+                service_creater_profile.reservehour = service_creater_profile.reservehour - service.duration + edit_service.duration
+                service_creater_profile.save()
+                for application in applications:
+                    service_applicant_profile = UserProfile.objects.get(pk=application.applicant)
+                    service_applicant_profile.reservehour = service_applicant_profile.reservehour + service.duration - edit_service.duration
+                    service_applicant_profile.save()
+                
+                service.picture = service.picture
+                if request.FILES:
+                    service.picture = edit_service.picture
+                service.name = edit_service.name
+                service.description = edit_service.description
+                service.servicedate = edit_service.servicedate
+                service.location = edit_service.location
+                service.capacity = edit_service.capacity
+                service.duration = edit_service.duration
+
+                service.save()
+                
+                messages.success(request, 'Service editing is successful.')
+            else:
+                messages.warning(request, 'You cannot make this service which causes credit hours exceed 15.')
+        
+        context = {
+            'form': form,
+        }
+
+        return render(request, 'social/service_edit.html', context)
+
+
+
+    # model = Service
+    # fields = ['picture', 'name', 'description', 'servicedate', 'location', 'capacity', 'duration']
+    # template_name = 'social/service_edit.html'
+    
+    # def get_success_url(self):
+    #     pk = self.kwargs['pk']
+    #     return reverse_lazy('service-detail', kwargs={'pk': pk})
+    
+    # def test_func(self):
+    #     service = self.get_object()
+    #     return self.request.user == service.creater
+
+class ServiceDeleteView(LoginRequiredMixin, View):
+    def get(self, request, *args, pk, **kwargs):
+        service = Service.objects.get(pk=pk)
+
+        if service.creater == request.user:
+            if service.servicedate > timezone.now():
+                form = ServiceForm(instance = service)
+                context = {
+                    'form': form,
+                }
+
+                return render(request, 'social/service_delete.html', context)
+            else:
+                return redirect('service-detail', pk=service.pk)
+        
+        else:
+            return redirect('service-detail', pk=service.pk)
+
+    def post(self, request, *args, pk, **kwargs):
+        service = Service.objects.get(pk=pk)
+        service.creater = request.user
+        service_creater_profile = UserProfile.objects.get(pk=service.creater)
+        service_creater_profile.reservehour = service_creater_profile.reservehour - service.duration
+        service_creater_profile.save()
+        applications = ServiceApplication.objects.filter(service=service)
+        for application in applications:
+            service_applicant_profile = UserProfile.objects.get(pk=application.applicant)
+            service_applicant_profile.reservehour = service_applicant_profile.reservehour + service.duration
+            service_applicant_profile.save()
+
+        service.delete()
+        return redirect('allservices')
+
+    # model = Service
+    # template_name = 'social/service_delete.html'
+    # success_url = reverse_lazy('allservices')
+
+    # def test_func(self):
+    #     service = self.get_object()
+    #     isOK = False
+    #     if self.request.user == service.creater:
+    #         isOK = True      
+    #         service_creater_profile = UserProfile.objects.get(pk=service.creater)
+    #         service_creater_profile.reservehour = service_creater_profile.reservehour - service.duration
+    #         service_creater_profile.save()
+    #         applications = ServiceApplication.objects.filter(service=service)
+    #         for application in applications:
+    #             service_applicant_profile = UserProfile.objects.get(pk=application.applicant)
+    #             service_applicant_profile.reservehour = service_applicant_profile.reservehour + service.duration
+    #             service_applicant_profile.save()
+    #     else:
+    #         isOK = False
+    #     return isOK
 
 """
 class FeedbackDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
@@ -293,7 +425,6 @@ class EventCreateView(LoginRequiredMixin, View):
             'form': form,
         }
 
-        #return redirect('allevents')
         return render(request, 'social/event_create.html', context)
 
 class AllEventsView(LoginRequiredMixin, View):

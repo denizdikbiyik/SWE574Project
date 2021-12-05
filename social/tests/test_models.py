@@ -30,22 +30,3 @@ class ServiceModelTest(TestCase):
     def tearDown(self):
         self.u1.delete()
 
-    # def setUpTestData(self):                                     
-    #     self.service = Service.objects.create(
-    #         creater=self.u1,
-    #         createddate=datetime.now,
-    #         name="ServiceTest",
-    #         picture='uploads/service_pictures/default.png',
-    #         description="ServiceTestDescription",   
-    #         servicedate=datetime.now,
-    #         capacity=1,
-    #         duration=1,
-    #         is_given=False,
-    #         is_taken=False
-    #     ) 
-
-    # def test_it_has_information_fields(self):                   
-    #     self.assertIsInstance(self.service.description, str)
-
-    # def test_it_has_timestamps(self):                           
-    #     self.assertIsInstance(self.service.servicedate, datetime)

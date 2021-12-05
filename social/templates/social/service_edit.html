@@ -14,6 +14,13 @@
         </div>
     </div>
     <div class="row justify-content-center mt-3 mb-5">
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <p style="text-align: center; color:navy"  {% if message.tags %} class=" {{ message.tags }} " {% endif %}> {{ message }} </p>
+                {% endfor %}
+            </ul>
+        {% endif %}
         <div class="col-md-5 col-sm-12 border-bottom">
             <form method="POST" enctype='multipart/form-data'>
                 {% csrf_token %}

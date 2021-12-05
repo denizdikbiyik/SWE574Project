@@ -10,6 +10,16 @@
         </div>
         <div class="row justify-content-center mt-3">
             <div class="col-md-5 col-sm-12 border-bottom">
+                {% if messages %}
+                    <ul class="messages">
+                        {% for message in messages %}
+                            <p style="text-align: center; color:navy;"  {% if message.tags %} class=" {{ message.tags }} " {% endif %}> {{ message }} </p>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                {% if is_active == False %}
+                    <p style="text-align: center; color:navy;"> Service datetime is passed. </p>
+                {% endif %}
                 <div class="row">
                     <div class="col">
                         <img width="150" height="150" src="{{ service.picture.url }}"/>
@@ -41,23 +51,34 @@
                         {% for application_done in applications %}
                         <div class="row justify-content-center">
                             <div class="border-bottom">
-                                <strong>{{ application_done.applicant }}</strong> applied on {{ application_done.date }}  
+                                <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' application_done.applicant.profile.pk %}">@{{ application_done.applicant }}</a> on {{ application_done.date.date }}
                                 {% if is_active %}
                                     {% if application_done.approved %}
-                                        <a href="{% url 'application-edit' service.pk application_done.pk %}" class="btn btn-danger">Remove</a>
+                                        <a href="{% url 'application-edit' service.pk application_done.pk %}" class="btn btn-danger">Delete Approval</a>
                                     {% else %}
                                         {% if service.capacity ==  number_of_accepted %}
                                         {% else %}
                                             <a href="{% url 'application-edit' service.pk application_done.pk %}" class="btn btn-success">Approve</a>
+                                            <a href="{% url 'application-delete' service.pk application_done.pk %}" class="btn btn-danger">Reject</a>
                                         {% endif %}
                                     {% endif %}
                                 {% endif %}
                             </div>
                         </div>
                         {% endfor %}
+                        {% if application_number == 0 %}
+                            <p>No application found.</p>
+                        {% endif %}
 
                         {% if is_active == False %}  
                             {% if number_of_accepted > 0 %} 
+
+                                {% if service.is_taken == False %}
+                                    <p>Participant did not confirmed service is taken yet.</p>
+                                {% else %}
+                                    <p>Participants confirmed application is given.</p>
+                                {% endif %}
+
                                 {% if service.is_given == False %}
                                     <form method="POST" action="{% url 'confirm-service-given' service.pk %}">
                                         {% csrf_token %}
@@ -67,17 +88,35 @@
                                     </form>
                                 {% else %}
                                     <p></p>
-                                    <p>You confirmed application is given.</p>
-                                {% endif %}
+                                    <p>You confirmed service is given.</p>
+                                {% endif %}       
+
                             {% endif %}
                         {% endif %}
 
                     {% else %}
+
+                        <p><strong>Participants:</strong></p>
+                        {% for accepted in accepted_applications %}
+                        <div class="row justify-content-center">
+                            <div class="border-bottom">
+                                <p style="text-decoration: none;" class="text-primary" href="{% url 'profile' accepted.applicant.profile.pk %}">@{{ accepted.applicant }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                                    
+
                         {% if is_applied %}
-                            {% if is_accepted %}
-                                <p>Your application is accepted.</p>
+                            {% if is_accepted %}               
+                                <p><strong>Your application is accepted.</strong></p>
 
                                 {% if is_active == False %}
+                                    {% if service.is_given == False %}
+                                        <p>Service owner is not confirmed service is given yet.</p>
+                                    {% else %}
+                                        <p>Service owner confirmed service is given.</p>
+                                    {% endif %}
+
                                     {% if service.is_taken == False %}
                                         <form method="POST" action="{% url 'confirm-service-taken' service.pk %}">
                                             {% csrf_token %}
@@ -86,12 +125,13 @@
                                             </div>
                                         </form>
                                     {% else %}
-                                        <p>You confirmed application is taken.</p>
+                                        <p>Participants confirmed service is taken.</p>
                                     {% endif %}
+
                                 {% endif %}
 
                             {% else %}
-                                <p>Your application is not accepted yet.</p>
+                                <p><strong>Your application is not accepted or rejected yet.</strong></p>
                             {% endif %}
                             {% if is_active %}
                                 {% for application in applications_this %}
