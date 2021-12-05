@@ -1,19 +1,19 @@
 from datetime import datetime
 from django.test import TestCase
 
-from social.models import Service
+from django.contrib.auth.models import User
+from social.models import Service, Feedback, UserProfile, Event, ServiceApplication
 
 class ServiceModelTest(TestCase):              
     @classmethod
 
     def setUp(self):
-        self.u1 = User.objects.create(username='user1')
-        self.up1 = UserProfile.objects.create(user=self.u1)
+        self.u1 = User.objects.create(username='usertest1')
 
-    def setUpTestData(self):                                     
-        self.service = Service.objects.create(
-            creater=self.u1,
-            createddate=datetime.now,
+    def testService(self):
+        service = Service(
+            creater=self.u1, 
+            createddate=datetime.now, 
             name="ServiceTest",
             picture='uploads/service_pictures/default.png',
             description="ServiceTestDescription",   
@@ -22,10 +22,30 @@ class ServiceModelTest(TestCase):
             duration=1,
             is_given=False,
             is_taken=False
-        ) 
+            )
+        self.assertEqual(service.creater, self.u1)
+        self.assertEqual(service.createddate, datetime.now)
+        self.assertEqual(service.name, "ServiceTest")
 
-    def test_it_has_information_fields(self):                   
-        self.assertIsInstance(self.service.description, str)
+    def tearDown(self):
+        self.u1.delete()
 
-    def test_it_has_timestamps(self):                           
-        self.assertIsInstance(self.service.servicedate, datetime)
+    # def setUpTestData(self):                                     
+    #     self.service = Service.objects.create(
+    #         creater=self.u1,
+    #         createddate=datetime.now,
+    #         name="ServiceTest",
+    #         picture='uploads/service_pictures/default.png',
+    #         description="ServiceTestDescription",   
+    #         servicedate=datetime.now,
+    #         capacity=1,
+    #         duration=1,
+    #         is_given=False,
+    #         is_taken=False
+    #     ) 
+
+    # def test_it_has_information_fields(self):                   
+    #     self.assertIsInstance(self.service.description, str)
+
+    # def test_it_has_timestamps(self):                           
+    #     self.assertIsInstance(self.service.servicedate, datetime)
