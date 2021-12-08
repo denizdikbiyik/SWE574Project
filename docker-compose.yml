@@ -19,7 +19,7 @@ services:
    build: .
    restart: always
    env_file: ./CommUnitySocial/.env
-   command: python manage.py runserver 0.0.0.0:8000
+   #command: python manage.py runserver 0.0.0.0:8000
    volumes:
      - .:/CommUnitySocial
      - static_volume:/CommUnitySocial/static
@@ -36,6 +36,8 @@ services:
     env_file: ./CommUnitySocial/.env
     volumes:
       - postgres_data:/var/lib/postgresql/data/
+    ports:
+     - 5433:5432
 
 volumes:
   static_volume:

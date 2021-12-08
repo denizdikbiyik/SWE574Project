@@ -33,7 +33,8 @@ SECRET_KEY = env('DJANGO_SECRET_KEY', default='m!rockf+snbas+3$6iwo#54&x@&@rw7x=
 #DEBUG = True
 DEBUG = env('DJANGO_DEBUG', default=True)
 
-ALLOWED_HOSTS = []
+#ALLOWED_HOSTS = []
+ALLOWED_HOSTS = env("DJANGO_ALLOWED_HOSTS").split(" ")
 
 
 # Application definition
@@ -119,7 +120,8 @@ DATABASES = {
         'NAME': env('DB_NAME', default='CommUnitySocial'), 
         'USER': env('DB_USER', default='postgres'), 
         'PASSWORD': env('DB_PASSWORD', default='admin'),
-        'HOST': env('DB_HOST', default='127.0.0.1'), 
+        #'HOST': env('DB_HOST', default='127.0.0.1'), 
+        'HOST': env('DB_HOST'), 
         'PORT': env('DB_PORT', default='5432'),
     }
 }
