@@ -34,7 +34,8 @@ SECRET_KEY = env('DJANGO_SECRET_KEY', default='m!rockf+snbas+3$6iwo#54&x@&@rw7x=
 DEBUG = env('DJANGO_DEBUG', default=True)
 
 #ALLOWED_HOSTS = []
-ALLOWED_HOSTS = env("DJANGO_ALLOWED_HOSTS").split(" ")
+#ALLOWED_HOSTS = env("DJANGO_ALLOWED_HOSTS").split(" ")
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -127,8 +128,8 @@ DATABASES = {
 }
 
 
-CORS_ALLOWED_ORIGINS = env("CORS_ALLOWED_ORIGINS").split(" ")
-
+#CORS_ALLOWED_ORIGINS = env("CORS_ALLOWED_ORIGINS").split(" ")
+CORS_ALLOW_ALL_ORIGINS = True
 
 
 # Password validation
