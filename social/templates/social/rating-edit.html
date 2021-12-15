@@ -22,6 +22,10 @@
             </ul>
         {% endif %}
         <div class="col-md-5 col-sm-12 border-bottom">
+            <b>You are rating:</b>
+            <p></p>
+            <p><b>Service:</b> {{ rating.service.name }}</p>
+            <p><b>User:</b> {{ rating.rated }}</p>
             <form method="POST" enctype='multipart/form-data'>
                 {% csrf_token %}
                 {{ form | crispy }}

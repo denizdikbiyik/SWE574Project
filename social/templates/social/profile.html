@@ -57,7 +57,15 @@
             <div class="mb-3">
                 <a href="{% url 'followers' profile.pk %}">Followers: {{ number_of_followers }}</a>
             </div>
+
+            <p>---------------------------------------------</p>
+            <b>Comments about user: </b>
+            {% for comment in comments %}
+                <a>- {{ comment.feedback }}</a>
+            {% endfor %}
+            <p></p>
         </div>
+
     </div>
     
 </div>

@@ -16,6 +16,10 @@
         <div class="row justify-content-center mt-3 mb-5">
             <div class="col-md-5 col-sm-12">
                 {% if isRated == 0 %}
+                    <b>You are rating:</b>
+                    <p></p>
+                    <p><b>Service:</b> {{ service.name }}</p>
+                    <p><b>User:</b> {{ rated.user.username }}</p>
                     <form method="POST" enctype='multipart/form-data'>
                         {% csrf_token %}
                         {{ form | crispy }}

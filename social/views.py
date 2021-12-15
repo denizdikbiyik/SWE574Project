@@ -467,12 +467,14 @@ class ProfileView(View):
             else:
                 is_following = False
         number_of_followers = len(followers)
+        comments = UserRatings.objects.filter(rated=profile.user)
         context = {
             'user': user,
             'profile': profile,
             'number_of_followers': number_of_followers,
             'is_following': is_following,
-            'ratings_average': ratings_average
+            'ratings_average': ratings_average,
+            'comments': comments,
         }
         return render(request, 'social/profile.html', context)
 
@@ -537,6 +539,8 @@ class RateUser(LoginRequiredMixin, View):
             'form': form,
             'ratingRecord': ratingRecord,
             'isRated': isRated,
+            'service': service,
+            'rated': rated,
         }
 
         return render(request, 'social/rating.html', context)
@@ -564,6 +568,7 @@ class RateUserEdit(LoginRequiredMixin, View):
         form = RatingForm(instance = rating)     
         context = {
             'form': form,
+            'rating': rating,
         }
         return render(request, 'social/rating-edit.html', context)
 
