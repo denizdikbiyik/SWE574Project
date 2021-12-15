@@ -1,5 +1,5 @@
 from django import forms
-from .models import Service, Event, Feedback, ServiceApplication
+from .models import Service, Event, Feedback, ServiceApplication, UserRatings
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 
@@ -99,6 +99,31 @@ class FeedbackForm(forms.ModelForm):
     class Meta:
         model = Feedback
         fields = ['feedback']
+
+class RatingForm(forms.ModelForm):
+    RatingList =(
+        (1, 1),
+        (2, 2),
+        (3, 3),
+        (4, 4),
+        (5, 5),
+    )
+
+    feedback = forms.CharField(
+        label = 'Feedback',
+        widget = forms.Textarea(attrs={
+            'rows': '3',
+            'placeholder': 'Please leave your comment here...'
+        })
+    )
+    rating = forms.ChoiceField(
+        label = 'Rating',
+        choices = RatingList
+    )
+
+    class Meta:
+        model = UserRatings
+        fields = ['rating', 'feedback']
 
 class ServiceApplicationForm(forms.ModelForm):    
 

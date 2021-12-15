@@ -2,8 +2,8 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.views import View
-from .models import Service, Feedback, UserProfile, Event, ServiceApplication
-from .forms import ServiceForm, EventForm, FeedbackForm, ServiceApplicationForm
+from .models import Service, Feedback, UserProfile, Event, ServiceApplication, UserRatings
+from .forms import ServiceForm, EventForm, FeedbackForm, ServiceApplicationForm, RatingForm
 from django.views.generic.edit import UpdateView, DeleteView
 from django.http import HttpResponseRedirect
 from django.contrib import messages
@@ -559,9 +559,85 @@ class FollowersListView(LoginRequiredMixin, View):
             'profile': profile,
             'number_of_followers': number_of_followers
         }
-
         return render(request, 'social/followers_list.html', context)
 
+class RateUser(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        form = RatingForm()
+        servicepk = self.kwargs['servicepk']
+        service = Service.objects.get(pk=servicepk)
+        ratedpk = self.kwargs['ratedpk']
+        rated = UserProfile.objects.get(user=ratedpk)
+        ratingRecord = UserRatings.objects.filter(service=service).filter(rated=rated.user).filter(rater=request.user)
+        isRated = len(ratingRecord)
+
+        context = {
+            'form': form,
+            'ratingRecord': ratingRecord,
+            'isRated': isRated,
+        }
+
+        return render(request, 'social/rating.html', context)
+    
+    def post(self, request, *args, **kwargs):
+        form = RatingForm(request.POST)
+        servicepk = self.kwargs['servicepk']
+        service = Service.objects.get(pk=servicepk)
+        ratedpk = self.kwargs['ratedpk']
+        rated = UserProfile.objects.get(user=ratedpk)
+
+        if form.is_valid():
+            new_rating = form.save(commit=False)
+            new_rating.rater = request.user
+            new_rating.service = service
+            new_rating.rated = rated.user
+            new_rating.save()
+            messages.success(request, 'Rating is successful.')
+
+        return redirect('service-detail', pk=servicepk)
+
+class RateUserEdit(LoginRequiredMixin, View):
+    def get(self, request, *args, pk, **kwargs):
+        rating = UserRatings.objects.get(pk=pk)
+        form = RatingForm(instance = rating)     
+        context = {
+            'form': form,
+        }
+        return render(request, 'social/rating-edit.html', context)
+
+    def post(self, request, *args, pk, **kwargs):
+        form = RatingForm(request.POST)
+        rating = UserRatings.objects.get(pk=pk)
+
+        if form.is_valid():
+            edit_rating = form.save(commit=False)
+            rating.rating = edit_rating.rating
+            rating.feedback = edit_rating.feedback
+            rating.save()        
+            messages.success(request, 'Rating editing is successful.')
+        
+        context = {
+            'form': form,
+        }
+
+        return render(request, 'social/rating-edit.html', context)
+
+class RateUserDelete(LoginRequiredMixin, View):
+    def get(self, request, *args, pk, **kwargs):
+        rating = UserRatings.objects.get(pk=pk)
+
+        form = RatingForm(instance = rating)
+        context = {
+            'form': form,
+        }
+
+        return render(request, 'social/rating-delete.html', context)
+
+    def post(self, request, *args, pk, **kwargs):
+        rating = UserRatings.objects.get(pk=pk)
+        service = rating.service
+        rating.delete()
+        return redirect('service-detail', pk=service.pk)
 
 class TimeLine(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):

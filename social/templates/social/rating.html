@@ -1,0 +1,41 @@
+{% extends 'landing/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="container">
+        <div class="row mt-5">
+            <div class="col-md-5 col-sm-6">
+                <a onClick="javascript:history.go(-1);" class="btn btn-light">Back</a>
+            </div>
+        </div>
+        <div class="row justify-content-center mt-3">
+            <div class="col-md-5 col-sm-12">
+                <h5>Rating!</h5>
+            </div>
+        </div>
+        <div class="row justify-content-center mt-3 mb-5">
+            <div class="col-md-5 col-sm-12">
+                {% if isRated == 0 %}
+                    <form method="POST" enctype='multipart/form-data'>
+                        {% csrf_token %}
+                        {{ form | crispy }}
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-success mt-3">Submit!</button>
+                        </div>
+                    </form>
+                {% else %}
+                    {% for record in ratingRecord %}
+                        <b>You already rated.</b>
+                        <p></p>
+                        <p><b>Rated service:</b> {{ record.service.name }}</p>
+                        <p><b>Rated user:</b> {{ record.rated }}</p>
+                        <p><b>Rating was:</b> {{ record.rating }}</p>
+                        <p><b>Comment was:</b> {{ record.feedback }}</p>
+                        <a href="{% url 'rating-edit' record.pk %}" class="btn btn-primary">Edit</a>
+                        <a href="{% url 'rating-delete' record.pk %}" class="btn btn-danger">Delete</a>
+                    {% endfor %}
+                {% endif %}  
+            </div>
+        </div>
+    </div>
+{% endblock content %}

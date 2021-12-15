@@ -56,6 +56,14 @@ class UserProfile(models.Model):
     followers = models.ManyToManyField(User, blank=True, related_name='followers')
     credithour = models.IntegerField(default=5)
     reservehour = models.IntegerField(default=0)
+    userrating = models.FloatField(blank=False, null=True)
+
+class UserRatings(models.Model):
+    rated = models.ForeignKey(User, verbose_name='user', related_name='rated', on_delete=models.CASCADE)
+    rater = models.ForeignKey(User, verbose_name='user', related_name='rater', on_delete=models.SET_NULL, null=True)
+    rating = models.IntegerField(blank=False, null=True)
+    service = models.ForeignKey('Service', on_delete=models.CASCADE)
+    feedback = models.TextField(blank=True, null=True)
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):

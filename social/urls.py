@@ -1,6 +1,6 @@
 from django.urls import path
-from .views import ServiceCreateView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventCreateView, EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, AddFollower, RemoveFollower, ApplicationDeleteView, ApplicationEditView, FollowersListView, RemoveMyFollower, TimeLine, AllServicesView, AllEventsView, CreatedServicesView, CreatedEventsView, AppliedServicesView, ConfirmServiceTaken, ConfirmServiceGiven
-#from .views import ServiceCreateView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventCreateView, EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, FeedbackDeleteView, AddFollower, RemoveFollower, ApplicationDeleteView, ApplicationEditView, FollowersListView, RemoveMyFollower, TimeLine, AllServicesView, AllEventsView, CreatedServicesView, CreatedEventsView, AppliedServicesView, ConfirmServiceTaken, ConfirmServiceGiven
+from .views import ServiceCreateView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventCreateView, EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, AddFollower, RemoveFollower, ApplicationDeleteView, ApplicationEditView, FollowersListView, RemoveMyFollower, TimeLine, AllServicesView, AllEventsView, CreatedServicesView, CreatedEventsView, AppliedServicesView, ConfirmServiceTaken, ConfirmServiceGiven, RateUser, RateUserDelete, RateUserEdit
+#from .views import ServiceCreateView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventCreateView, EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, FeedbackDeleteView, AddFollower, RemoveFollower, ApplicationDeleteView, ApplicationEditView, FollowersListView, RemoveMyFollower, TimeLine, AllServicesView, AllEventsView, CreatedServicesView, CreatedEventsView, AppliedServicesView, ConfirmServiceTaken, ConfirmServiceGiven, RateUser, RateUserDelete, RateUserEdit
 
 urlpatterns = [
     path('service/create', ServiceCreateView.as_view(), name='service-create'),
@@ -27,5 +27,8 @@ urlpatterns = [
     path('service/<int:pk>/confirmtaken/', ConfirmServiceTaken.as_view(), name='confirm-service-taken'),
     path('service/<int:pk>/confirmgiven/', ConfirmServiceGiven.as_view(), name='confirm-service-given'),
     path('profile/<int:pk>/followers/', FollowersListView.as_view(), name='followers'),
+    path('rate/<int:servicepk>/<int:ratedpk>', RateUser.as_view(), name='rateuser'),
+    path('rate/edit/<int:pk>', RateUserEdit.as_view(), name='rating-edit'),
+    path('rate/delete/<int:pk>', RateUserDelete.as_view(), name='rating-delete'),
     path('timeline', TimeLine.as_view(), name='timeline'),
 ]

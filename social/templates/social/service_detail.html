@@ -126,6 +126,7 @@
                                         </form>
                                     {% else %}
                                         <p>Participants confirmed service is taken.</p>
+                                        <a class="btn btn-primary mt-3" href="{% url 'rateuser' service.pk service.creater.pk %}">Rating</a>
                                     {% endif %}
 
                                 {% endif %}
