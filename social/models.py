@@ -56,7 +56,6 @@ class UserProfile(models.Model):
     followers = models.ManyToManyField(User, blank=True, related_name='followers')
     credithour = models.IntegerField(default=5)
     reservehour = models.IntegerField(default=0)
-    userrating = models.FloatField(blank=False, null=True)
 
 class UserRatings(models.Model):
     rated = models.ForeignKey(User, verbose_name='user', related_name='rated', on_delete=models.CASCADE)

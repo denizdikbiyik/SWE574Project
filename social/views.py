@@ -8,6 +8,7 @@ from django.views.generic.edit import UpdateView, DeleteView
 from django.http import HttpResponseRedirect
 from django.contrib import messages
 from django.utils import timezone
+from django.db.models import Avg
 
 class ServiceCreateView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
@@ -497,6 +498,7 @@ class ProfileView(View):
         profile = UserProfile.objects.get(pk=pk)
         user = profile.user
         followers = profile.followers.all()
+        ratings_average = UserRatings.objects.filter(rated=profile.user).aggregate(Avg('rating'))
         if len(followers) == 0:
             is_following = False
         for follower in followers:
@@ -510,7 +512,8 @@ class ProfileView(View):
             'user': user,
             'profile': profile,
             'number_of_followers': number_of_followers,
-            'is_following': is_following
+            'is_following': is_following,
+            'ratings_average': ratings_average
         }
         return render(request, 'social/profile.html', context)
 

@@ -39,6 +39,11 @@
             {% if request.user == user %}
                 <p><a style="font-weight: bolder;">Credit Hour: </a>{{ profile.credithour }}</p>
             {% endif %}
+            {% if ratings_average.rating__avg != none %}
+                <p><a style="font-weight: bolder;">Rating: </a>{{ ratings_average.rating__avg }}</p>
+            {% else %}
+                <p><a style="font-weight: bolder;">Rating: </a>Does not have any rating yet.</p>
+            {% endif %}
             {% if profile.location %}
             <p><a style="font-weight: bolder;">Location: </a>{{ profile.location }}</p>
             {% endif %}
