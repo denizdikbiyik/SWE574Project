@@ -2,8 +2,8 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.views import View
-from .models import Service, Feedback, UserProfile, Event, ServiceApplication, UserRatings
-from .forms import ServiceForm, EventForm, FeedbackForm, ServiceApplicationForm, RatingForm
+from .models import Service, UserProfile, Event, ServiceApplication, UserRatings
+from .forms import ServiceForm, EventForm, ServiceApplicationForm, RatingForm
 from django.views.generic.edit import UpdateView, DeleteView
 from django.http import HttpResponseRedirect
 from django.contrib import messages
@@ -94,7 +94,6 @@ class ServiceDetailView(View):
     def get(self, request, pk, *args, **kwargs):
         service = Service.objects.get(pk=pk)
         #form = ServiceForm()
-        #form = FeedbackForm()
         applications = ServiceApplication.objects.filter(service=pk).order_by('-date')
         applications_this = applications.filter(applicant=request.user)
         number_of_accepted = len(applications.filter(approved=True))
@@ -118,7 +117,6 @@ class ServiceDetailView(View):
         context = {
             'service': service,
             #'form': form,
-            #'feedbacks': feedbacks,
             'applications': applications,
             'number_of_accepted': number_of_accepted,
             'is_applied': is_applied,
@@ -131,29 +129,6 @@ class ServiceDetailView(View):
 
         return render(request, 'social/service_detail.html', context)
 
-    def post(self, request, *args, **kwargs):
-        pass
-    """
-    def post(self, request, pk, *args, **kwargs):
-        service = Service.objects.get(pk=pk)
-        form = FeedbackForm(request.POST)
-
-        if form.is_valid():
-            new_feedback = form.save(commit=False)
-            new_feedback.creater = request.user
-            new_feedback.service = service
-            new_feedback.save()
-        
-        feedbacks = Feedback.objects.filter(service=service).order_by('-createddate')
-
-        context = {
-            'service': service,
-            'form': form,
-            'feedbacks': feedbacks,
-        }
-
-        return render(request, 'social/service_detail.html', context)
-    """
     def post(self, request, pk, *args, **kwargs):
         service = Service.objects.get(pk=pk)
         form = ServiceApplicationForm(request.POST)
@@ -319,8 +294,6 @@ class ServiceEditView(LoginRequiredMixin, View):
 
         return render(request, 'social/service_edit.html', context)
 
-
-
     # model = Service
     # fields = ['picture', 'name', 'description', 'servicedate', 'location', 'capacity', 'duration']
     # template_name = 'social/service_edit.html'
@@ -386,20 +359,6 @@ class ServiceDeleteView(LoginRequiredMixin, View):
     #     else:
     #         isOK = False
     #     return isOK
-
-"""
-class FeedbackDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
-    model = Feedback
-    template_name = 'social/feedback_delete.html'
-
-    def get_success_url(self):
-        pk = self.kwargs['service_pk']
-        return reverse_lazy('service-detail', kwargs={'pk': pk})
-    
-    def test_func(self):
-        service = self.get_object()
-        return self.request.user == service.creater
-"""
 
 class EventCreateView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):

@@ -2,8 +2,8 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.views import View
-from social.models import Service, Feedback, UserProfile, Event, ServiceApplication
-from social.forms import ServiceForm, EventForm, FeedbackForm, ServiceApplicationForm
+from social.models import Service, UserProfile, Event, ServiceApplication
+from social.forms import ServiceForm, EventForm, ServiceApplicationForm
 from django.views.generic.edit import UpdateView, DeleteView
 from django.http import HttpResponseRedirect
 

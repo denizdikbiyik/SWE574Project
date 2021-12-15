@@ -40,12 +40,6 @@ class Event(models.Model):
     eventcapacity = models.IntegerField(default=1)
     eventduration = models.IntegerField(default=1)
 
-class Feedback(models.Model):
-    feedback = models.TextField()
-    createddate = models.DateTimeField(default=timezone.now)
-    service = models.ForeignKey('Service', on_delete=models.CASCADE)
-    creater = models.ForeignKey(User, on_delete=models.CASCADE)
-
 class UserProfile(models.Model):
     user = models.OneToOneField(User, primary_key=True, verbose_name='user', related_name='profile', on_delete=models.CASCADE)
     name = models.CharField(max_length=30, blank=True, null=True)

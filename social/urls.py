@@ -1,6 +1,5 @@
 from django.urls import path
 from .views import ServiceCreateView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventCreateView, EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, AddFollower, RemoveFollower, ApplicationDeleteView, ApplicationEditView, FollowersListView, RemoveMyFollower, TimeLine, AllServicesView, AllEventsView, CreatedServicesView, CreatedEventsView, AppliedServicesView, ConfirmServiceTaken, ConfirmServiceGiven, RateUser, RateUserDelete, RateUserEdit
-#from .views import ServiceCreateView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventCreateView, EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, FeedbackDeleteView, AddFollower, RemoveFollower, ApplicationDeleteView, ApplicationEditView, FollowersListView, RemoveMyFollower, TimeLine, AllServicesView, AllEventsView, CreatedServicesView, CreatedEventsView, AppliedServicesView, ConfirmServiceTaken, ConfirmServiceGiven, RateUser, RateUserDelete, RateUserEdit
 
 urlpatterns = [
     path('service/create', ServiceCreateView.as_view(), name='service-create'),
@@ -10,7 +9,6 @@ urlpatterns = [
     path('service/<int:pk>', ServiceDetailView.as_view(), name='service-detail'),
     path('service/edit/<int:pk>', ServiceEditView.as_view(), name='service-edit'),
     path('service/delete/<int:pk>', ServiceDeleteView.as_view(), name='service-delete'),
-    #path('service/<int:service_pk>/feedback/delete/<int:pk>', FeedbackDeleteView.as_view(), name='feedback-delete'),
     path('profile/<int:pk>/', ProfileView.as_view(), name='profile'),
     path('profile/edit/<int:pk>/', ProfileEditView.as_view(), name='profile-edit'),
     path('event/create', EventCreateView.as_view(), name='event-create'),
