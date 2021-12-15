@@ -72,11 +72,11 @@
 
                         {% if is_active == False %}  
                             {% if number_of_accepted > 0 %} 
-
+                                <p></p>
                                 {% if service.is_taken == False %}
-                                    <p>Participant did not confirmed service is taken yet.</p>
+                                    <p>Participant did not confirm service is taken yet.</p>
                                 {% else %}
-                                    <p>Participants confirmed application is given.</p>
+                                    <p>Participants confirmed service is taken.</p>
                                 {% endif %}
 
                                 {% if service.is_given == False %}
@@ -89,6 +89,30 @@
                                 {% else %}
                                     <p></p>
                                     <p>You confirmed service is given.</p>
+
+
+
+                                    <p></p>
+                                    <p style="font-weight: bolder;">Ratings:</p>
+                                    {% for application_done in applications %}
+                                    <div class="row justify-content-center">
+                                        <div class="border-bottom">
+                                            <a style="text-decoration: none; vertical-align: middle;" class="text-primary" href="{% url 'profile' application_done.applicant.profile.pk %}">@{{ application_done.applicant }} &nbsp; &nbsp; &nbsp; </a>
+                                            {% if application_done.approved %}
+                                            <a class="btn btn-primary mt-3" href="{% url 'rateuser' service.pk application_done.applicant.profile.user.pk %}">Rating</a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+
+
+
+
+
+
+
+
+
                                 {% endif %}       
 
                             {% endif %}
