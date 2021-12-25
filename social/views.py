@@ -661,9 +661,11 @@ class ServiceSearch(View):
         services = Service.objects.filter(
             Q(name__icontains=query)
         )
+        services_count = len(services)
 
         context = {
-            'services': services
+            'services': services,
+            'services_count': services_count,
         }
 
         return render(request, 'social/service-search.html', context)
@@ -674,9 +676,11 @@ class EventSearch(View):
         events = Event.objects.filter(
             Q(eventname__icontains=query)
         )
+        events_count = len(events)
 
         context = {
-            'events': events
+            'events': events,
+            'events_count': events_count,
         }
 
         return render(request, 'social/event-search.html', context)
