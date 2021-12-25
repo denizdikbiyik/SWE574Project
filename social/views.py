@@ -9,6 +9,7 @@ from django.http import HttpResponseRedirect
 from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Avg
+from django.db.models import Q
 
 class ServiceCreateView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
@@ -637,4 +638,30 @@ class TimeLine(LoginRequiredMixin, View):
         }
 
         return render(request, 'social/timeline.html', context)
+
+class ServiceSearch(View):
+    def get(self, request, *args, **kwargs):
+        query = self.request.GET.get('query')
+        services = Service.objects.filter(
+            Q(name__icontains=query)
+        )
+
+        context = {
+            'services': services
+        }
+
+        return render(request, 'social/service-search.html', context)
+
+class EventSearch(View):
+    def get(self, request, *args, **kwargs):
+        query = self.request.GET.get('query')
+        events = Event.objects.filter(
+            Q(eventname__icontains=query)
+        )
+
+        context = {
+            'events': events
+        }
+
+        return render(request, 'social/event-search.html', context)
     

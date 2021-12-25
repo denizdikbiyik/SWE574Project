@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import ServiceCreateView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventCreateView, EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, AddFollower, RemoveFollower, ApplicationDeleteView, ApplicationEditView, FollowersListView, RemoveMyFollower, TimeLine, AllServicesView, AllEventsView, CreatedServicesView, CreatedEventsView, AppliedServicesView, ConfirmServiceTaken, ConfirmServiceGiven, RateUser, RateUserDelete, RateUserEdit
+from .views import ServiceCreateView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventCreateView, EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, AddFollower, RemoveFollower, ApplicationDeleteView, ApplicationEditView, FollowersListView, RemoveMyFollower, TimeLine, AllServicesView, AllEventsView, CreatedServicesView, CreatedEventsView, AppliedServicesView, ConfirmServiceTaken, ConfirmServiceGiven, RateUser, RateUserDelete, RateUserEdit, ServiceSearch, EventSearch
 
 urlpatterns = [
     path('service/create', ServiceCreateView.as_view(), name='service-create'),
@@ -29,4 +29,6 @@ urlpatterns = [
     path('rate/edit/<int:pk>', RateUserEdit.as_view(), name='rating-edit'),
     path('rate/delete/<int:pk>', RateUserDelete.as_view(), name='rating-delete'),
     path('timeline', TimeLine.as_view(), name='timeline'),
+    path('service-search', ServiceSearch.as_view(), name='service-search'),
+    path('event-search', EventSearch.as_view(), name='event-search'),
 ]
