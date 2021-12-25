@@ -295,18 +295,6 @@ class ServiceEditView(LoginRequiredMixin, View):
 
         return render(request, 'social/service_edit.html', context)
 
-    # model = Service
-    # fields = ['picture', 'name', 'description', 'servicedate', 'location', 'capacity', 'duration']
-    # template_name = 'social/service_edit.html'
-    
-    # def get_success_url(self):
-    #     pk = self.kwargs['pk']
-    #     return reverse_lazy('service-detail', kwargs={'pk': pk})
-    
-    # def test_func(self):
-    #     service = self.get_object()
-    #     return self.request.user == service.creater
-
 class ServiceDeleteView(LoginRequiredMixin, View):
     def get(self, request, *args, pk, **kwargs):
         service = Service.objects.get(pk=pk)
@@ -339,27 +327,6 @@ class ServiceDeleteView(LoginRequiredMixin, View):
 
         service.delete()
         return redirect('allservices')
-
-    # model = Service
-    # template_name = 'social/service_delete.html'
-    # success_url = reverse_lazy('allservices')
-
-    # def test_func(self):
-    #     service = self.get_object()
-    #     isOK = False
-    #     if self.request.user == service.creater:
-    #         isOK = True      
-    #         service_creater_profile = UserProfile.objects.get(pk=service.creater)
-    #         service_creater_profile.reservehour = service_creater_profile.reservehour - service.duration
-    #         service_creater_profile.save()
-    #         applications = ServiceApplication.objects.filter(service=service)
-    #         for application in applications:
-    #             service_applicant_profile = UserProfile.objects.get(pk=application.applicant)
-    #             service_applicant_profile.reservehour = service_applicant_profile.reservehour + service.duration
-    #             service_applicant_profile.save()
-    #     else:
-    #         isOK = False
-    #     return isOK
 
 class EventCreateView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
