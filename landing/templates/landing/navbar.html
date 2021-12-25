@@ -21,6 +21,7 @@
               {% endif %} 
             </ul>
             {% if user.is_authenticated %}
+              <ul class="navbar-nav mb-2 mb-lg-0" style="color: white;">Credits: {{request.user.profile.credithour}} &nbsp;&nbsp;&nbsp;|</ul>
               <div class="nav-item dropdown">
                   <a style="color: white;" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="buton" aria-expanded="false">{{request.user.username}}</a>
                   <ul class="dropdown-menu">
