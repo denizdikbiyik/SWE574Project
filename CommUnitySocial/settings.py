@@ -18,7 +18,6 @@ env = Env()
 env.read_env(env_file='CommUnitySocial/.env')
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-#BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -26,15 +25,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-#SECRET_KEY = 'm!rockf+snbas+3$6iwo#54&x@&@rw7x=d6c0t4au4gunb9&y4'
 SECRET_KEY = env('DJANGO_SECRET_KEY', default='m!rockf+snbas+3$6iwo#54&x@&@rw7x=d6c0t4au4gunb9&y4')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-#DEBUG = True
 DEBUG = env('DJANGO_DEBUG', default=True)
 
-#ALLOWED_HOSTS = []
-#ALLOWED_HOSTS = env("DJANGO_ALLOWED_HOSTS").split(" ")
 ALLOWED_HOSTS = ['*']
 
 
@@ -64,7 +59,15 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'django_static_fontawesome',
     'corsheaders',
+    'location_field.apps.DefaultConfig'
 ]
+
+LOCATION_FIELD = {
+    'provider.google.api': '//maps.google.com/maps/api/js?sensor=false',
+    'provider.google.api_key': 'AIzaSyCCMF-2zpHGf_H_5mpYCmSShHkCwmZbZXY',
+    'provider.google.api_libraries': '',
+    'provider.google.map.type': 'ROADMAP',
+}
 
 SITE_ID = 1
 
@@ -104,17 +107,6 @@ WSGI_APPLICATION = 'CommUnitySocial.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': 'CommUnitySocial', 
-#         'USER': 'postgres', 
-#         'PASSWORD': 'admin',
-#         'HOST': '127.0.0.1', 
-#         'PORT': '5432',
-#     }
-# }
-
 DATABASES = {
     'default': {
         'ENGINE': env('DB_ENGINE', default = 'django.db.backends.postgresql_psycopg2'),
@@ -127,8 +119,6 @@ DATABASES = {
     }
 }
 
-
-#CORS_ALLOWED_ORIGINS = env("CORS_ALLOWED_ORIGINS").split(" ")
 CORS_ALLOW_ALL_ORIGINS = True
 
 

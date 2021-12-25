@@ -1,3 +1,23 @@
+<head>
+    <script type="text/javascript" src="/admin/jsi18n/"></script>
+    <script type="text/javascript" src="/static/admin/js/vendor/jquery/jquery.js"></script>
+    <script type="text/javascript" src="/static/admin/js/calendar.js"></script>
+    <script type="text/javascript" src="/static/location_field/js/form.js"></script>
+    <script type="text/javascript" src="/static/admin/js/jquery.init.js"></script>
+    <script type="text/javascript" src="/static/admin/js/admin/DateTimeShortcuts.js"></script>
+    <script type="text/javascript" src="/static/admin/js/core.js"></script>
+    <script type="text/javascript" src="/static/admin/js/admin/RelatedObjectLookups.js"></script>
+    <script type="text/javascript" src="/static/admin/js/actions.js"></script>
+    <script type="text/javascript" src="/static/admin/js/urlify.js"></script>
+    <script type="text/javascript" src="/static/admin/js/prepopulate.js"></script>
+    <script type="text/javascript" src="/static/admin/js/vendor/xregexp/xregexp.js"></script>
+
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/static/admin/css/responsive.css">
+    
+    <meta name="robots" content="NONE,NOARCHIVE">
+</head>
+
 {% extends 'landing/base.html' %}
 {% load crispy_forms_tags %}
 
@@ -42,6 +62,17 @@
                 <p><a style="font-weight: bolder;">Datetime: </a>{{ service.servicedate }}</p>
                 <p><a style="font-weight: bolder;">Duration: </a>{{ service.duration }} hour</p>
                 <p><a style="font-weight: bolder;">Location: </a>{{ service.location }}</p>
+   
+                <div class="form-row field-location">
+                    <div>
+                        <input style="visibility: hidden; height: 0px; margin: 0px;" type="text" name="location" value={{ service.location }} required id="id_location" data-location-field-options="{&quot;map.provider&quot;: &quot;google&quot;, &quot;map.zoom&quot;: 13, &quot;search.provider&quot;: &quot;google&quot;, &quot;search.suffix&quot;: &quot;&quot;, &quot;provider.google.api&quot;: &quot;//maps.google.com/maps/api/js?sensor=false&quot;, &quot;provider.google.api_key&quot;: &quot;AIzaSyCCMF-2zpHGf_H_5mpYCmSShHkCwmZbZXY&quot;, &quot;provider.google.map_type&quot;: &quot;ROADMAP&quot;, &quot;provider.mapbox.access_token&quot;: &quot;&quot;, &quot;provider.mapbox.max_zoom&quot;: 18, &quot;provider.mapbox.id&quot;: &quot;mapbox.streets&quot;, &quot;provider.openstreetmap.max_zoom&quot;: 18, &quot;resources.root_path&quot;: &quot;/static/location_field&quot;, &quot;resources.media&quot;: {&quot;js&quot;: [&quot;/static/location_field/js/form.js&quot;]}, &quot;provider.google.api_libraries&quot;: &quot;&quot;, &quot;provider.google.map.type&quot;: &quot;ROADMAP&quot;, &quot;field_options&quot;: {&quot;based_fields&quot;: [], &quot;prefix&quot;: &quot;&quot;}}">
+                        <div class="map-widget" style="margin-top: 4px">
+                            <div id="map_location" style="width: 500px; height: 250px"></div>
+                        </div>
+                    </div>
+                </div>
+                <p></p>
+
                 <p><a style="font-weight: bolder;">Capacity: </a>{{ service.capacity }}</p>
                 <div class="row justify-content-center mt-3 mb-5">
                     <p><a style="font-weight: bolder;">Accepted Participant Count: </a>{{ number_of_accepted }}</p>

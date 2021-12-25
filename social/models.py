@@ -5,6 +5,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
 from django.core.exceptions import ValidationError
+from location_field.models.plain import PlainLocationField
 
 def validate_date(date):
     if date < timezone.now():
@@ -16,7 +17,7 @@ class Service(models.Model):
     name = models.TextField(default="Service Name", blank=False, null=False)
     description = models.TextField(blank=True, null=True)
     picture = models.ImageField(upload_to='uploads/service_pictures/', default='uploads/service_pictures/default.png')
-    location = models.CharField(max_length=100, blank=True, null=True)
+    location = PlainLocationField(default='41.0255493,28.9742571', zoom=7, blank=False, null=False)
     servicedate = models.DateTimeField(default=timezone.now)
     capacity = models.IntegerField(default=1)
     duration = models.IntegerField(default=1)
