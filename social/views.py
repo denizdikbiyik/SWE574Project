@@ -49,9 +49,11 @@ class AllServicesView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         services = Service.objects.all().order_by('-createddate')
         form = ServiceForm()
+        services_count = len(services)
 
         context = {
             'services': services,
+            'services_count': services_count,
         }
 
         return render(request, 'social/allservices.html', context)
@@ -359,9 +361,11 @@ class AllEventsView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         events = Event.objects.all().order_by('-eventcreateddate')
         form = EventForm()
+        events_count = len(events)
 
         context = {
             'events': events,
+            'events_count': events_count,
         }
 
         return render(request, 'social/allevents.html', context)
@@ -398,27 +402,72 @@ class EventDetailView(View):
     def post(self, request, *args, **kwargs):
         pass
 
-class EventEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    model = Event
-    fields = ['eventpicture', 'eventname', 'eventdescription', 'eventdate', 'eventlocation', 'eventcapacity', 'eventduration']
-    template_name = 'social/event_edit.html'
-    
-    def get_success_url(self):
-        pk = self.kwargs['pk']
-        return reverse_lazy('event-detail', kwargs={'pk': pk})
-    
-    def test_func(self):
-        event = self.get_object()
-        return self.request.user == event.eventcreater
+class EventEditView(LoginRequiredMixin, View):
+    def get(self, request, *args, pk, **kwargs):
+        event = Event.objects.get(pk=pk)
 
-class EventDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
-    model = Event
-    template_name = 'social/event_delete.html'
-    success_url = reverse_lazy('allevents')
+        if event.eventcreater == request.user:
+            if event.eventdate > timezone.now():
+                form = EventForm(instance = event)
+                context = {
+                    'form': form,
+                }
 
-    def test_func(self):
-        event = self.get_object()
-        return self.request.user == event.eventcreater
+                return render(request, 'social/event_edit.html', context)
+            else:
+                return redirect('event-detail', pk=event.pk)
+        
+        else:
+            return redirect('event-detail', pk=event.pk)
+
+    def post(self, request, *args, pk, **kwargs):
+        form = EventForm(request.POST, request.FILES)
+        event = Event.objects.get(pk=pk)
+
+        if form.is_valid():
+            edit_event = form.save(commit=False)
+            event.eventpicture = event.eventpicture
+            if request.FILES:
+                event.eventpicture = edit_event.eventpicture
+            event.eventname = edit_event.eventname
+            event.eventdescription = edit_event.eventdescription
+            event.eventdate = edit_event.eventdate
+            event.eventlocation = edit_event.eventlocation
+            event.eventcapacity = edit_event.eventcapacity
+            event.eventduration = edit_event.eventduration
+
+            event.save()
+                
+            messages.success(request, 'Event editing is successful.')
+        
+        context = {
+            'form': form,
+        }
+
+        return render(request, 'social/event_edit.html', context)
+
+class EventDeleteView(LoginRequiredMixin, View):
+    def get(self, request, *args, pk, **kwargs):
+        event = Event.objects.get(pk=pk)
+
+        if event.eventcreater == request.user:
+            if event.eventdate > timezone.now():
+                form = EventForm(instance = event)
+                context = {
+                    'form': form,
+                }
+
+                return render(request, 'social/event_delete.html', context)
+            else:
+                return redirect('event-detail', pk=event.pk)
+        
+        else:
+            return redirect('event-detail', pk=event.pk)
+
+    def post(self, request, *args, pk, **kwargs):
+        event = Event.objects.get(pk=pk)
+        event.delete()
+        return redirect('allevents')
 
 class ProfileView(View):
     def get(self, request, pk, *args, **kwargs):
