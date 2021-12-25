@@ -36,7 +36,7 @@ class Event(models.Model):
     eventname = models.TextField(default="Event Name", blank=False, null=False)
     eventdescription = models.TextField(blank=True, null=True)
     eventpicture = models.ImageField(upload_to='uploads/event_pictures/', default='uploads/event_pictures/default.png')
-    eventlocation = models.CharField(max_length=100, blank=True, null=True)
+    eventlocation = PlainLocationField(default='41.0255493,28.9742571', zoom=7, blank=False, null=False)
     eventdate = models.DateTimeField(default=timezone.now)
     eventcapacity = models.IntegerField(default=1)
     eventduration = models.IntegerField(default=1)
