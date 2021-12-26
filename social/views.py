@@ -49,9 +49,11 @@ class AllServicesView(LoginRequiredMixin, View):
         services = Service.objects.all().order_by('-createddate')
         form = ServiceForm()
         services_count = len(services)
+        currentTime = timezone.now()
         context = {
             'services': services,
             'services_count': services_count,
+            'currentTime': currentTime,
         }
         return render(request, 'social/allservices.html', context)
 
@@ -60,9 +62,11 @@ class CreatedServicesView(LoginRequiredMixin, View):
         services = Service.objects.filter(creater=request.user).order_by('-createddate')
         form = ServiceForm()
         number_of_createdservice = len(services)
+        currentTime = timezone.now()
         context = {
             'services': services,
             'number_of_createdservice': number_of_createdservice,
+            'currentTime': currentTime,
         }
         return render(request, 'social/createdservices.html', context)
 
@@ -78,10 +82,12 @@ class AppliedServicesView(LoginRequiredMixin, View):
                         servicesapplied.append(service)
         number_of_appliedservice = len(servicesapplied)
         form = ServiceForm()
+        currentTime = timezone.now()
         context = {
             'services': services,
             'serviceapplied': servicesapplied,
             'number_of_appliedservice': number_of_appliedservice,
+            'currentTime': currentTime,
         }
         return render(request, 'social/appliedservices.html', context)
 
@@ -399,9 +405,11 @@ class AllEventsView(LoginRequiredMixin, View):
         events = Event.objects.all().order_by('-eventcreateddate')
         form = EventForm()
         events_count = len(events)
+        currentTime = timezone.now()
         context = {
             'events': events,
             'events_count': events_count,
+            'currentTime': currentTime,
         }
         return render(request, 'social/allevents.html', context)
 
@@ -410,9 +418,11 @@ class CreatedEventsView(LoginRequiredMixin, View):
         events = Event.objects.filter(eventcreater=request.user).order_by('-eventcreateddate')
         number_of_createdevent = len(events)
         form = EventForm()
+        currentTime = timezone.now()
         context = {
             'events': events,
             'number_of_createdevent': number_of_createdevent,
+            'currentTime': currentTime,
         }
         return render(request, 'social/createdevents.html', context)
 
@@ -428,10 +438,12 @@ class AppliedEventsView(LoginRequiredMixin, View):
                         eventsapplied.append(event)
         number_of_appliedevent = len(eventsapplied)
         form = EventForm()
+        currentTime = timezone.now()
         context = {
             'events': events,
             'eventapplied': eventsapplied,
             'number_of_appliedevent': number_of_appliedevent,
+            'currentTime': currentTime,
         }
         return render(request, 'social/appliedevents.html', context)
 
@@ -795,11 +807,13 @@ class TimeLine(LoginRequiredMixin, View):
                     events2.append(event)
         events_count = len(events2)
         services_count = len(services2)
+        currentTime = timezone.now()
         context = {
             'services': services2,
             'events': events2,
             'services_count': services_count,
-            'events_count': events_count
+            'events_count': events_count,
+            'currentTime': currentTime,
         }
         return render(request, 'social/timeline.html', context)
 
@@ -808,9 +822,11 @@ class ServiceSearch(View):
         query = self.request.GET.get('query')
         services = Service.objects.filter(Q(name__icontains=query))
         services_count = len(services)
+        currentTime = timezone.now()
         context = {
             'services': services,
             'services_count': services_count,
+            'currentTime': currentTime,
         }
         return render(request, 'social/service-search.html', context)
 
@@ -819,9 +835,11 @@ class EventSearch(View):
         query = self.request.GET.get('query')
         events = Event.objects.filter(Q(eventname__icontains=query))
         events_count = len(events)
+        currentTime = timezone.now()
         context = {
             'events': events,
             'events_count': events_count,
+            'currentTime': currentTime,
         }
         return render(request, 'social/event-search.html', context)
 

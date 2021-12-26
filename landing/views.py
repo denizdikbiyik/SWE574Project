@@ -6,6 +6,7 @@ from social.models import Service, UserProfile, Event, ServiceApplication
 from social.forms import ServiceForm, EventForm, ServiceApplicationForm
 from django.views.generic.edit import UpdateView, DeleteView
 from django.http import HttpResponseRedirect
+from django.utils import timezone
 
 class Index(View):
     def get(self, request, *args, **kwargs):
@@ -13,12 +14,13 @@ class Index(View):
         events = Event.objects.all().order_by('-eventcreateddate')
         events_count = len(events)
         services_count = len(services)
-
+        currentTime = timezone.now()
         context = {
             'services': services,
             'events': events,
             'services_count': services_count,
             'events_count': events_count,
+            'currentTime': currentTime,
         }
 
         return render(request, 'landing/index.html', context)

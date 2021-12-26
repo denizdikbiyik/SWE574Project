@@ -15,10 +15,10 @@
                         <div class="row justify-content-center mt-3">
                             <div class="card col-md-10 col-sm-12 border-bottom position-relative" style="padding:3%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
                                 <div class="row">
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <img style="border-radius:10px;" src="{{ service.picture.url }}" width="100" height="100" />
                                     </div>
-                                    <div class="col-md-8">
+                                    <div class="col-md-7">
                                         </br>
                                         <p style="font-weight:bold;">{{ service.name }}</p>       
                                         <p>Time: {{ service.servicedate }}</p>
@@ -26,7 +26,14 @@
                                         <a class="stretched-link" href="{% url 'service-detail' service.pk %}"></a>    
                                         {% else %}    
                                         {% endif %}            
-                                    </div>          
+                                    </div>  
+                                    {% if service.servicedate <= currentTime %}
+                                        <div class="col-md-2">
+                                            <p style="font-weight:bold;">Not Active</p>  
+                                            <p></p> 
+                                            <p></p>                
+                                        </div> 
+                                    {% endif %}        
                                 </div>
                             </div>
                         </div>
@@ -42,10 +49,10 @@
                         <div class="row justify-content-center mt-3">
                             <div class="card col-md-10 col-sm-12 border-bottom position-relative" style="padding:3%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;"">
                                 <div class="row">
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <img style="border-radius:10px;" src="{{ event.eventpicture.url }}" width="100" height="100" />
                                     </div>
-                                    <div class="col-md-8">
+                                    <div class="col-md-7">
                                         </br>
                                         <p style="font-weight:bold;">{{ event.eventname }}</p>
                                         <p>Time: {{ event.eventdate }}</p>
@@ -53,7 +60,14 @@
                                         <a href="{% url 'event-detail' event.pk %}" class="stretched-link"></a>
                                         {% else %}    
                                         {% endif %}
-                                    </div>          
+                                    </div>      
+                                    {% if event.eventdate <= currentTime %}
+                                        <div class="col-md-2">
+                                            <p style="font-weight:bold;">Not Active</p>  
+                                            <p></p> 
+                                            <p></p>                
+                                        </div> 
+                                    {% endif %}    
                                 </div>
                             </div>
                         </div>
