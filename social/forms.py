@@ -84,10 +84,6 @@ class EventForm(forms.ModelForm):
         label = 'Duration',
     )
 
-    eventpicture = forms.ImageField(
-        label = 'Image',
-    )
-
     class Meta:
         model = Event
         fields = ['eventpicture', 'eventname', 'eventdescription', 'eventdate', 'eventlocation', 'eventcapacity', 'eventduration']
@@ -149,10 +145,6 @@ class ProfileForm(forms.ModelForm):
     birth_date = DateTimeLocalField(
         label = 'Birthdate',
         validators=[validate_date_after],
-    )
-
-    picture = forms.ImageField(
-        label = 'Image',
     )
 
     class Meta:

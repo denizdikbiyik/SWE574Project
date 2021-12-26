@@ -295,42 +295,37 @@ class ServiceEditView(LoginRequiredMixin, View):
             applications = ServiceApplication.objects.filter(service=service)
             totalcredit = service_creater_profile.reservehour + service_creater_profile.credithour - service.duration
             edit_service = form.save(commit=False)
-            sameDateServices = Service.objects.filter(creater=request.user).filter(servicedate=edit_service.servicedate)
-            sameDateEvents = Event.objects.filter(eventcreater=request.user).filter(eventdate=edit_service.servicedate)
-            if len(sameDateServices) > 0 or  len(sameDateEvents) > 0:
-                messages.warning(request, 'You cannot edit this service because you have one with the same datetime.')
-            else:
-                if totalcredit + edit_service.duration <= 15:
-                    applications = ServiceApplication.objects.filter(service=service)
-                    number_of_accepted = len(applications.filter(approved=True))
-                    if edit_service.capacity < number_of_accepted:
-                        messages.warning(request, 'You cannot make capacity below the accepted number, please remove accepted participants.')
-                    else:
-                        service_creater_profile.reservehour = service_creater_profile.reservehour - service.duration + edit_service.duration
-                        service_creater_profile.save()
-                        for application in applications:
-                            service_applicant_profile = UserProfile.objects.get(pk=application.applicant)
-                            service_applicant_profile.reservehour = service_applicant_profile.reservehour + service.duration - edit_service.duration
-                            service_applicant_profile.save()
-                        service.picture = service.picture
-                        if request.FILES:
-                            service.picture = edit_service.picture
-                        service.name = edit_service.name
-                        service.description = edit_service.description
-                        service.servicedate = edit_service.servicedate
-                        service.location = edit_service.location
-                        service.capacity = edit_service.capacity
-                        service.duration = edit_service.duration
-                        service.save()
-                        messages.success(request, 'Service editing is successful.')
-                        applications = ServiceApplication.objects.filter(service=service)
-                        for application in applications:
-                            notification = NotifyUser.objects.create(notify=application.applicant, notification=str(service.name)+' which you applied is edited.', offerType="service", offerPk=service.pk)
-                            notified_user = UserProfile.objects.get(pk=application.applicant)
-                            notified_user.unreadcount = notified_user.unreadcount+1
-                            notified_user.save()
+            if totalcredit + edit_service.duration <= 15:
+                applications = ServiceApplication.objects.filter(service=service)
+                number_of_accepted = len(applications.filter(approved=True))
+                if edit_service.capacity < number_of_accepted:
+                    messages.warning(request, 'You cannot make capacity below the accepted number, please remove accepted participants.')
                 else:
-                    messages.warning(request, 'You cannot make this service which causes credit hours exceed 15.')
+                    service_creater_profile.reservehour = service_creater_profile.reservehour - service.duration + edit_service.duration
+                    service_creater_profile.save()
+                    for application in applications:
+                        service_applicant_profile = UserProfile.objects.get(pk=application.applicant)
+                        service_applicant_profile.reservehour = service_applicant_profile.reservehour + service.duration - edit_service.duration
+                        service_applicant_profile.save()
+                    service.picture = service.picture
+                    if request.FILES:
+                        service.picture = edit_service.picture
+                    service.name = edit_service.name
+                    service.description = edit_service.description
+                    service.servicedate = edit_service.servicedate
+                    service.location = edit_service.location
+                    service.capacity = edit_service.capacity
+                    service.duration = edit_service.duration
+                    service.save()
+                    messages.success(request, 'Service editing is successful.')
+                    applications = ServiceApplication.objects.filter(service=service)
+                    for application in applications:
+                        notification = NotifyUser.objects.create(notify=application.applicant, notification=str(service.name)+' which you applied is edited.', offerType="service", offerPk=service.pk)
+                        notified_user = UserProfile.objects.get(pk=application.applicant)
+                        notified_user.unreadcount = notified_user.unreadcount+1
+                        notified_user.save()
+            else:
+                messages.warning(request, 'You cannot make this service which causes credit hours exceed 15.')
         context = {
             'form': form,
         }
@@ -581,30 +576,25 @@ class EventEditView(LoginRequiredMixin, View):
         number_of_accepted = len(applications.filter(approved=True))
         if form.is_valid():
             edit_event = form.save(commit=False)
-            sameDateEvents = Event.objects.filter(eventcreater=request.user).filter(eventdate=edit_event.eventdate)
-            sameDateServices = Service.objects.filter(creater=request.user).filter(servicedate=edit_event.eventdate)
-            if len(sameDateEvents) > 0 or len(sameDateServices) > 0:
-                messages.warning(request, 'You cannot edit this event because you have one with the same datetime.')
+            if edit_event.eventcapacity < number_of_accepted:
+                messages.warning(request, 'You cannot make the capacity below the accepted number.')
             else:
-                if edit_event.eventcapacity < number_of_accepted:
-                    messages.warning(request, 'You cannot make the capacity below the accepted number.')
-                else:
-                    event.eventpicture = event.eventpicture
-                    if request.FILES:
-                        event.eventpicture = edit_event.eventpicture
-                    event.eventname = edit_event.eventname
-                    event.eventdescription = edit_event.eventdescription
-                    event.eventdate = edit_event.eventdate
-                    event.eventlocation = edit_event.eventlocation
-                    event.eventcapacity = edit_event.eventcapacity
-                    event.eventduration = edit_event.eventduration
-                    event.save()
-                    messages.success(request, 'Event editing is successful.')
-                    for application in applications:
-                        notification = NotifyUser.objects.create(notify=application.applicant, notification=str(event.eventname)+' event which you applied is edited.', offerType="event", offerPk=event.pk)
-                        notified_user = UserProfile.objects.get(pk=application.applicant)
-                        notified_user.unreadcount = notified_user.unreadcount+1
-                        notified_user.save()
+                event.eventpicture = event.eventpicture
+                if request.FILES:
+                    event.eventpicture = edit_event.eventpicture
+                event.eventname = edit_event.eventname
+                event.eventdescription = edit_event.eventdescription
+                event.eventdate = edit_event.eventdate
+                event.eventlocation = edit_event.eventlocation
+                event.eventcapacity = edit_event.eventcapacity
+                event.eventduration = edit_event.eventduration
+                event.save()
+                messages.success(request, 'Event editing is successful.')
+                for application in applications:
+                    notification = NotifyUser.objects.create(notify=application.applicant, notification=str(event.eventname)+' event which you applied is edited.', offerType="event", offerPk=event.pk)
+                    notified_user = UserProfile.objects.get(pk=application.applicant)
+                    notified_user.unreadcount = notified_user.unreadcount+1
+                    notified_user.save()
         context = {
             'form': form,
         }
@@ -696,24 +686,6 @@ class ProfileEditView(LoginRequiredMixin, View):
             'form': form,
         }
         return render(request, 'social/profile_edit.html', context)
-
-
-
-
-
-
-
-    # model = UserProfile
-    # fields = ['name', 'bio', 'birth_date', 'location', 'picture']
-    # template_name = 'social/profile_edit.html'
-    
-    # def get_success_url(self):
-    #     pk = self.kwargs['pk']
-    #     return reverse_lazy('profile', kwargs={'pk': pk})
-    
-    # def test_func(self):
-    #     profile = self.get_object()
-    #     return self.request.user == profile.user
 
 class AddFollower(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
