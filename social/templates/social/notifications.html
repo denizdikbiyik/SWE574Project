@@ -1,0 +1,42 @@
+{% extends 'landing/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="container">
+        <br/>
+        <div class="row">
+            <h5 style="text-align:center;">Notifications</h5>     
+                <br/>
+                {% if notifications_count != 0 %}
+                    {% for notification in notifications %}
+                        <div class="row justify-content-center mt-3">
+                            <div class="card col-md-12 col-sm-12 border-bottom position-relative" style="padding:3%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
+                                <div class="row">
+                                    <div class="col-md-8">  
+                                        {% if notification.offerType == "service" %}
+                                            {% if notification.offerPk != 0 %}
+                                                <p>Notification: {{ notification.notification }}</p>
+                                                <a class="stretched-link" href="{% url 'service-detail' notification.offerPk %}"></a>
+                                            {% else %}  
+                                                <p>Notification: {{ notification.notification }}</p>
+                                            {% endif %}
+                                        {% else %}   
+                                            {% if notification.offerPk != 0 %}
+                                                <p>Notification: {{ notification.notification }}</p>
+                                                <a class="stretched-link" href="{% url 'event-detail' notification.offerPk %}"></a>  
+                                            {% else %}  
+                                                <p>Notification: {{ notification.notification }}</p>
+                                            {% endif %}
+                                        {% endif %}            
+                                    </div>          
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="row justify-content-center mt-3">No notification found!</p>
+                {% endif %}
+        </div>
+        
+    </div>
+{% endblock content %}

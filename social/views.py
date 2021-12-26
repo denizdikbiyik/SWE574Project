@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.views import View
-from .models import Service, UserProfile, Event, ServiceApplication, UserRatings
+from .models import Service, UserProfile, Event, ServiceApplication, UserRatings, NotifyUser
 from .forms import ServiceForm, EventForm, ServiceApplicationForm, RatingForm
 from django.views.generic.edit import UpdateView, DeleteView
 from django.http import HttpResponseRedirect
@@ -96,7 +96,14 @@ class AppliedServicesView(LoginRequiredMixin, View):
 class ServiceDetailView(View):
     def get(self, request, pk, *args, **kwargs):
         service = Service.objects.get(pk=pk)
-        #form = ServiceForm()
+        notifications = NotifyUser.objects.filter(notify=request.user).filter(offerType="service").filter(offerPk=pk).filter(hasRead=False)
+        countNotifications = len(notifications)
+        for notification in notifications:
+            notification.hasRead = True
+            notification.save()
+        userNotified = UserProfile.objects.get(pk=request.user.profile)
+        userNotified.unreadcount = userNotified.unreadcount - countNotifications
+        userNotified.save()
         applications = ServiceApplication.objects.filter(service=pk).order_by('-date')
         applications_this = applications.filter(applicant=request.user)
         number_of_accepted = len(applications.filter(approved=True))
@@ -119,7 +126,6 @@ class ServiceDetailView(View):
 
         context = {
             'service': service,
-            #'form': form,
             'applications': applications,
             'number_of_accepted': number_of_accepted,
             'is_applied': is_applied,
@@ -151,7 +157,7 @@ class ServiceDetailView(View):
         if form.is_valid():
             if is_applied == False:
                 totalcredit = applicant_user_profile.reservehour + applicant_user_profile.credithour
-                if totalcredit > service.duration:
+                if totalcredit >= service.duration:
                     new_application = form.save(commit=False)
                     new_application.applicant = request.user
                     new_application.service = service
@@ -159,6 +165,10 @@ class ServiceDetailView(View):
                     new_application.save()
                     applicant_user_profile.reservehour = applicant_user_profile.reservehour - service.duration
                     applicant_user_profile.save()
+                    notification = NotifyUser.objects.create(notify=service.creater, notification=str(new_application.applicant)+' applied to service '+str(new_application.service.name), offerType="service", offerPk=new_application.service.pk)
+                    notified_user = UserProfile.objects.get(pk=service.creater)
+                    notified_user.unreadcount = notified_user.unreadcount+1
+                    notified_user.save()
                 else:
                     messages.warning(request, 'You do not have enough credit to apply.')
 
@@ -184,6 +194,10 @@ class ApplicationDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView)
         applicant_user_profile = UserProfile.objects.get(pk=application.applicant.pk)
         applicant_user_profile.reservehour = applicant_user_profile.reservehour + service.duration
         applicant_user_profile.save()
+        notification = NotifyUser.objects.create(notify=service.creater, notification=str(applicant_user_profile.user.username)+' canceled application for service '+str(service.name), offerType="service", offerPk=service.pk)
+        notified_user = UserProfile.objects.get(pk=service.creater)
+        notified_user.unreadcount = notified_user.unreadcount+1
+        notified_user.save()
         return reverse_lazy('service-detail', kwargs={'pk': service_pk})
     
     def test_func(self):
@@ -201,6 +215,11 @@ class ApplicationEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     template_name = 'social/application_edit.html'
     
     def get_success_url(self):
+        application = self.get_object()
+        notification = NotifyUser.objects.create(notify=application.applicant, notification='Your application status for '+str(application.service.name)+' is changed by the owner.', offerType="service", offerPk=application.service.pk)
+        notified_user = UserProfile.objects.get(pk=application.applicant)
+        notified_user.unreadcount = notified_user.unreadcount+1
+        notified_user.save()
         pk = self.kwargs['service_pk']
         return reverse_lazy('service-detail', kwargs={'pk': pk})
     
@@ -214,6 +233,16 @@ class ConfirmServiceTaken(LoginRequiredMixin, View):
         service.is_taken = True
         service.save()
         CreditExchange(service)
+        applications = ServiceApplication.objects.filter(service=pk).filter(approved=True)
+        for application in applications:
+            notification = NotifyUser.objects.create(notify=application.applicant, notification=str(service.name)+' taken confirmation done.', offerType="service", offerPk=service.pk)
+            notified_user = UserProfile.objects.get(pk=application.applicant)
+            notified_user.unreadcount = notified_user.unreadcount+1
+            notified_user.save()
+        notification = NotifyUser.objects.create(notify=service.creater, notification=str(service.name)+' taken confirmation done.', offerType="service", offerPk=service.pk)
+        notified_user = UserProfile.objects.get(pk=service.creater)
+        notified_user.unreadcount = notified_user.unreadcount+1
+        notified_user.save()
         return redirect('service-detail', pk=pk)
 
 class ConfirmServiceGiven(LoginRequiredMixin, View):
@@ -222,10 +251,17 @@ class ConfirmServiceGiven(LoginRequiredMixin, View):
         service.is_given = True
         service.save()
         CreditExchange(service)
+        applications = ServiceApplication.objects.filter(service=pk).filter(approved=True)
+        for application in applications:
+            notification = NotifyUser.objects.create(notify=application.applicant, notification=str(service.name)+' given confirmation done.', offerType="service", offerPk=service.pk)
+            notified_user = UserProfile.objects.get(pk=application.applicant)
+            notified_user.unreadcount = notified_user.unreadcount+1
+            notified_user.save()
         return redirect('service-detail', pk=pk)
     
 def CreditExchange(service):
     applications = ServiceApplication.objects.filter(service=service.pk).filter(approved=True)
+    notConfirmedApplications = ServiceApplication.objects.filter(service=service.pk).filter(approved=False)
     if service.is_taken == True:
         if service.is_given == True:
             service_giver = UserProfile.objects.get(pk=service.creater.pk)
@@ -237,6 +273,12 @@ def CreditExchange(service):
                 service_taker.credithour = service_taker.credithour - service.duration
                 service_taker.reservehour = service_taker.reservehour + service.duration
                 service_taker.save()
+            
+            for notApplication in notConfirmedApplications:
+                applicant = UserProfile.objects.get(pk=notApplication.applicant.pk)
+                applicant.reservehour = applicant.reservehour + service.duration
+                applicant.save()
+            
     return redirect('service-detail', pk=service.pk)
 
 class ServiceEditView(LoginRequiredMixin, View):
@@ -288,6 +330,13 @@ class ServiceEditView(LoginRequiredMixin, View):
                 service.save()
                 
                 messages.success(request, 'Service editing is successful.')
+
+                applications = ServiceApplication.objects.filter(service=service)
+                for application in applications:
+                    notification = NotifyUser.objects.create(notify=application.applicant, notification=str(service.name)+' which you applied is edited.', offerType="service", offerPk=service.pk)
+                    notified_user = UserProfile.objects.get(pk=application.applicant)
+                    notified_user.unreadcount = notified_user.unreadcount+1
+                    notified_user.save()
             else:
                 messages.warning(request, 'You cannot make this service which causes credit hours exceed 15.')
         
@@ -326,6 +375,10 @@ class ServiceDeleteView(LoginRequiredMixin, View):
             service_applicant_profile = UserProfile.objects.get(pk=application.applicant)
             service_applicant_profile.reservehour = service_applicant_profile.reservehour + service.duration
             service_applicant_profile.save()
+            notification = NotifyUser.objects.create(notify=application.applicant, notification=str(service.name)+' which you applied is deleted.', offerType="service")
+            notified_user = UserProfile.objects.get(pk=application.applicant)
+            notified_user.unreadcount = notified_user.unreadcount+1
+            notified_user.save()
 
         service.delete()
         return redirect('allservices')
@@ -684,4 +737,25 @@ class EventSearch(View):
         }
 
         return render(request, 'social/event-search.html', context)
+
+class Notifications(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        notifications = NotifyUser.objects.filter(notify=request.user).filter(hasRead=False)
+        notifications_count = len(notifications)
+
+        notificationsToRead = notifications.filter(offerPk=0)
+        countNotifications = len(notificationsToRead)
+        for notification in notificationsToRead:
+            notification.hasRead = True
+            notification.save()
+        userNotified = UserProfile.objects.get(pk=request.user.profile)
+        userNotified.unreadcount = userNotified.unreadcount - countNotifications
+        userNotified.save()
+
+        context = {
+            'notifications': notifications,
+            'notifications_count': notifications_count,
+        }
+
+        return render(request, 'social/notifications.html', context)
     

@@ -22,6 +22,7 @@
             </ul>
             {% if user.is_authenticated %}
               <ul class="navbar-nav mb-2 mb-lg-0" style="color: white;">Credits: {{request.user.profile.credithour}} &nbsp;&nbsp;&nbsp;|</ul>
+              <a href="{% url 'notifications' %}" class="navbar-nav mb-2 mb-lg-0" style="color: white;">&nbsp;&nbsp;&nbsp; {{request.user.profile.unreadcount}} unread &nbsp;&nbsp;&nbsp;|</a> 
               <div class="nav-item dropdown">
                   <a style="color: white;" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="buton" aria-expanded="false">{{request.user.username}}</a>
                   <ul class="dropdown-menu">
@@ -31,7 +32,7 @@
                       <li><a class="dropdown-item" href="{% url 'appliedservices' %}">Applied Services</a></li>
                       <li><a class="dropdown-item" href="{% url 'account_logout' %}">Sign Out</a></li>
                   </ul>
-              </div>     
+              </div>  
             {% endif %}
           </div>
         </div>
