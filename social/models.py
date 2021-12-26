@@ -41,6 +41,12 @@ class Event(models.Model):
     eventcapacity = models.IntegerField(default=1)
     eventduration = models.IntegerField(default=1)
 
+class EventApplication(models.Model):
+    date = models.DateTimeField(default=timezone.now)
+    applicant = models.ForeignKey(User, on_delete=models.CASCADE)
+    event = models.ForeignKey('Event', on_delete=models.CASCADE)
+    approved = models.BooleanField(default=False)
+
 class UserProfile(models.Model):
     user = models.OneToOneField(User, primary_key=True, verbose_name='user', related_name='profile', on_delete=models.CASCADE)
     name = models.CharField(max_length=30, blank=True, null=True)

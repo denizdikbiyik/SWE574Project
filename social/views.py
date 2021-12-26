@@ -2,30 +2,26 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.views import View
-from .models import Service, UserProfile, Event, ServiceApplication, UserRatings, NotifyUser
-from .forms import ServiceForm, EventForm, ServiceApplicationForm, RatingForm
+from .models import Service, UserProfile, Event, ServiceApplication, UserRatings, NotifyUser, EventApplication
+from .forms import ServiceForm, EventForm, ServiceApplicationForm, RatingForm, EventApplicationForm
 from django.views.generic.edit import UpdateView, DeleteView
 from django.http import HttpResponseRedirect
 from django.contrib import messages
 from django.utils import timezone
-from django.db.models import Avg
-from django.db.models import Q
+from django.db.models import Avg, Q
 
 class ServiceCreateView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         form = ServiceForm()
-
         context = {
             'form': form,
         }
-
         return render(request, 'social/service_create.html', context)
     
     def post(self, request, *args, **kwargs):
         services = Service.objects.all().order_by('-createddate')
         creater_user_profile = UserProfile.objects.get(pk=request.user)
         form = ServiceForm(request.POST, request.FILES)
-
         if form.is_valid():
             totalcredit = creater_user_profile.reservehour + creater_user_profile.credithour
             new_service = form.save(commit=False)
@@ -37,12 +33,10 @@ class ServiceCreateView(LoginRequiredMixin, View):
                 messages.success(request, 'Service creation is successful.')
             else:
                 messages.warning(request, 'You cannot create this service which causes credit hours exceed 15.')
-
         context = {
             'service_list': services,
             'form': form,
         }
-
         return render(request, 'social/service_create.html', context)
 
 class AllServicesView(LoginRequiredMixin, View):
@@ -50,12 +44,10 @@ class AllServicesView(LoginRequiredMixin, View):
         services = Service.objects.all().order_by('-createddate')
         form = ServiceForm()
         services_count = len(services)
-
         context = {
             'services': services,
             'services_count': services_count,
         }
-
         return render(request, 'social/allservices.html', context)
 
 class CreatedServicesView(LoginRequiredMixin, View):
@@ -63,12 +55,10 @@ class CreatedServicesView(LoginRequiredMixin, View):
         services = Service.objects.filter(creater=request.user).order_by('-createddate')
         form = ServiceForm()
         number_of_createdservice = len(services)
-
         context = {
             'services': services,
             'number_of_createdservice': number_of_createdservice,
         }
-
         return render(request, 'social/createdservices.html', context)
 
 class AppliedServicesView(LoginRequiredMixin, View):
@@ -82,15 +72,12 @@ class AppliedServicesView(LoginRequiredMixin, View):
                     if serviceapplication.applicant == request.user:
                         servicesapplied.append(service)
         number_of_appliedservice = len(servicesapplied)
-
         form = ServiceForm()
-
         context = {
             'services': services,
             'serviceapplied': servicesapplied,
             'number_of_appliedservice': number_of_appliedservice,
         }
-
         return render(request, 'social/appliedservices.html', context)
 
 class ServiceDetailView(View):
@@ -123,7 +110,6 @@ class ServiceDetailView(View):
             else:
                 is_applied = False
                 is_accepted = False
-
         context = {
             'service': service,
             'applications': applications,
@@ -135,7 +121,6 @@ class ServiceDetailView(View):
             'application_number': application_number,
             'accepted_applications': accepted_applications
         }
-
         return render(request, 'social/service_detail.html', context)
 
     def post(self, request, pk, *args, **kwargs):
@@ -153,7 +138,6 @@ class ServiceDetailView(View):
                 break
             else:
                 is_applied = False
-
         if form.is_valid():
             if is_applied == False:
                 totalcredit = applicant_user_profile.reservehour + applicant_user_profile.credithour
@@ -171,7 +155,6 @@ class ServiceDetailView(View):
                     notified_user.save()
                 else:
                     messages.warning(request, 'You do not have enough credit to apply.')
-
         context = {
             'service': service,
             'form': form,
@@ -180,7 +163,6 @@ class ServiceDetailView(View):
             'is_applied': is_applied,
             'applications_this': applications_this,
         }
-
         return redirect('service-detail', pk=service.pk)
 
 class ApplicationDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
@@ -273,94 +255,83 @@ def CreditExchange(service):
                 service_taker.credithour = service_taker.credithour - service.duration
                 service_taker.reservehour = service_taker.reservehour + service.duration
                 service_taker.save()
-            
             for notApplication in notConfirmedApplications:
                 applicant = UserProfile.objects.get(pk=notApplication.applicant.pk)
                 applicant.reservehour = applicant.reservehour + service.duration
                 applicant.save()
-            
     return redirect('service-detail', pk=service.pk)
 
 class ServiceEditView(LoginRequiredMixin, View):
     def get(self, request, *args, pk, **kwargs):
         service = Service.objects.get(pk=pk)
-
         if service.creater == request.user:
             if service.servicedate > timezone.now():
                 form = ServiceForm(instance = service)
                 context = {
                     'form': form,
                 }
-
                 return render(request, 'social/service_edit.html', context)
             else:
                 return redirect('service-detail', pk=service.pk)
-        
         else:
             return redirect('service-detail', pk=service.pk)
 
     def post(self, request, *args, pk, **kwargs):
         form = ServiceForm(request.POST, request.FILES)
         service = Service.objects.get(pk=pk)
-
         if form.is_valid():
             service_creater_profile = UserProfile.objects.get(pk=service.creater)
             applications = ServiceApplication.objects.filter(service=service)
             totalcredit = service_creater_profile.reservehour + service_creater_profile.credithour - service.duration
             edit_service = form.save(commit=False)
             if totalcredit + edit_service.duration <= 15:
-
-                service_creater_profile.reservehour = service_creater_profile.reservehour - service.duration + edit_service.duration
-                service_creater_profile.save()
-                for application in applications:
-                    service_applicant_profile = UserProfile.objects.get(pk=application.applicant)
-                    service_applicant_profile.reservehour = service_applicant_profile.reservehour + service.duration - edit_service.duration
-                    service_applicant_profile.save()
-                
-                service.picture = service.picture
-                if request.FILES:
-                    service.picture = edit_service.picture
-                service.name = edit_service.name
-                service.description = edit_service.description
-                service.servicedate = edit_service.servicedate
-                service.location = edit_service.location
-                service.capacity = edit_service.capacity
-                service.duration = edit_service.duration
-
-                service.save()
-                
-                messages.success(request, 'Service editing is successful.')
-
                 applications = ServiceApplication.objects.filter(service=service)
-                for application in applications:
-                    notification = NotifyUser.objects.create(notify=application.applicant, notification=str(service.name)+' which you applied is edited.', offerType="service", offerPk=service.pk)
-                    notified_user = UserProfile.objects.get(pk=application.applicant)
-                    notified_user.unreadcount = notified_user.unreadcount+1
-                    notified_user.save()
+                number_of_accepted = len(applications.filter(approved=True))
+                if edit_service.capacity < number_of_accepted:
+                    messages.warning(request, 'You cannot make capacity below the accepted number, please remove accepted participants.')
+                else:
+                    service_creater_profile.reservehour = service_creater_profile.reservehour - service.duration + edit_service.duration
+                    service_creater_profile.save()
+                    for application in applications:
+                        service_applicant_profile = UserProfile.objects.get(pk=application.applicant)
+                        service_applicant_profile.reservehour = service_applicant_profile.reservehour + service.duration - edit_service.duration
+                        service_applicant_profile.save()
+                    service.picture = service.picture
+                    if request.FILES:
+                        service.picture = edit_service.picture
+                    service.name = edit_service.name
+                    service.description = edit_service.description
+                    service.servicedate = edit_service.servicedate
+                    service.location = edit_service.location
+                    service.capacity = edit_service.capacity
+                    service.duration = edit_service.duration
+                    service.save()
+                    messages.success(request, 'Service editing is successful.')
+                    applications = ServiceApplication.objects.filter(service=service)
+                    for application in applications:
+                        notification = NotifyUser.objects.create(notify=application.applicant, notification=str(service.name)+' which you applied is edited.', offerType="service", offerPk=service.pk)
+                        notified_user = UserProfile.objects.get(pk=application.applicant)
+                        notified_user.unreadcount = notified_user.unreadcount+1
+                        notified_user.save()
             else:
                 messages.warning(request, 'You cannot make this service which causes credit hours exceed 15.')
-        
         context = {
             'form': form,
         }
-
         return render(request, 'social/service_edit.html', context)
 
 class ServiceDeleteView(LoginRequiredMixin, View):
     def get(self, request, *args, pk, **kwargs):
         service = Service.objects.get(pk=pk)
-
         if service.creater == request.user:
             if service.servicedate > timezone.now():
                 form = ServiceForm(instance = service)
                 context = {
                     'form': form,
                 }
-
                 return render(request, 'social/service_delete.html', context)
             else:
                 return redirect('service-detail', pk=service.pk)
-        
         else:
             return redirect('service-detail', pk=service.pk)
 
@@ -375,39 +346,37 @@ class ServiceDeleteView(LoginRequiredMixin, View):
             service_applicant_profile = UserProfile.objects.get(pk=application.applicant)
             service_applicant_profile.reservehour = service_applicant_profile.reservehour + service.duration
             service_applicant_profile.save()
-            notification = NotifyUser.objects.create(notify=application.applicant, notification=str(service.name)+' which you applied is deleted.', offerType="service")
+            notification = NotifyUser.objects.create(notify=application.applicant, notification=str(service.name)+' service which you applied is deleted.', offerType="service")
             notified_user = UserProfile.objects.get(pk=application.applicant)
             notified_user.unreadcount = notified_user.unreadcount+1
             notified_user.save()
-
+            notificationsToChange = NotifyUser.objects.filter(notify=application.applicant).filter(hasRead=False).filter(offerType="service").filter(offerPk=pk)
+            for notificationChange in notificationsToChange:
+                notificationChange.offerPk = 0
+                notificationChange.save()
         service.delete()
         return redirect('allservices')
 
 class EventCreateView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         form = EventForm()
-
         context = {
             'form': form,
         }
-
         return render(request, 'social/event_create.html', context)
     
     def post(self, request, *args, **kwargs):
         events = Event.objects.all().order_by('-eventcreateddate')
         form = EventForm(request.POST, request.FILES)
-
         if form.is_valid():
             new_event = form.save(commit=False)
             new_event.eventcreater = request.user
             new_event.save()
             messages.success(request, 'Event creation is successful.')
-
         context = {
             'event_list': events,
             'form': form,
         }
-
         return render(request, 'social/event_create.html', context)
 
 class AllEventsView(LoginRequiredMixin, View):
@@ -415,12 +384,10 @@ class AllEventsView(LoginRequiredMixin, View):
         events = Event.objects.all().order_by('-eventcreateddate')
         form = EventForm()
         events_count = len(events)
-
         context = {
             'events': events,
             'events_count': events_count,
         }
-
         return render(request, 'social/allevents.html', context)
 
 class CreatedEventsView(LoginRequiredMixin, View):
@@ -428,97 +395,216 @@ class CreatedEventsView(LoginRequiredMixin, View):
         events = Event.objects.filter(eventcreater=request.user).order_by('-eventcreateddate')
         number_of_createdevent = len(events)
         form = EventForm()
-
         context = {
             'events': events,
             'number_of_createdevent': number_of_createdevent,
         }
-
         return render(request, 'social/createdevents.html', context)
+
+class AppliedEventsView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        events = Event.objects.all()
+        eventapplications = EventApplication.objects.all()
+        eventsapplied = []
+        for eventapplication in eventapplications:
+            for event in events:
+                if eventapplication.event == event:
+                    if eventapplication.applicant == request.user:
+                        eventsapplied.append(event)
+        number_of_appliedevent = len(eventsapplied)
+        form = EventForm()
+        context = {
+            'events': events,
+            'eventapplied': eventsapplied,
+            'number_of_appliedevent': number_of_appliedevent,
+        }
+        return render(request, 'social/appliedevents.html', context)
+
+class EventApplicationDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = EventApplication
+    template_name = 'social/event-application_delete.html'
+
+    def get_success_url(self):
+        event_pk = self.kwargs['event_pk']
+        event = Event.objects.get(pk=event_pk)
+        application = self.get_object()
+        applicant_user_profile = UserProfile.objects.get(pk=application.applicant.pk)
+        notification = NotifyUser.objects.create(notify=event.eventcreater, notification=str(applicant_user_profile.user.username)+' canceled application for event '+str(event.eventname), offerType="event", offerPk=event.pk)
+        notified_user = UserProfile.objects.get(pk=event.eventcreater)
+        notified_user.unreadcount = notified_user.unreadcount+1
+        notified_user.save()
+        applicationsNext = EventApplication.objects.filter(event=event).filter(approved=False).order_by('-date')
+        count = 0
+        for applicationNext in applicationsNext:
+            if count == 0:
+                applicationNext.approved = True
+                applicationNext.save()
+                count = 1
+        return reverse_lazy('event-detail', kwargs={'pk': event_pk})
+    
+    def test_func(self):
+        application = self.get_object()
+        isOK = False
+        if self.request.user == application.applicant:
+            isOK = True
+        if self.request.user == application.event.eventcreater:
+            isOK = True
+        return isOK
 
 class EventDetailView(View):
     def get(self, request, pk, *args, **kwargs):
         event = Event.objects.get(pk=pk)
-        form = EventForm()
+        notifications = NotifyUser.objects.filter(notify=request.user).filter(offerType="event").filter(offerPk=pk).filter(hasRead=False)
+        countNotifications = len(notifications)
+        for notification in notifications:
+            notification.hasRead = True
+            notification.save()
+        userNotified = UserProfile.objects.get(pk=request.user.profile)
+        userNotified.unreadcount = userNotified.unreadcount - countNotifications
+        userNotified.save()
+        applications = EventApplication.objects.filter(event=pk).order_by('-date')
+        applications_this = applications.filter(applicant=request.user)
+        number_of_accepted = len(applications.filter(approved=True))
+        accepted_applications = applications.filter(approved=True)
+        application_number = len(applications)
         is_active = True
         if event.eventdate <= timezone.now():
             is_active = False
+        if len(applications) == 0:
+            is_applied = False
+            is_accepted = False
+        for application in applications:
+            if application.applicant == request.user:
+                is_applied = True
+                is_accepted = application.approved
+                break
+            else:
+                is_applied = False
+                is_accepted = False
+        context = {
+            'event': event,
+            'applications': applications,
+            'number_of_accepted': number_of_accepted,
+            'is_applied': is_applied,
+            'applications_this': applications_this,
+            'is_accepted': is_accepted,
+            'is_active': is_active,
+            'application_number': application_number,
+            'accepted_applications': accepted_applications
+        }
+        return render(request, 'social/event_detail.html', context)
 
+    def post(self, request, pk, *args, **kwargs):
+        event = Event.objects.get(pk=pk)
+        form = EventApplicationForm(request.POST)
+        applications = EventApplication.objects.filter(event=pk).order_by('-date')
+        applications_this = applications.filter(applicant=request.user)
+        number_of_accepted = len(applications.filter(approved=True))
+        if len(applications) == 0:
+            is_applied = False
+        for application in applications:
+            if application.applicant == request.user:
+                is_applied = True
+                break
+            else:
+                is_applied = False
+        if form.is_valid():
+            if is_applied == False:
+                new_application = form.save(commit=False)
+                new_application.applicant = request.user
+                new_application.event = event
+                if number_of_accepted < event.eventcapacity:
+                    new_application.approved = True
+                else:
+                    new_application.approved = False
+                new_application.save()
+                notification = NotifyUser.objects.create(notify=event.eventcreater, notification=str(new_application.applicant)+' applied to event '+str(new_application.event.eventname), offerType="event", offerPk=new_application.event.pk)
+                notified_user = UserProfile.objects.get(pk=event.eventcreater)
+                notified_user.unreadcount = notified_user.unreadcount+1
+                notified_user.save()
         context = {
             'event': event,
             'form': form,
-            'is_active': is_active,
+            'applications': applications,
+            'number_of_accepted': number_of_accepted,
+            'is_applied': is_applied,
+            'applications_this': applications_this,
         }
-
-        return render(request, 'social/event_detail.html', context)
-
-    def post(self, request, *args, **kwargs):
-        pass
+        return redirect('event-detail', pk=event.pk)
 
 class EventEditView(LoginRequiredMixin, View):
     def get(self, request, *args, pk, **kwargs):
         event = Event.objects.get(pk=pk)
-
         if event.eventcreater == request.user:
             if event.eventdate > timezone.now():
                 form = EventForm(instance = event)
                 context = {
                     'form': form,
                 }
-
                 return render(request, 'social/event_edit.html', context)
             else:
                 return redirect('event-detail', pk=event.pk)
-        
         else:
             return redirect('event-detail', pk=event.pk)
 
     def post(self, request, *args, pk, **kwargs):
         form = EventForm(request.POST, request.FILES)
         event = Event.objects.get(pk=pk)
-
+        applications = EventApplication.objects.filter(event=event)
+        number_of_accepted = len(applications.filter(approved=True))
         if form.is_valid():
             edit_event = form.save(commit=False)
-            event.eventpicture = event.eventpicture
-            if request.FILES:
-                event.eventpicture = edit_event.eventpicture
-            event.eventname = edit_event.eventname
-            event.eventdescription = edit_event.eventdescription
-            event.eventdate = edit_event.eventdate
-            event.eventlocation = edit_event.eventlocation
-            event.eventcapacity = edit_event.eventcapacity
-            event.eventduration = edit_event.eventduration
-
-            event.save()
-                
-            messages.success(request, 'Event editing is successful.')
-        
+            if edit_event.eventcapacity < number_of_accepted:
+                messages.warning(request, 'You cannot make the capacity below the accepted number.')
+            else:
+                event.eventpicture = event.eventpicture
+                if request.FILES:
+                    event.eventpicture = edit_event.eventpicture
+                event.eventname = edit_event.eventname
+                event.eventdescription = edit_event.eventdescription
+                event.eventdate = edit_event.eventdate
+                event.eventlocation = edit_event.eventlocation
+                event.eventcapacity = edit_event.eventcapacity
+                event.eventduration = edit_event.eventduration
+                event.save()
+                messages.success(request, 'Event editing is successful.')
+                for application in applications:
+                    notification = NotifyUser.objects.create(notify=application.applicant, notification=str(event.eventname)+' event which you applied is edited.', offerType="event", offerPk=event.pk)
+                    notified_user = UserProfile.objects.get(pk=application.applicant)
+                    notified_user.unreadcount = notified_user.unreadcount+1
+                    notified_user.save()
         context = {
             'form': form,
         }
-
         return render(request, 'social/event_edit.html', context)
 
 class EventDeleteView(LoginRequiredMixin, View):
     def get(self, request, *args, pk, **kwargs):
         event = Event.objects.get(pk=pk)
-
         if event.eventcreater == request.user:
             if event.eventdate > timezone.now():
                 form = EventForm(instance = event)
                 context = {
                     'form': form,
                 }
-
                 return render(request, 'social/event_delete.html', context)
             else:
                 return redirect('event-detail', pk=event.pk)
-        
         else:
             return redirect('event-detail', pk=event.pk)
 
     def post(self, request, *args, pk, **kwargs):
         event = Event.objects.get(pk=pk)
+        applications = EventApplication.objects.filter(event=event)
+        for application in applications:
+            notification = NotifyUser.objects.create(notify=application.applicant, notification=str(event.eventname)+' event which you applied is deleted.', offerType="event")
+            notified_user = UserProfile.objects.get(pk=application.applicant)
+            notified_user.unreadcount = notified_user.unreadcount+1
+            notified_user.save()
+            notificationsToChange = NotifyUser.objects.filter(notify=application.applicant).filter(hasRead=False).filter(offerType="event").filter(offerPk=pk)
+            for notificationChange in notificationsToChange:
+                notificationChange.offerPk = 0
+                notificationChange.save()
         event.delete()
         return redirect('allevents')
 
@@ -604,7 +690,6 @@ class RateUser(LoginRequiredMixin, View):
         rated = UserProfile.objects.get(user=ratedpk)
         ratingRecord = UserRatings.objects.filter(service=service).filter(rated=rated.user).filter(rater=request.user)
         isRated = len(ratingRecord)
-
         context = {
             'form': form,
             'ratingRecord': ratingRecord,
@@ -612,7 +697,6 @@ class RateUser(LoginRequiredMixin, View):
             'service': service,
             'rated': rated,
         }
-
         return render(request, 'social/rating.html', context)
     
     def post(self, request, *args, **kwargs):
@@ -621,7 +705,6 @@ class RateUser(LoginRequiredMixin, View):
         service = Service.objects.get(pk=servicepk)
         ratedpk = self.kwargs['ratedpk']
         rated = UserProfile.objects.get(user=ratedpk)
-
         if form.is_valid():
             new_rating = form.save(commit=False)
             new_rating.rater = request.user
@@ -629,7 +712,6 @@ class RateUser(LoginRequiredMixin, View):
             new_rating.rated = rated.user
             new_rating.save()
             messages.success(request, 'Rating is successful.')
-
         return redirect('service-detail', pk=servicepk)
 
 class RateUserEdit(LoginRequiredMixin, View):
@@ -645,29 +727,24 @@ class RateUserEdit(LoginRequiredMixin, View):
     def post(self, request, *args, pk, **kwargs):
         form = RatingForm(request.POST)
         rating = UserRatings.objects.get(pk=pk)
-
         if form.is_valid():
             edit_rating = form.save(commit=False)
             rating.rating = edit_rating.rating
             rating.feedback = edit_rating.feedback
             rating.save()        
             messages.success(request, 'Rating editing is successful.')
-        
         context = {
             'form': form,
         }
-
         return render(request, 'social/rating-edit.html', context)
 
 class RateUserDelete(LoginRequiredMixin, View):
     def get(self, request, *args, pk, **kwargs):
         rating = UserRatings.objects.get(pk=pk)
-
         form = RatingForm(instance = rating)
         context = {
             'form': form,
         }
-
         return render(request, 'social/rating-delete.html', context)
 
     def post(self, request, *args, pk, **kwargs):
@@ -698,51 +775,40 @@ class TimeLine(LoginRequiredMixin, View):
                     events2.append(event)
         events_count = len(events2)
         services_count = len(services2)
-
         context = {
             'services': services2,
             'events': events2,
             'services_count': services_count,
             'events_count': events_count
         }
-
         return render(request, 'social/timeline.html', context)
 
 class ServiceSearch(View):
     def get(self, request, *args, **kwargs):
         query = self.request.GET.get('query')
-        services = Service.objects.filter(
-            Q(name__icontains=query)
-        )
+        services = Service.objects.filter(Q(name__icontains=query))
         services_count = len(services)
-
         context = {
             'services': services,
             'services_count': services_count,
         }
-
         return render(request, 'social/service-search.html', context)
 
 class EventSearch(View):
     def get(self, request, *args, **kwargs):
         query = self.request.GET.get('query')
-        events = Event.objects.filter(
-            Q(eventname__icontains=query)
-        )
+        events = Event.objects.filter(Q(eventname__icontains=query))
         events_count = len(events)
-
         context = {
             'events': events,
             'events_count': events_count,
         }
-
         return render(request, 'social/event-search.html', context)
 
 class Notifications(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         notifications = NotifyUser.objects.filter(notify=request.user).filter(hasRead=False)
         notifications_count = len(notifications)
-
         notificationsToRead = notifications.filter(offerPk=0)
         countNotifications = len(notificationsToRead)
         for notification in notificationsToRead:
@@ -751,11 +817,9 @@ class Notifications(LoginRequiredMixin, View):
         userNotified = UserProfile.objects.get(pk=request.user.profile)
         userNotified.unreadcount = userNotified.unreadcount - countNotifications
         userNotified.save()
-
         context = {
             'notifications': notifications,
             'notifications_count': notifications_count,
         }
-
         return render(request, 'social/notifications.html', context)
     

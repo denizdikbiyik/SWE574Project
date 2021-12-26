@@ -1,5 +1,5 @@
 from django import forms
-from .models import Service, Event, ServiceApplication, UserRatings
+from .models import Service, Event, ServiceApplication, UserRatings, EventApplication
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 
@@ -117,4 +117,10 @@ class ServiceApplicationForm(forms.ModelForm):
 
     class Meta:
         model = ServiceApplication
+        fields = []
+
+class EventApplicationForm(forms.ModelForm):    
+
+    class Meta:
+        model = EventApplication
         fields = []

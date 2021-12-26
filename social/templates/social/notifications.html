@@ -10,25 +10,23 @@
                 {% if notifications_count != 0 %}
                     {% for notification in notifications %}
                         <div class="row justify-content-center mt-3">
-                            <div class="card col-md-12 col-sm-12 border-bottom position-relative" style="padding:3%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
+                            <div class="card col-md-8 col-sm-12 border-bottom position-relative" style="border-radius:15px; background-color:whitesmoke; border-color: dimgrey; text-align: center;">
                                 <div class="row">
-                                    <div class="col-md-8">  
-                                        {% if notification.offerType == "service" %}
-                                            {% if notification.offerPk != 0 %}
-                                                <p>Notification: {{ notification.notification }}</p>
-                                                <a class="stretched-link" href="{% url 'service-detail' notification.offerPk %}"></a>
-                                            {% else %}  
-                                                <p>Notification: {{ notification.notification }}</p>
-                                            {% endif %}
-                                        {% else %}   
-                                            {% if notification.offerPk != 0 %}
-                                                <p>Notification: {{ notification.notification }}</p>
-                                                <a class="stretched-link" href="{% url 'event-detail' notification.offerPk %}"></a>  
-                                            {% else %}  
-                                                <p>Notification: {{ notification.notification }}</p>
-                                            {% endif %}
-                                        {% endif %}            
-                                    </div>          
+                                    {% if notification.offerType == "service" %}
+                                        {% if notification.offerPk != 0 %}
+                                            <p>Notification: {{ notification.notification }}</p>
+                                            <a class="stretched-link" href="{% url 'service-detail' notification.offerPk %}"></a>
+                                        {% else %}  
+                                            <p><span style="font-weight: bolder;">Notification:</span> {{ notification.notification }}</p>
+                                        {% endif %}
+                                    {% else %}   
+                                        {% if notification.offerPk != 0 %}
+                                            <p><span style="font-weight: bolder;">Notification:</span> {{ notification.notification }}</p>
+                                            <a class="stretched-link" href="{% url 'event-detail' notification.offerPk %}"></a>  
+                                        {% else %}  
+                                            <p>Notification: {{ notification.notification }}</p>
+                                        {% endif %}
+                                    {% endif %}          
                                 </div>
                             </div>
                         </div>

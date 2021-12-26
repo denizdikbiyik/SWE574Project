@@ -61,8 +61,68 @@
                     </div>
                 </div>
                 <p></p>
-
                 <p><a style="font-weight: bolder;">Capacity: </a>{{ event.eventcapacity }}</p>
+
+
+                <div class="row justify-content-center mt-3 mb-5">
+                    <p><a style="font-weight: bolder;">Accepted Participant Count: </a>{{ number_of_accepted }}</p>
+                    {% if event.eventcreater == request.user %}
+
+                        <p></p>
+                        <p style="font-weight: bolder;">Applicants:</p>
+                        {% for application_done in applications %}
+                        <div class="row justify-content-center">
+                            <div class="border-bottom">
+                                <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' application_done.applicant.profile.pk %}">@{{ application_done.applicant }}</a> on {{ application_done.date.date }}
+                                {% if application_done.approved %}
+                                    <a style="font-weight: bolder;">Approved</a>
+                                {% else %}
+                                    <a style="font-weight: bolder;">Not Approved</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% if application_number == 0 %}
+                            <p>No application found.</p>
+                        {% endif %}
+
+                    {% else %}
+                        <p><strong>Participants:</strong></p>
+                        {% for accepted in accepted_applications %}
+                        <div class="row justify-content-center">
+                            <div class="border-bottom">
+                                <p style="text-decoration: none;" class="text-primary" href="{% url 'profile' accepted.applicant.profile.pk %}">@{{ accepted.applicant }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                                    
+                        {% if is_applied %}
+                            {% if is_accepted %}               
+                                <p><strong>Your application is accepted.</strong></p>
+                            {% else %}
+                                <p><strong>Your application is not accepted or rejected yet.</strong></p>
+                            {% endif %}
+                            {% if is_active %}
+                                {% for application in applications_this %}
+                                    <div class="d-grid gap-2">
+                                        <a class="btn btn-danger mt-3" href="{% url 'event-application-delete' event.pk application.pk %}">Cancel Application</a>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% else %}
+                            <form method="POST">
+                                {% csrf_token %}
+                                {{ form | crispy}}
+                                {% if is_active %}
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-success mt-3">Apply</button>
+                                    </div>
+                                {% endif %}
+                            </form>
+                        {% endif %}
+                    {% endif %}
+                </div>
+
             </div>
         </div>
     </div>
