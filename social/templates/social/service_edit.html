@@ -45,11 +45,11 @@
             <form method="POST" enctype='multipart/form-data'>
                 {% csrf_token %}
                 {{ form | crispy }}
-                <div class="map-widget" style="margin-top: 4px">
-                    <div id="map_location" style="width: 500px; height: 250px"></div>
-                </div>
                 <div class="d-grid gap-2">
                     <button class="btn btn-success mt-3">Submit!</button>
+                </div>
+                <div class="map-widget" style="margin-top: 4px">
+                    <div id="map_location" style="width: 500px; height: 250px"></div>
                 </div>
             </form>
         </div>
