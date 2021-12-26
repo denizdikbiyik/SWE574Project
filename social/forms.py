@@ -1,11 +1,15 @@
 from django import forms
-from .models import Service, Event, ServiceApplication, UserRatings, EventApplication
+from .models import Service, Event, ServiceApplication, UserRatings, EventApplication, UserProfile
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 
 def validate_date(date):
     if date < timezone.now():
         raise ValidationError("Date cannot be in the past.")
+
+def validate_date_after(date):
+    if date > timezone.now():
+        raise ValidationError("Date cannot be in the future.")
 
 class DateTimeLocalInput(forms.DateTimeInput):
     input_type = "datetime-local"
@@ -124,3 +128,33 @@ class EventApplicationForm(forms.ModelForm):
     class Meta:
         model = EventApplication
         fields = []
+
+class ProfileForm(forms.ModelForm):
+    name = forms.CharField(
+        label = 'Name',
+        widget = forms.Textarea(attrs={
+            'rows': '1',
+            'placeholder': 'Your name...'
+        })
+    )
+    
+    bio = forms.CharField(
+        label = 'Bio',
+        widget = forms.Textarea(attrs={
+            'rows': '3',
+            'placeholder': 'Your bio...'
+        })
+    )
+
+    birth_date = DateTimeLocalField(
+        label = 'Birthdate',
+        validators=[validate_date_after],
+    )
+
+    picture = forms.ImageField(
+        label = 'Image',
+    )
+
+    class Meta:
+        model = UserProfile
+        fields = ['name', 'bio', 'birth_date', 'location', 'picture']

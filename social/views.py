@@ -3,7 +3,7 @@ from django.urls import reverse_lazy
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.views import View
 from .models import Service, UserProfile, Event, ServiceApplication, UserRatings, NotifyUser, EventApplication
-from .forms import ServiceForm, EventForm, ServiceApplicationForm, RatingForm, EventApplicationForm
+from .forms import ServiceForm, EventForm, ServiceApplicationForm, RatingForm, EventApplicationForm, ProfileForm
 from django.views.generic.edit import UpdateView, DeleteView
 from django.http import HttpResponseRedirect
 from django.contrib import messages
@@ -666,18 +666,54 @@ class ProfileView(View):
         }
         return render(request, 'social/profile.html', context)
 
-class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    model = UserProfile
-    fields = ['name', 'bio', 'birth_date', 'location', 'picture']
-    template_name = 'social/profile_edit.html'
+class ProfileEditView(LoginRequiredMixin, View):
+    def get(self, request, *args, pk, **kwargs):
+        profile = UserProfile.objects.get(pk=pk)
+        if profile.user == request.user:
+            form = ProfileForm(instance = profile)
+            context = {
+                'form': form,
+            }
+            return render(request, 'social/profile_edit.html', context)
+        else:
+            return redirect('profile', pk=profile.pk)
+
+    def post(self, request, *args, pk, **kwargs):
+        form = ProfileForm(request.POST, request.FILES)
+        profile = UserProfile.objects.get(pk=pk)
+        if form.is_valid():
+            edit_profile = form.save(commit=False)
+            profile.picture = profile.picture
+            if request.FILES:
+                profile.picture = edit_profile.picture
+            profile.name = edit_profile.name
+            profile.bio = edit_profile.bio
+            profile.birth_date = edit_profile.birth_date
+            profile.location = edit_profile.location
+            profile.save()
+            messages.success(request, 'Profile editing is successful.')
+        context = {
+            'form': form,
+        }
+        return render(request, 'social/profile_edit.html', context)
+
+
+
+
+
+
+
+    # model = UserProfile
+    # fields = ['name', 'bio', 'birth_date', 'location', 'picture']
+    # template_name = 'social/profile_edit.html'
     
-    def get_success_url(self):
-        pk = self.kwargs['pk']
-        return reverse_lazy('profile', kwargs={'pk': pk})
+    # def get_success_url(self):
+    #     pk = self.kwargs['pk']
+    #     return reverse_lazy('profile', kwargs={'pk': pk})
     
-    def test_func(self):
-        profile = self.get_object()
-        return self.request.user == profile.user
+    # def test_func(self):
+    #     profile = self.get_object()
+    #     return self.request.user == profile.user
 
 class AddFollower(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
