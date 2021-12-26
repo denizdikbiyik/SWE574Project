@@ -36,6 +36,7 @@
             {% else %}
                 <h3 class="py-4">{{ user.username }}</h3>
             {% endif %}
+            <p><a style="font-weight: bolder;">Email: </a>{{ user.email }}</p>
             {% if request.user == user %}
                 <p><a style="font-weight: bolder;">Credit Hour: </a>{{ profile.credithour }}</p>
             {% endif %}
