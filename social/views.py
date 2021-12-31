@@ -34,10 +34,11 @@ class ServiceCreateView(LoginRequiredMixin, View):
                     new_service.creater = request.user
                     creater_user_profile.reservehour = creater_user_profile.reservehour + new_service.duration
                     creater_user_profile.save()
-                    notification = NotifyUser.objects.create(notify=new_service.category.requester, notification=str(request.user)+' created service with your request '+str(new_service.category)+'.', offerType="request", offerPk=0)
-                    notified_user = UserProfile.objects.get(pk=new_service.category.requester)
-                    notified_user.unreadcount = notified_user.unreadcount+1
-                    notified_user.save()
+                    if new_service.category:
+                        notification = NotifyUser.objects.create(notify=new_service.category.requester, notification=str(request.user)+' created service with your request '+str(new_service.category)+'.', offerType="request", offerPk=0)
+                        notified_user = UserProfile.objects.get(pk=new_service.category.requester)
+                        notified_user.unreadcount = notified_user.unreadcount+1
+                        notified_user.save()
                     new_service.save()
                     messages.success(request, 'Service creation is successful.')
             else:
@@ -157,6 +158,22 @@ class ServiceDetailView(View):
                 is_applied = False
         if form.is_valid():
             if is_applied == False:
+                oldApplications = ServiceApplication.objects.filter(applicant=request.user).filter(approved=False)
+                for oldApplication in oldApplications:
+                    if oldApplication.service.servicedate <= timezone.now() and oldApplication.service.is_given == False and oldApplication.service.is_taken == False:
+                        applicant_user_profile.reservehour = applicant_user_profile.reservehour + oldApplication.service.duration
+                        oldApplication.service.is_given = True
+                        oldApplication.service.is_taken = True
+                        oldApplication.save()
+                oldServices = Service.objects.filter(creater=request.user).filter(is_given=False).filter(is_taken=False)
+                applicationsForOldServiceCheck = ServiceApplication.objects.all()
+                for oldService in oldServices:
+                    if oldService.servicedate <= timezone.now():
+                        if len(applicationsForOldServiceCheck.filter(service=oldService)) == 0 or len(applicationsForOldServiceCheck.filter(service=oldService).filter(approved=True)) == 0:
+                            applicant_user_profile.reservehour = applicant_user_profile.reservehour - oldService.duration
+                            oldService.is_taken = True
+                            oldService.is_given = True
+                            oldService.save()
                 totalcredit = applicant_user_profile.reservehour + applicant_user_profile.credithour
                 if totalcredit >= service.duration:
                     new_application = form.save(commit=False)
