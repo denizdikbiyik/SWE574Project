@@ -1,0 +1,35 @@
+{% extends 'landing/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="container">
+        <div class="row mt-5">
+            <div class="col-md-5 col-sm-6">
+                <a onClick="javascript:history.go(-1);" class="btn btn-light">Back</a>
+            </div>
+        </div>
+        <div class="row justify-content-center mt-3">
+            <div class="col-md-5 col-sm-12 border-bottom">
+                <div class="row">
+                    <div class="col">
+                        {% if request.user == requestDetail.requester %}
+                            <a href="{% url 'request-delete' requestDetail.pk %}" class="btn btn-danger">Delete</a>
+                        {% endif %}
+                    </div>      
+                </div>
+                </br>
+                <p>Requested from: <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' requestDetail.toPerson.profile.pk %}">@{{ requestDetail.toPerson }}</a></p>
+                <p><a style="font-weight: bolder;">Request Tag: </a>{{ requestDetail.tag }}</p>
+                </br>
+                <div class="row">
+                    <div class="col">
+                        {% if request.user != requestDetail.requester %}
+                            <a href="{% url 'service-create' %}" class="btn btn-danger">Create Service</a>
+                        {% endif %}
+                    </div>                  
+                </div>
+            </div>
+        </div>
+
+    </div>
+{% endblock content %}

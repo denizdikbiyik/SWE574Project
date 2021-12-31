@@ -59,6 +59,9 @@
                 {% if service.description %}
                     <p><a style="font-weight: bolder;">Description: </a>{{ service.description }}</p>
                 {% endif %}
+                {% if service.category %}
+                    <p><a style="font-weight: bolder;">Category: </a>{{ service.category }}</p>
+                {% endif %}
                 <p><a style="font-weight: bolder;">Datetime: </a>{{ service.servicedate }}</p>
                 <p><a style="font-weight: bolder;">Duration: </a>{{ service.duration }} hour</p>
                 <p><a style="font-weight: bolder;">Location: </a>{{ service.location }}</p>

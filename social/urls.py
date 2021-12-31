@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import ServiceCreateView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventCreateView, EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, AddFollower, RemoveFollower, ApplicationDeleteView, ApplicationEditView, FollowersListView, RemoveMyFollower, TimeLine, AllServicesView, AllEventsView, CreatedServicesView, CreatedEventsView, AppliedServicesView, ConfirmServiceTaken, ConfirmServiceGiven, RateUser, RateUserDelete, RateUserEdit, ServiceSearch, EventSearch, Notifications, EventApplicationDeleteView, AppliedEventsView
+from .views import ServiceCreateView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventCreateView, EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, AddFollower, RemoveFollower, ApplicationDeleteView, ApplicationEditView, FollowersListView, RemoveMyFollower, TimeLine, AllServicesView, AllEventsView, CreatedServicesView, CreatedEventsView, AppliedServicesView, ConfirmServiceTaken, ConfirmServiceGiven, RateUser, RateUserDelete, RateUserEdit, ServiceSearch, EventSearch, Notifications, EventApplicationDeleteView, AppliedEventsView, RequestCreateView, CreatedRequestsView, RequestsFromMeView, RequestDetailView, RequestDeleteView
 
 urlpatterns = [
     path('service/create', ServiceCreateView.as_view(), name='service-create'),
@@ -34,4 +34,9 @@ urlpatterns = [
     path('notifications', Notifications.as_view(), name='notifications'),
     path('event/<int:event_pk>/application/delete/<int:pk>', EventApplicationDeleteView.as_view(), name='event-application-delete'),
     path('event/appliedevents', AppliedEventsView.as_view(), name='appliedevents'),
+    path('request/create', RequestCreateView.as_view(), name='request-create'),
+    path('request/createdrequests', CreatedRequestsView.as_view(), name='createdrequests'),
+    path('request/requestsfromme', RequestsFromMeView.as_view(), name='requestsfromme'),
+    path('request/<int:pk>', RequestDetailView.as_view(), name='request-detail'),
+    path('request/delete/<int:pk>', RequestDeleteView.as_view(), name='request-delete'),
 ]

@@ -11,10 +11,28 @@
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
               {% if user.is_authenticated %}
                 <a style="color: white;" class="navbar-brand" href="{% url 'timeline' %}">TimeLine</a>
-                <a style="color: white;" class="navbar-brand" href="{% url 'allservices' %}">Services</a>
-                <a style="color: white;" class="navbar-brand" href="{% url 'service-create' %}">Create Service</a>
-                <a style="color: white;" class="navbar-brand" href="{% url 'allevents' %}">Events</a>
-                <a style="color: white;" class="navbar-brand" href="{% url 'event-create' %}">Create Event</a>
+                <div class="nav-item dropdown">
+                  <a style="color: white;" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="buton" aria-expanded="false">Service</a>
+                  <ul class="dropdown-menu">
+                      <li><a class="dropdown-item" href="{% url 'allservices' %}">Services</a></li>
+                      <li><a class="dropdown-item" href="{% url 'service-create' %}">Create Service</a></li>
+                  </ul>
+                </div>
+                <div class="nav-item dropdown">
+                  <a style="color: white;" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="buton" aria-expanded="false">Event</a>
+                  <ul class="dropdown-menu">
+                      <li><a class="dropdown-item" href="{% url 'allevents' %}">Events</a></li>
+                      <li><a class="dropdown-item" href="{% url 'event-create' %}">Create Event</a></li>
+                  </ul>
+                </div>   
+                <div class="nav-item dropdown">
+                  <a style="color: white;" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="buton" aria-expanded="false">Request</a>
+                  <ul class="dropdown-menu">
+                      <li><a class="dropdown-item" href="{% url 'request-create' %}">Create Request</a></li>
+                      <li><a class="dropdown-item" href="{% url 'createdrequests' %}">Created Requests</a></li>
+                      <li><a class="dropdown-item" href="{% url 'requestsfromme' %}">Requests From Me</a></li>
+                  </ul>
+                </div>     
               {% else %}
                 <a href="{% url 'account_login' %}" class="btn btn-light mr-2">Login</a>
                 <a style="color: white;" href="{% url 'account_signup' %}" class="btn btn-dark">Register</a> 

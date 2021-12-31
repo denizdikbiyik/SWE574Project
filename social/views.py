@@ -2,8 +2,8 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.views import View
-from .models import Service, UserProfile, Event, ServiceApplication, UserRatings, NotifyUser, EventApplication
-from .forms import ServiceForm, EventForm, ServiceApplicationForm, RatingForm, EventApplicationForm, ProfileForm
+from .models import Service, UserProfile, Event, ServiceApplication, UserRatings, NotifyUser, EventApplication, Tag
+from .forms import ServiceForm, EventForm, ServiceApplicationForm, RatingForm, EventApplicationForm, ProfileForm, RequestForm
 from django.views.generic.edit import UpdateView, DeleteView
 from django.http import HttpResponseRedirect
 from django.contrib import messages
@@ -34,6 +34,10 @@ class ServiceCreateView(LoginRequiredMixin, View):
                     new_service.creater = request.user
                     creater_user_profile.reservehour = creater_user_profile.reservehour + new_service.duration
                     creater_user_profile.save()
+                    notification = NotifyUser.objects.create(notify=new_service.category.requester, notification=str(request.user)+' created service with your request '+str(new_service.category)+'.', offerType="request", offerPk=0)
+                    notified_user = UserProfile.objects.get(pk=new_service.category.requester)
+                    notified_user.unreadcount = notified_user.unreadcount+1
+                    notified_user.save()
                     new_service.save()
                     messages.success(request, 'Service creation is successful.')
             else:
@@ -316,6 +320,7 @@ class ServiceEditView(LoginRequiredMixin, View):
                     service.location = edit_service.location
                     service.capacity = edit_service.capacity
                     service.duration = edit_service.duration
+                    service.category = edit_service.category
                     service.save()
                     messages.success(request, 'Service editing is successful.')
                     applications = ServiceApplication.objects.filter(service=service)
@@ -869,3 +874,87 @@ class Notifications(LoginRequiredMixin, View):
         }
         return render(request, 'social/notifications.html', context)
     
+class RequestCreateView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        form = RequestForm()
+        context = {
+            'form': form,
+        }
+        return render(request, 'social/request_create.html', context)
+    
+    def post(self, request, *args, **kwargs):
+        form = RequestForm(request.POST)
+        if form.is_valid():
+            new_request = form.save(commit=False)
+            new_request.requester = request.user
+            new_request.save()
+            messages.success(request, 'Request creation is successful.')
+            notification = NotifyUser.objects.create(notify=new_request.toPerson, notification=str(new_request.requester.username)+' requested service tag '+str(new_request.tag), offerType="request", offerPk=new_request.pk)
+            notified_user = UserProfile.objects.get(pk=new_request.toPerson)
+            notified_user.unreadcount = notified_user.unreadcount+1
+            notified_user.save()
+        context = {
+            'form': form,
+        }
+        return render(request, 'social/request_create.html', context)
+
+class CreatedRequestsView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        requests = Tag.objects.filter(requester=request.user)
+        number_of_requests = len(requests)
+        context = {
+            'requests': requests,
+            'number_of_requests': number_of_requests,
+        }
+        return render(request, 'social/createdrequests.html', context)
+
+class RequestsFromMeView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        requests = Tag.objects.filter(toPerson=request.user)
+        number_of_requests = len(requests)
+        context = {
+            'requests': requests,
+            'number_of_requests': number_of_requests,
+        }
+        return render(request, 'social/requestsfromme.html', context)
+
+class RequestDetailView(View):
+    def get(self, request, pk, *args, **kwargs):
+        requestDetail = Tag.objects.get(pk=pk)
+        notifications = NotifyUser.objects.filter(notify=request.user).filter(offerType="request").filter(offerPk=pk).filter(hasRead=False)
+        countNotifications = len(notifications)
+        for notification in notifications:
+            notification.hasRead = True
+            notification.save()
+        userNotified = UserProfile.objects.get(pk=request.user.profile)
+        userNotified.unreadcount = userNotified.unreadcount - countNotifications
+        userNotified.save()
+        context = {
+            'requestDetail': requestDetail,
+        }
+        return render(request, 'social/request_detail.html', context)
+
+class RequestDeleteView(LoginRequiredMixin, View):
+    def get(self, request, *args, pk, **kwargs):
+        requestToDelete = Tag.objects.get(pk=pk)
+        if requestToDelete.requester == request.user:
+            form = RequestForm(instance = requestToDelete)
+            context = {
+                'form': form,
+            }
+            return render(request, 'social/request_delete.html', context)
+        else:
+            return redirect('request-detail', pk=requestToDelete.pk)
+
+    def post(self, request, *args, pk, **kwargs):
+        requestToDelete = Tag.objects.get(pk=pk)
+        notification = NotifyUser.objects.create(notify=requestToDelete.toPerson, notification=str(requestToDelete.tag)+' request from you is deleted.', offerType="request")
+        notified_user = UserProfile.objects.get(pk=requestToDelete.toPerson)
+        notified_user.unreadcount = notified_user.unreadcount+1
+        notified_user.save()
+        notificationsToChange = NotifyUser.objects.filter(notify=requestToDelete.toPerson).filter(hasRead=False).filter(offerType="request").filter(offerPk=pk)
+        for notificationChange in notificationsToChange:
+            notificationChange.offerPk = 0
+            notificationChange.save()
+        requestToDelete.delete()
+        return redirect('createdrequests')

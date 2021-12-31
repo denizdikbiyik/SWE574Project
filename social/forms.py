@@ -1,5 +1,5 @@
 from django import forms
-from .models import Service, Event, ServiceApplication, UserRatings, EventApplication, UserProfile
+from .models import Service, Event, ServiceApplication, UserRatings, EventApplication, UserProfile, Tag, User
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 
@@ -52,7 +52,7 @@ class ServiceForm(forms.ModelForm):
 
     class Meta:
         model = Service
-        fields = ['picture', 'name', 'description', 'servicedate', 'location', 'capacity', 'duration']
+        fields = ['picture', 'name', 'description', 'category', 'servicedate', 'location', 'capacity', 'duration']
 
 class EventForm(forms.ModelForm):
     eventname = forms.CharField(
@@ -150,3 +150,15 @@ class ProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
         fields = ['name', 'bio', 'birth_date', 'location', 'picture']
+
+class RequestForm(forms.ModelForm):
+    tag = forms.CharField(
+        widget = forms.Textarea(attrs={
+            'rows': '1',
+            'placeholder': 'Create a request (tag)...'
+        })
+    )
+
+    class Meta:
+        model = Tag
+        fields = ['tag', 'toPerson']

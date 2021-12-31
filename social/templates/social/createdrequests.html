@@ -1,0 +1,41 @@
+{% extends 'landing/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="container">
+        <br/>
+        <div class="row">
+            <h5 style="text-align:center;">Requests Created By You</h5>
+            </br>
+            {% if number_of_requests == 0 %}
+            </br>
+            <p style="text-align:center;">No requests found that you created.</p>
+            {% else %}
+                {% for request in requests %}
+                    <div class="row justify-content-center mt-3">
+                        <div class="card col-md-12 col-sm-12 border-bottom position-relative" style="padding:3%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    
+                                </div>
+                                <div class="col-md-6">
+                                    <p>Requested from: <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' request.toPerson.profile.pk %}">@{{ request.toPerson }}</a></p> 
+                                    <p style="font-weight:bold;">{{ request.tag }}</p>       
+                                    <a class="stretched-link" href="{% url 'request-detail' request.pk %}"></a>                   
+                                </div>      
+                                {% if request.isAccepted == True %}
+                                    <div class="col-md-2">
+                                        <p style="font-weight:bold;">Accepted</p>  
+                                        <p></p> 
+                                        <p></p>                
+                                    </div> 
+                                {% endif %}      
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %} 
+        </div>
+        
+    </div>
+{% endblock content %}

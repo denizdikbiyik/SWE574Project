@@ -11,6 +11,14 @@ def validate_date(date):
     if date < timezone.now():
         raise ValidationError("Date cannot be in the past.")
 
+class Tag(models.Model):
+    tag = models.TextField(default='', blank=False, null=False)
+    requester = models.ForeignKey(User, verbose_name='user', related_name='requester', blank=True, null=True, on_delete=models.SET_NULL)
+    toPerson = models.OneToOneField(User, verbose_name='user', related_name='toPerson', blank=True, null=True, on_delete=models.SET_NULL)
+
+    def __str__(self):
+        return self.tag
+
 class Service(models.Model):
     creater = models.ForeignKey(User, on_delete=models.CASCADE)
     createddate = models.DateTimeField(default=timezone.now)
@@ -23,6 +31,7 @@ class Service(models.Model):
     duration = models.IntegerField(default=1)
     is_given = models.BooleanField(default=False)
     is_taken = models.BooleanField(default=False)
+    category = models.OneToOneField(Tag, verbose_name='category', related_name='category', blank=True, null=True, on_delete=models.SET_NULL)
 
 class ServiceApplication(models.Model):
     date = models.DateTimeField(default=timezone.now)
