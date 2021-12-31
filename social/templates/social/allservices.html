@@ -7,7 +7,29 @@
         <div class="row">
             <div class="row">
                 <div class="col">
-                    <h5 style="text-align:center;">Services</h5>
+                    <div class="row">
+                        <div class="col">
+                            <h5 style="text-align:center;">Services</h5>
+                        </div>
+                        <div class="col">
+
+                            <form class="d-flex" method="GET" action="{% url 'service-filter' %}">
+                                <div class="input-group">
+                                    <label style="font-weight: bolder;">Categories:&nbsp;</label>
+                                    <select name="category">
+                                        <option value="all">All</option>
+                                        {% for tag in alltags %}
+                                            <option value="{{tag.pk}}">{{tag.tag}}</option>
+                                        {% endfor %}  
+                                    </select>
+                                    &nbsp;
+                                    <button style="border: none; background-color: white; box-shadow: none" type="submit">Filter</button>
+                                </div>
+                            </form>
+    
+                        </div>  
+                    </div>
+                      
                 </div>
                 <div class="col">
                     <form class="d-flex" method="GET" action="{% url 'service-search' %}">
@@ -15,7 +37,7 @@
                             <input type="text" class="form-control" placeholder="Search Service" aria-label="Service" aria-describedby="basic-addon1" name='query' value="{{ request.GET.query }}">
                             <button style="border: none; background-color: white; box-shadow: none" type="submit">Search</button>
                         </div>
-                      </form>
+                    </form>
                 </div>
             </div>      
                 <br/>

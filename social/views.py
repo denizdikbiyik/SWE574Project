@@ -51,6 +51,7 @@ class ServiceCreateView(LoginRequiredMixin, View):
 class AllServicesView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         services = Service.objects.all().order_by('-createddate')
+        alltags = Tag.objects.all()
         form = ServiceForm()
         services_count = len(services)
         currentTime = timezone.now()
@@ -58,6 +59,7 @@ class AllServicesView(LoginRequiredMixin, View):
             'services': services,
             'services_count': services_count,
             'currentTime': currentTime,
+            'alltags': alltags,
         }
         return render(request, 'social/allservices.html', context)
 
@@ -836,10 +838,12 @@ class ServiceSearch(View):
         services = Service.objects.filter(Q(name__icontains=query))
         services_count = len(services)
         currentTime = timezone.now()
+        alltags = Tag.objects.all()
         context = {
             'services': services,
             'services_count': services_count,
             'currentTime': currentTime,
+            'alltags': alltags,
         }
         return render(request, 'social/service-search.html', context)
 
@@ -958,3 +962,21 @@ class RequestDeleteView(LoginRequiredMixin, View):
             notificationChange.save()
         requestToDelete.delete()
         return redirect('createdrequests')
+
+class ServiceFilter(View):
+    def get(self, request, *args, **kwargs):
+        category = self.request.GET.get('category')
+        if category != "all":
+            services = Service.objects.filter(category=category)
+        else:
+            services = Service.objects.all().order_by('-createddate')
+        services_count = len(services)
+        currentTime = timezone.now()
+        alltags = Tag.objects.all()
+        context = {
+            'services': services,
+            'services_count': services_count,
+            'currentTime': currentTime,
+            'alltags': alltags,
+        }
+        return render(request, 'social/service-filter.html', context)
