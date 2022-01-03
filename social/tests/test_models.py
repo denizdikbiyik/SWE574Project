@@ -4,7 +4,7 @@ from django.test import TestCase
 from django.contrib.auth.models import User
 from social.models import Service, UserProfile, Event, ServiceApplication, UserRatings, NotifyUser, EventApplication, Tag
 
-class ServiceModelTest(TestCase):              
+class ServiceEventModelTest(TestCase):              
     @classmethod
 
     def setUp(self):
