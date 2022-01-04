@@ -31,7 +31,7 @@ class Service(models.Model):
     duration = models.IntegerField(default=1)
     is_given = models.BooleanField(default=False)
     is_taken = models.BooleanField(default=False)
-    category = models.OneToOneField(Tag, verbose_name='category', related_name='category', blank=True, null=True, on_delete=models.SET_NULL)
+    category = models.ForeignKey(Tag, verbose_name='category', related_name='category', blank=True, null=True, on_delete=models.SET_NULL)
 
 class ServiceApplication(models.Model):
     date = models.DateTimeField(default=timezone.now)
