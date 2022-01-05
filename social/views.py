@@ -669,6 +669,10 @@ class ProfileView(View):
             else:
                 is_following = False
         number_of_followers = len(followers)
+        services = Service.objects.filter(creater=profile.user)
+        number_of_services = len(services)
+        events = Event.objects.filter(eventcreater=profile.user)
+        number_of_events = len(events)
         comments = UserRatings.objects.filter(rated=profile.user)
         context = {
             'user': user,
@@ -677,6 +681,10 @@ class ProfileView(View):
             'is_following': is_following,
             'ratings_average': ratings_average,
             'comments': comments,
+            'services': services,
+            'number_of_services': number_of_services,
+            'events': events,
+            'number_of_events': number_of_events,
         }
         return render(request, 'social/profile.html', context)
 
@@ -997,3 +1005,35 @@ class ServiceFilter(View):
             'alltags': alltags,
         }
         return render(request, 'social/service-filter.html', context)
+
+class AllUsersView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        users = UserProfile.objects.all()
+        context = {
+            'users': users,
+        }
+        return render(request, 'social/allusers.html', context)
+
+class UsersServicesListView(LoginRequiredMixin, View):
+    def get(self, request, pk, *args, **kwargs):
+        profile = UserProfile.objects.get(pk=pk)
+        services = Service.objects.filter(creater=profile.user)
+        number_of_services = len(services)
+        context = {
+            'services': services,
+            'profile': profile,
+            'number_of_services': number_of_services
+        }
+        return render(request, 'social/usersservices.html', context)
+
+class UsersEventsListView(LoginRequiredMixin, View):
+    def get(self, request, pk, *args, **kwargs):
+        profile = UserProfile.objects.get(pk=pk)
+        events = Event.objects.filter(eventcreater=profile.user)
+        number_of_events = len(events)
+        context = {
+            'events': events,
+            'profile': profile,
+            'number_of_events': number_of_events
+        }
+        return render(request, 'social/usersevents.html', context)

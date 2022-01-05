@@ -14,7 +14,7 @@
                                 <div class="row">
                                     {% if notification.offerType == "service" %}
                                         {% if notification.offerPk != 0 %}
-                                            <p>Notification: {{ notification.notification }}</p>
+                                            <p><span style="font-weight: bolder;">Notification:</span> {{ notification.notification }}</p>
                                             <a class="stretched-link" href="{% url 'service-detail' notification.offerPk %}"></a>
                                         {% else %}  
                                             <p><span style="font-weight: bolder;">Notification:</span> {{ notification.notification }}</p>
@@ -24,14 +24,14 @@
                                             <p><span style="font-weight: bolder;">Notification:</span> {{ notification.notification }}</p>
                                             <a class="stretched-link" href="{% url 'event-detail' notification.offerPk %}"></a>  
                                         {% else %}  
-                                            <p>Notification: {{ notification.notification }}</p>
+                                            <p><span style="font-weight: bolder;">Notification:</span> {{ notification.notification }}</p>
                                         {% endif %}
                                     {% else %} 
                                         {% if notification.offerPk != 0 %}
                                             <p><span style="font-weight: bolder;">Notification:</span> {{ notification.notification }}</p>
                                             <a class="stretched-link" href="{% url 'request-detail' notification.offerPk %}"></a>  
                                         {% else %}  
-                                            <p>Notification: {{ notification.notification }}</p>
+                                            <p><span style="font-weight: bolder;">Notification:</span> {{ notification.notification }}</p>
                                         {% endif %}
                                     {% endif %}          
                                 </div>

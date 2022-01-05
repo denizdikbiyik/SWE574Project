@@ -59,6 +59,12 @@
             <div class="mb-3">
                 <a href="{% url 'followers' profile.pk %}">Followers: {{ number_of_followers }}</a>
             </div>
+            <div class="mb-3">
+                <a href="{% url 'usersservices' profile.pk %}">Services created: {{ number_of_services }}</a>
+            </div>
+            <div class="mb-3">
+                <a href="{% url 'usersevents' profile.pk %}">Events created: {{ number_of_events }}</a>
+            </div>
             <p><a style="font-weight: bolder;">Email: </a>{{ user.email }}</p>
             {% if request.user == user %}
                 <p><a style="font-weight: bolder;">Credit Hour: </a>{{ profile.credithour }}</p>
@@ -67,9 +73,6 @@
                 <p><a style="font-weight: bolder;">Rating: </a>{{ ratings_average.rating__avg }}</p>
             {% else %}
                 <p><a style="font-weight: bolder;">Rating: </a>Does not have any rating yet.</p>
-            {% endif %}
-            {% if profile.location %}
-            <p><a style="font-weight: bolder;">Location: </a>{{ profile.location }}</p>
             {% endif %}
             {% if profile.birth_date %}
             <p><a style="font-weight: bolder;">Birth Date: </a>{{ profile.birth_date }}</p>
@@ -90,8 +93,9 @@
 
             <p>---------------------------------------------</p>
             <b>Comments about user: </b>
+            <p></p>
             {% for comment in comments %}
-                <a>- {{ comment.feedback }}</a>
+                <p>-<a style="font-weight: bolder;">Service </a><a href="{% url 'service-detail' comment.service.pk %}" style="font-weight: bolder;"> {{ comment.service.name }} </a><a style="font-weight: bolder;">:</a> {{ comment.feedback }}</p>
             {% endfor %}
             <p></p>
         </div>
