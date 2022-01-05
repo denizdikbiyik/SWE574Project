@@ -8,4 +8,7 @@ This web project is for people to be able to offer some services to the other pe
 
 There will be also an event option to make people meet and share some funny time.
 
+To get the source code on your local machine, you can use 
+'git init' command, and then 'git clone https://github.com/denizdikbiyik/SWE573Project' command.
+
 
