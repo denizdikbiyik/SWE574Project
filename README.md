@@ -37,6 +37,7 @@ To run the system locally, there should be an ide to open the code like Visual S
 
 ```CORS_ALLOWED_ORIGINS="http://localhost:3000 http://127.0.0.1:3000"```
 
+
 The DB_HOST part should have the db command open there which is configured for Docker. To run the system locally with a local postgresql database, localhost could be given there. To create the database for Docker, some commands should also be run. Firstly, create a database on your local machine. Run ```docker-compose up --build``` command to build the Docker images. Then, ```docker-compose start db``` should be run to start the db. After it, because the db is defined as core_db ```docker exec -it core_db bash``` should be run. By ```psql -U postgres``` command, the creation process will be started and after writing ```\l``` , the command can be given as ```CREATE DATABASE communitysocial;``` there. You can exit from here by writing ```exit``` two times.
 To run the images for Docker, ```docker-compose up``` should be run. If you want the run to be continued in the background, you can run the ```docker-compose up -d``` command. 
 
