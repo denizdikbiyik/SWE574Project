@@ -1,6 +1,6 @@
-# SWE573 Course Project - CommUnity
+# SWE574 Course Project - CommUnity
 
-This repository is created for SWE573 project. The project owner is Deniz Dikbıyık.
+This repository is created for SWE574 project.
 
 ## CommUnity
 
@@ -9,7 +9,7 @@ This web project is for people to be able to offer some services to the other pe
 There will be also an event option to make people meet and share some funny time.
 
 To get the source code on your local machine, you can use 
-```git init``` command, and then ```git clone https://github.com/denizdikbiyik/SWE573Project.git``` command.
+```git init``` command, and then ```git clone https://github.com/denizdikbiyik/SWE574Project.git``` command.
 
 To run the system locally, there should be an ide to open the code like Visual Studio code and PostgreSql for the database. Docker desktop should also be installed because docker commands cannot be run without it. To create the virtual environment for the project, ```source myvenv/bin/activate``` command should be run on the project directory in the terminal. All the requirements should be installed to use the system. The needed installations are given in the requirements.txt file, so just by running ```pip install -r requirements.txt``` command, the process can be completed. Env file should also be configured to use the system. Update the file like below. Also a template for env file is given in the project with the name .env example.
 
