@@ -1,6 +1,6 @@
 # SWE574 Course Project - CommUnity
 
-This repository is created for SWE574 project.
+This repository is created for SWE574 project. This is a group project.
 
 ## CommUnity
 
