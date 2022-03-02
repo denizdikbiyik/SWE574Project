@@ -18,7 +18,9 @@
                     </div>      
                 </div>
                 </br>
-                <p>Requested from: <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' requestDetail.toPerson.profile.pk %}">@{{ requestDetail.toPerson }}</a></p>
+                {% if request.toPerson %}
+                    <p>Requested from: <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' requestDetail.toPerson.profile.pk %}">@{{ requestDetail.toPerson }}</a></p>
+                {% endif %}
                 <p>Requester: <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' requestDetail.requester.profile.pk %}">@{{ requestDetail.requester }}</a></p>
                 <p><a style="font-weight: bolder;">Request Tag: </a>{{ requestDetail.tag }}</p>
                 </br>

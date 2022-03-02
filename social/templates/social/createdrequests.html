@@ -19,7 +19,9 @@
                                     
                                 </div>
                                 <div class="col-md-6">
-                                    <p>Requested from: <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' request.toPerson.profile.pk %}">@{{ request.toPerson }}</a></p> 
+                                    {% if request.toPerson %}
+                                        <p>Requested from: <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' request.toPerson.profile.pk %}">@{{ request.toPerson }}</a></p> 
+                                    {% endif %} 
                                     <p style="font-weight:bold;">{{ request.tag }}</p>       
                                     <a class="stretched-link" href="{% url 'request-detail' request.pk %}"></a>                   
                                 </div>      
