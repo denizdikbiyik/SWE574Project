@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.urls import reverse
 from social.models import Service, UserProfile, Event, ServiceApplication, UserRatings, NotifyUser, EventApplication, Tag
 from social.forms import ServiceForm, EventForm, ServiceApplicationForm, RatingForm, EventApplicationForm, ProfileForm, RequestForm
+from social.views import ServiceCreateView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventCreateView, EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, AddFollower, RemoveFollower, ApplicationDeleteView, ApplicationEditView, FollowersListView, RemoveMyFollower, TimeLine, AllServicesView, AllEventsView, CreatedServicesView, CreatedEventsView, AppliedServicesView, ConfirmServiceTaken, ConfirmServiceGiven, RateUser, RateUserDelete, RateUserEdit, ServiceSearch, EventSearch, Notifications, EventApplicationDeleteView, AppliedEventsView, RequestCreateView, CreatedRequestsView, RequestsFromMeView, RequestDetailView, RequestDeleteView, ServiceFilter, AllUsersView, UsersServicesListView, UsersEventsListView, AddAdminView, RemoveAdminView
 from django.contrib.auth.models import User
 import datetime
 from django.utils import timezone
@@ -115,3 +116,41 @@ class AppliedEventsServicesViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue('serviceapplied' in response.context)
         self.assertEqual(len(response.context['serviceapplied']), 1)
+
+class AdminViewsTest(TestCase):
+    def test_default_user_admin_false(self):
+        test_user1 = User.objects.create_user(username='testuser1', password='1X<ISRUkw+tuK')
+        test_user2 = User.objects.create_user(username='testuser2', password='2HJ1vRV0Z&3iD')
+        test_user2.profile.isAdmin = True
+        test_user1.save()
+        test_user2.save()
+        login = self.client.login(username='testuser2', password='2HJ1vRV0Z&3iD')
+        test_user1_pk = str(test_user1.profile.pk)
+        response = self.client.get(reverse('profile', kwargs={'pk':test_user1_pk}))
+        self.assertEqual(str(response.context['user']), 'testuser1')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('profile' in response.context)
+        self.assertEqual(response.context['profile'].isAdmin, False)
+
+    def test_make_admin(self):
+        test_user1 = User.objects.create_user(username='testuser1', password='1X<ISRUkw+tuK')
+        test_user2 = User.objects.create_user(username='testuser2', password='2HJ1vRV0Z&3iD')
+        test_user2.profile.isAdmin = True
+        test_user1.save()
+        test_user2.save()
+        login = self.client.login(username='testuser2', password='2HJ1vRV0Z&3iD')
+        response = self.client.post(reverse('add-admin', kwargs={'pk': test_user1.pk}))
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(User.objects.get(username='testuser1').profile.isAdmin, True)
+
+    def test_remove_admin(self):
+        test_user1 = User.objects.create_user(username='testuser1', password='1X<ISRUkw+tuK')
+        test_user2 = User.objects.create_user(username='testuser2', password='2HJ1vRV0Z&3iD')
+        test_user1.profile.isAdmin = True
+        test_user2.profile.isAdmin = True
+        test_user1.save()
+        test_user2.save()
+        login = self.client.login(username='testuser2', password='2HJ1vRV0Z&3iD')
+        response = self.client.post(reverse('remove-admin', kwargs={'pk': test_user1.pk}))
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(User.objects.get(username='testuser1').profile.isAdmin, False)

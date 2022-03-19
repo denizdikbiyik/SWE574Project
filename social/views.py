@@ -1037,3 +1037,18 @@ class UsersEventsListView(LoginRequiredMixin, View):
             'number_of_events': number_of_events
         }
         return render(request, 'social/usersevents.html', context)
+
+
+class AddAdminView(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        profile = UserProfile.objects.get(pk=pk)
+        profile.isAdmin = True
+        profile.save()
+        return redirect('profile', pk=pk)
+
+class RemoveAdminView(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        profile = UserProfile.objects.get(pk=pk)
+        profile.isAdmin = False
+        profile.save()
+        return redirect('profile', pk=pk)

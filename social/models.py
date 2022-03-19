@@ -67,6 +67,7 @@ class UserProfile(models.Model):
     credithour = models.IntegerField(default=5)
     reservehour = models.IntegerField(default=0)
     unreadcount = models.IntegerField(default=0)
+    isAdmin = models.BooleanField(default=False)
 
 class UserRatings(models.Model):
     rated = models.ForeignKey(User, verbose_name='user', related_name='rated', on_delete=models.CASCADE)
