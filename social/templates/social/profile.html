@@ -47,15 +47,37 @@
                                 <button class="btn btn-outline-success" type=submit>Follow</button>
                             </form>
                         {% endif %}
+                        {% if request.user.profile.isAdmin %}
+                            {% if profile.isAdmin %}
+                                <form method="POST" action="{% url 'remove-admin' profile.pk %}">
+                                    {% csrf_token %}
+                                    <button class="btn btn-outline-danger" type=submit>Remove Admin</button>
+                                </form>
+                            {% else %}
+                                <form method="POST" action="{% url 'add-admin' profile.pk %}">
+                                    {% csrf_token %}
+                                    <button class="btn btn-outline-success" type=submit>Make Admin</button>
+                                </form>
+                            {% endif %}
+                        {% endif %}
                     {% endif %}
                 </div>
             </div>
+
+            <p></p>
+
+            {% if request.user.profile.isAdmin %}
+                {% if profile.isAdmin %}
+                    <h5><a style="font-weight: bolder;">ADMIN</a></h5>
+                {% endif %}
+            {% endif %}
 
             {% if profile.name %}
                 <h3 class="py-4">{{ profile.name }}</h3>           
             {% else %}
                 <h3 class="py-4">{{ user.username }}</h3>
             {% endif %}
+
             <div class="mb-3">
                 <a href="{% url 'followers' profile.pk %}">Followers: {{ number_of_followers }}</a>
             </div>
