@@ -14,7 +14,7 @@ def validate_date(date):
 class Tag(models.Model):
     tag = models.TextField(default='', blank=False, null=False)
     requester = models.ForeignKey(User, verbose_name='user', related_name='requester', blank=True, null=True, on_delete=models.SET_NULL)
-    toPerson = models.OneToOneField(User, verbose_name='user', related_name='toPerson', blank=True, null=True, on_delete=models.SET_NULL)
+    toPerson = models.ForeignKey(User, verbose_name='user', related_name='toPerson', blank=True, null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return self.tag
@@ -32,6 +32,7 @@ class Service(models.Model):
     is_given = models.BooleanField(default=False)
     is_taken = models.BooleanField(default=False)
     category = models.ForeignKey(Tag, verbose_name='category', related_name='category', blank=True, null=True, on_delete=models.SET_NULL)
+    isDeleted = models.BooleanField(default=False)
 
 class ServiceApplication(models.Model):
     date = models.DateTimeField(default=timezone.now)
@@ -49,6 +50,7 @@ class Event(models.Model):
     eventdate = models.DateTimeField(default=timezone.now)
     eventcapacity = models.IntegerField(default=1)
     eventduration = models.IntegerField(default=1)
+    isDeleted = models.BooleanField(default=False)
 
 class EventApplication(models.Model):
     date = models.DateTimeField(default=timezone.now)
@@ -73,7 +75,7 @@ class UserRatings(models.Model):
     rated = models.ForeignKey(User, verbose_name='user', related_name='rated', on_delete=models.CASCADE)
     rater = models.ForeignKey(User, verbose_name='user', related_name='rater', on_delete=models.SET_NULL, null=True)
     rating = models.IntegerField(blank=False, null=True)
-    service = models.ForeignKey('Service', on_delete=models.CASCADE)
+    service = models.ForeignKey('Service', on_delete=models.SET_NULL, null=True)
     feedback = models.TextField(blank=True, null=True)
 
 @receiver(post_save, sender=User)
@@ -91,3 +93,12 @@ class NotifyUser(models.Model):
     hasRead = models.BooleanField(default=False)
     offerType = models.TextField(blank=True, null=True)
     offerPk = models.IntegerField(default=0)
+
+class Log(models.Model):
+    date = models.DateTimeField(default=timezone.now)
+    operation = models.TextField(blank=True, null=True)
+    itemType = models.TextField(blank=True, null=True)
+    itemId = models.IntegerField(default=0)
+    userId = models.ForeignKey(User, verbose_name='user', related_name='userId', on_delete=models.CASCADE)
+    affectedItemType = models.TextField(blank=True, null=True)
+    affectedItemId = models.IntegerField(default=0)
