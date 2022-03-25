@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.views import View
-from .models import Service, UserProfile, Event, ServiceApplication, UserRatings, NotifyUser, EventApplication, Tag
+from .models import Service, UserProfile, Event, ServiceApplication, UserRatings, NotifyUser, EventApplication, Tag, Log
 from .forms import ServiceForm, EventForm, ServiceApplicationForm, RatingForm, EventApplicationForm, ProfileForm, RequestForm
 from django.views.generic.edit import UpdateView, DeleteView
 from django.http import HttpResponseRedirect
@@ -19,15 +19,15 @@ class ServiceCreateView(LoginRequiredMixin, View):
         return render(request, 'social/service_create.html', context)
     
     def post(self, request, *args, **kwargs):
-        services = Service.objects.all().order_by('-createddate')
+        services = Service.objects.filter(isDeleted=False).order_by('-createddate')
         creater_user_profile = UserProfile.objects.get(pk=request.user)
         form = ServiceForm(request.POST, request.FILES)
         if form.is_valid():
             totalcredit = creater_user_profile.reservehour + creater_user_profile.credithour
             new_service = form.save(commit=False)
             if totalcredit + new_service.duration <= 15:
-                sameDateServices = Service.objects.filter(creater=request.user).filter(servicedate=new_service.servicedate)
-                sameDateEvents = Event.objects.filter(eventcreater=request.user).filter(eventdate=new_service.servicedate)
+                sameDateServices = Service.objects.filter(creater=request.user).filter(servicedate=new_service.servicedate).filter(isDeleted=False)
+                sameDateEvents = Event.objects.filter(eventcreater=request.user).filter(eventdate=new_service.servicedate).filter(isDeleted=False)
                 if len(sameDateServices) > 0 or  len(sameDateEvents) > 0:
                     messages.warning(request, 'You cannot create this service because you have one with the same datetime.')
                 else:
@@ -41,6 +41,7 @@ class ServiceCreateView(LoginRequiredMixin, View):
                         notified_user.save()
                     new_service.save()
                     messages.success(request, 'Service creation is successful.')
+                    log = Log.objects.create(operation="createservice", itemType="service", itemId=new_service.pk, userId=request.user)
             else:
                 messages.warning(request, 'You cannot create this service which causes credit hours exceed 15.')
         context = {
@@ -51,7 +52,7 @@ class ServiceCreateView(LoginRequiredMixin, View):
 
 class AllServicesView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        services = Service.objects.all().order_by('-createddate')
+        services = Service.objects.all().order_by('-createddate').filter(isDeleted=False)
         alltags = Tag.objects.all()
         form = ServiceForm()
         services_count = len(services)
@@ -66,7 +67,7 @@ class AllServicesView(LoginRequiredMixin, View):
 
 class CreatedServicesView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        services = Service.objects.filter(creater=request.user).order_by('-createddate')
+        services = Service.objects.filter(creater=request.user).filter(isDeleted=False).order_by('-createddate')
         form = ServiceForm()
         number_of_createdservice = len(services)
         currentTime = timezone.now()
@@ -79,7 +80,7 @@ class CreatedServicesView(LoginRequiredMixin, View):
 
 class AppliedServicesView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        services = Service.objects.all()
+        services = Service.objects.filter(isDeleted=False)
         serviceapplications = ServiceApplication.objects.all()
         servicesapplied = []
         for serviceapplication in serviceapplications:
@@ -165,7 +166,7 @@ class ServiceDetailView(View):
                         oldApplication.service.is_given = True
                         oldApplication.service.is_taken = True
                         oldApplication.save()
-                oldServices = Service.objects.filter(creater=request.user).filter(is_given=False).filter(is_taken=False)
+                oldServices = Service.objects.filter(creater=request.user).filter(is_given=False).filter(is_taken=False).filter(isDeleted=False)
                 applicationsForOldServiceCheck = ServiceApplication.objects.all()
                 for oldService in oldServices:
                     if oldService.servicedate <= timezone.now():
@@ -181,6 +182,7 @@ class ServiceDetailView(View):
                     new_application.service = service
                     new_application.approved = False
                     new_application.save()
+                    log = Log.objects.create(operation="createserviceapplication", itemType="service", itemId=service.pk, userId=request.user)
                     applicant_user_profile.reservehour = applicant_user_profile.reservehour - service.duration
                     applicant_user_profile.save()
                     notification = NotifyUser.objects.create(notify=service.creater, notification=str(new_application.applicant)+' applied to service '+str(new_application.service.name), offerType="service", offerPk=new_application.service.pk)
@@ -214,6 +216,7 @@ class ApplicationDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView)
         notified_user = UserProfile.objects.get(pk=service.creater)
         notified_user.unreadcount = notified_user.unreadcount+1
         notified_user.save()
+        log = Log.objects.create(operation="deleteserviceapplication", itemType="service", itemId=service.pk, affectedItemType="user", affectedItemId=application.applicant.pk, userId=self.request.user)
         return reverse_lazy('service-detail', kwargs={'pk': service_pk})
     
     def test_func(self):
@@ -236,6 +239,7 @@ class ApplicationEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         notified_user = UserProfile.objects.get(pk=application.applicant)
         notified_user.unreadcount = notified_user.unreadcount+1
         notified_user.save()
+        log = Log.objects.create(operation="editserviceapplication", itemType="service", itemId=application.service.pk, affectedItemType="user", affectedItemId=application.applicant.pk, userId=self.request.user)
         pk = self.kwargs['service_pk']
         return reverse_lazy('service-detail', kwargs={'pk': pk})
     
@@ -259,6 +263,7 @@ class ConfirmServiceTaken(LoginRequiredMixin, View):
         notified_user = UserProfile.objects.get(pk=service.creater)
         notified_user.unreadcount = notified_user.unreadcount+1
         notified_user.save()
+        log = Log.objects.create(operation="confirmtaken", itemType="service", itemId=service.pk, userId=request.user)
         return redirect('service-detail', pk=pk)
 
 class ConfirmServiceGiven(LoginRequiredMixin, View):
@@ -273,6 +278,7 @@ class ConfirmServiceGiven(LoginRequiredMixin, View):
             notified_user = UserProfile.objects.get(pk=application.applicant)
             notified_user.unreadcount = notified_user.unreadcount+1
             notified_user.save()
+        log = Log.objects.create(operation="confirmgiven", itemType="service", itemId=service.pk, userId=request.user)
         return redirect('service-detail', pk=pk)
     
 def CreditExchange(service):
@@ -284,11 +290,13 @@ def CreditExchange(service):
             service_giver.credithour = service_giver.credithour + service.duration
             service_giver.reservehour = service_giver.reservehour - service.duration
             service_giver.save()
+            log1 = Log.objects.create(operation="earncredit", itemType="service", itemId=service.pk, affectedItemType="user", affectedItemId=service.creater.pk, userId=service.creater)
             for application in applications:
                 service_taker = UserProfile.objects.get(pk=application.applicant.pk)
                 service_taker.credithour = service_taker.credithour - service.duration
                 service_taker.reservehour = service_taker.reservehour + service.duration
                 service_taker.save()
+                log2 = Log.objects.create(operation="spentcredit", itemType="service", itemId=service.pk, affectedItemType="user", affectedItemId=application.applicant.pk, userId=application.applicant)
             for notApplication in notConfirmedApplications:
                 applicant = UserProfile.objects.get(pk=notApplication.applicant.pk)
                 applicant.reservehour = applicant.reservehour + service.duration
@@ -341,6 +349,7 @@ class ServiceEditView(LoginRequiredMixin, View):
                     service.duration = edit_service.duration
                     service.category = edit_service.category
                     service.save()
+                    log = Log.objects.create(operation="editservice", itemType="service", itemId=service.pk, userId=request.user)
                     messages.success(request, 'Service editing is successful.')
                     applications = ServiceApplication.objects.filter(service=service)
                     for application in applications:
@@ -389,7 +398,15 @@ class ServiceDeleteView(LoginRequiredMixin, View):
             for notificationChange in notificationsToChange:
                 notificationChange.offerPk = 0
                 notificationChange.save()
-        service.delete()
+            log1 = Log.objects.create(operation="deleteserviceapplication", itemType="service", itemId=service.pk, affectedItemType="user", affectedItemId=application.applicant.pk, userId=request.user)
+            application.delete()
+        log2 = Log.objects.create(operation="deleteservice", itemType="service", itemId=service.pk, userId=request.user)
+        service.isDeleted = True
+        ratingsToEdit = UserRatings.objects.filter(service=service)
+        for ratingToEdit in ratingsToEdit:
+            ratingToEdit.service = None
+            ratingToEdit.save()
+        service.save()
         return redirect('allservices')
 
 class EventCreateView(LoginRequiredMixin, View):
@@ -401,17 +418,18 @@ class EventCreateView(LoginRequiredMixin, View):
         return render(request, 'social/event_create.html', context)
     
     def post(self, request, *args, **kwargs):
-        events = Event.objects.all().order_by('-eventcreateddate')
+        events = Event.objects.filter(isDeleted=False).order_by('-eventcreateddate')
         form = EventForm(request.POST, request.FILES)
         if form.is_valid():
             new_event = form.save(commit=False)
-            sameDateEvents = Event.objects.filter(eventcreater=request.user).filter(eventdate=new_event.eventdate)
-            sameDateServices = Service.objects.filter(creater=request.user).filter(servicedate=new_event.eventdate)
+            sameDateEvents = Event.objects.filter(eventcreater=request.user).filter(eventdate=new_event.eventdate).filter(isDeleted=False)
+            sameDateServices = Service.objects.filter(creater=request.user).filter(servicedate=new_event.eventdate).filter(isDeleted=False)
             if len(sameDateEvents) > 0 or len(sameDateServices) > 0:
                 messages.warning(request, 'You cannot create this event because you have one with the same datetime.')
             else:
                 new_event.eventcreater = request.user
                 new_event.save()
+                log = Log.objects.create(operation="createevent", itemType="event", itemId=new_event.pk, userId=request.user)
                 messages.success(request, 'Event creation is successful.')
         context = {
             'event_list': events,
@@ -421,7 +439,7 @@ class EventCreateView(LoginRequiredMixin, View):
 
 class AllEventsView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        events = Event.objects.all().order_by('-eventcreateddate')
+        events = Event.objects.filter(isDeleted=False).order_by('-eventcreateddate')
         form = EventForm()
         events_count = len(events)
         currentTime = timezone.now()
@@ -434,7 +452,7 @@ class AllEventsView(LoginRequiredMixin, View):
 
 class CreatedEventsView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        events = Event.objects.filter(eventcreater=request.user).order_by('-eventcreateddate')
+        events = Event.objects.filter(eventcreater=request.user).filter(isDeleted=False).order_by('-eventcreateddate')
         number_of_createdevent = len(events)
         form = EventForm()
         currentTime = timezone.now()
@@ -447,7 +465,7 @@ class CreatedEventsView(LoginRequiredMixin, View):
 
 class AppliedEventsView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        events = Event.objects.all()
+        events = Event.objects.filter(isDeleted=False)
         eventapplications = EventApplication.objects.all()
         eventsapplied = []
         for eventapplication in eventapplications:
@@ -479,6 +497,7 @@ class EventApplicationDeleteView(LoginRequiredMixin, UserPassesTestMixin, Delete
         notified_user = UserProfile.objects.get(pk=event.eventcreater)
         notified_user.unreadcount = notified_user.unreadcount+1
         notified_user.save()
+        log = Log.objects.create(operation="deleteeventapplication", itemType="event", itemId=event.pk, affectedItemType="user", affectedItemId=application.applicant.pk, userId=self.request.user)
         applicationsNext = EventApplication.objects.filter(event=event).filter(approved=False).order_by('-date')
         count = 0
         for applicationNext in applicationsNext:
@@ -564,6 +583,7 @@ class EventDetailView(View):
                 else:
                     new_application.approved = False
                 new_application.save()
+                log = Log.objects.create(operation="createeventapplication", itemType="event", itemId=event.pk, userId=request.user)
                 notification = NotifyUser.objects.create(notify=event.eventcreater, notification=str(new_application.applicant)+' applied to event '+str(new_application.event.eventname), offerType="event", offerPk=new_application.event.pk)
                 notified_user = UserProfile.objects.get(pk=event.eventcreater)
                 notified_user.unreadcount = notified_user.unreadcount+1
@@ -613,6 +633,7 @@ class EventEditView(LoginRequiredMixin, View):
                 event.eventcapacity = edit_event.eventcapacity
                 event.eventduration = edit_event.eventduration
                 event.save()
+                log = Log.objects.create(operation="editevent", itemType="event", itemId=event.pk, userId=request.user)
                 messages.success(request, 'Event editing is successful.')
                 for application in applications:
                     notification = NotifyUser.objects.create(notify=application.applicant, notification=str(event.eventname)+' event which you applied is edited.', offerType="event", offerPk=event.pk)
@@ -648,10 +669,14 @@ class EventDeleteView(LoginRequiredMixin, View):
             notified_user.unreadcount = notified_user.unreadcount+1
             notified_user.save()
             notificationsToChange = NotifyUser.objects.filter(notify=application.applicant).filter(hasRead=False).filter(offerType="event").filter(offerPk=pk)
+            log1 = Log.objects.create(operation="deleteeventapplication", itemType="event", itemId=event.pk, affectedItemType="user", affectedItemId=application.applicant.pk, userId=request.user)
+            application.delete()
             for notificationChange in notificationsToChange:
                 notificationChange.offerPk = 0
                 notificationChange.save()
-        event.delete()
+        log2 = Log.objects.create(operation="deleteevent", itemType="event", itemId=event.pk, userId=request.user)
+        event.isDeleted = True
+        event.save()
         return redirect('allevents')
 
 class ProfileView(View):
@@ -669,9 +694,9 @@ class ProfileView(View):
             else:
                 is_following = False
         number_of_followers = len(followers)
-        services = Service.objects.filter(creater=profile.user)
+        services = Service.objects.filter(creater=profile.user).filter(isDeleted=False)
         number_of_services = len(services)
-        events = Event.objects.filter(eventcreater=profile.user)
+        events = Event.objects.filter(eventcreater=profile.user).filter(isDeleted=False)
         number_of_events = len(events)
         comments = UserRatings.objects.filter(rated=profile.user)
         context = {
@@ -713,6 +738,7 @@ class ProfileEditView(LoginRequiredMixin, View):
             profile.birth_date = edit_profile.birth_date
             profile.location = edit_profile.location
             profile.save()
+            log = Log.objects.create(operation="editprofile", itemType="user", itemId=pk, userId=request.user)
             messages.success(request, 'Profile editing is successful.')
         context = {
             'form': form,
@@ -724,6 +750,7 @@ class AddFollower(LoginRequiredMixin, View):
         follow_pk = self.kwargs['followpk']
         profile = UserProfile.objects.get(pk=follow_pk)
         profile.followers.add(request.user)
+        log = Log.objects.create(operation="follow", itemType="user", itemId=follow_pk, userId=request.user)
         return redirect('profile', pk=follow_pk)
 
 class RemoveFollower(LoginRequiredMixin, View):
@@ -731,6 +758,7 @@ class RemoveFollower(LoginRequiredMixin, View):
         follow_pk = self.kwargs['followpk']
         profile = UserProfile.objects.get(pk=follow_pk)
         profile.followers.remove(request.user)
+        log = Log.objects.create(operation="unfollow", itemType="user", itemId=follow_pk, userId=request.user)
         return redirect('profile', pk=follow_pk)
 
 class RemoveMyFollower(LoginRequiredMixin, View):
@@ -739,6 +767,7 @@ class RemoveMyFollower(LoginRequiredMixin, View):
         follower = UserProfile.objects.get(pk=follower_pk).user
         profile = UserProfile.objects.get(pk=request.user.pk)
         profile.followers.remove(follower)
+        log = Log.objects.create(operation="removemyfollower", itemType="user", itemId=follower_pk, userId=request.user)
         return redirect('followers', pk=request.user.pk)
 
 class FollowersListView(LoginRequiredMixin, View):
@@ -783,6 +812,7 @@ class RateUser(LoginRequiredMixin, View):
             new_rating.service = service
             new_rating.rated = rated.user
             new_rating.save()
+            log = Log.objects.create(operation="createrating", itemType="service", itemId=service.pk, affectedItemType="user", affectedItemId=new_rating.rated.pk, userId=request.user)
             messages.success(request, 'Rating is successful.')
         return redirect('service-detail', pk=servicepk)
 
@@ -803,7 +833,8 @@ class RateUserEdit(LoginRequiredMixin, View):
             edit_rating = form.save(commit=False)
             rating.rating = edit_rating.rating
             rating.feedback = edit_rating.feedback
-            rating.save()        
+            rating.save()     
+            log = Log.objects.create(operation="editrating", itemType="service", itemId=rating.service.pk, affectedItemType="user", affectedItemId=rating.rated.pk, userId=request.user) 
             messages.success(request, 'Rating editing is successful.')
         context = {
             'form': form,
@@ -822,6 +853,7 @@ class RateUserDelete(LoginRequiredMixin, View):
     def post(self, request, *args, pk, **kwargs):
         rating = UserRatings.objects.get(pk=pk)
         service = rating.service
+        log = Log.objects.create(operation="deleterating", itemType="service", itemId=rating.service.pk, affectedItemType="user", affectedItemId=rating.rated.pk, userId=request.user)
         rating.delete()
         return redirect('service-detail', pk=service.pk)
 
@@ -836,8 +868,8 @@ class TimeLine(LoginRequiredMixin, View):
             thisFollowers = UserProfile.objects.get(pk=auser.pk).followers.all()
             if request.user in thisFollowers:
                 followedOnes.append(auser)
-        services = Service.objects.all().order_by('-createddate')
-        events = Event.objects.all().order_by('-eventcreateddate')
+        services = Service.objects.filter(isDeleted=False).order_by('-createddate')
+        events = Event.objects.filter(isDeleted=False).order_by('-eventcreateddate')
         for one in followedOnes:
             for service in services:
                 if service.creater == one.user :
@@ -860,7 +892,7 @@ class TimeLine(LoginRequiredMixin, View):
 class ServiceSearch(View):
     def get(self, request, *args, **kwargs):
         query = self.request.GET.get('query')
-        services = Service.objects.filter(Q(name__icontains=query))
+        services = Service.objects.filter(isDeleted=False).filter(Q(name__icontains=query))
         services_count = len(services)
         currentTime = timezone.now()
         alltags = Tag.objects.all()
@@ -875,7 +907,7 @@ class ServiceSearch(View):
 class EventSearch(View):
     def get(self, request, *args, **kwargs):
         query = self.request.GET.get('query')
-        events = Event.objects.filter(Q(eventname__icontains=query))
+        events = Event.objects.filter(isDeleted=False).filter(Q(eventname__icontains=query))
         events_count = len(events)
         currentTime = timezone.now()
         context = {
@@ -918,10 +950,11 @@ class RequestCreateView(LoginRequiredMixin, View):
             new_request.requester = request.user
             new_request.save()
             messages.success(request, 'Request creation is successful.')
-            notification = NotifyUser.objects.create(notify=new_request.toPerson, notification=str(new_request.requester.username)+' requested service tag '+str(new_request.tag), offerType="request", offerPk=new_request.pk)
-            notified_user = UserProfile.objects.get(pk=new_request.toPerson)
-            notified_user.unreadcount = notified_user.unreadcount+1
-            notified_user.save()
+            if(new_request.toPerson):
+                notification = NotifyUser.objects.create(notify=new_request.toPerson, notification=str(new_request.requester.username)+' requested service tag '+str(new_request.tag), offerType="request", offerPk=new_request.pk)
+                notified_user = UserProfile.objects.get(pk=new_request.toPerson)
+                notified_user.unreadcount = notified_user.unreadcount+1
+                notified_user.save()
         context = {
             'form': form,
         }
@@ -984,7 +1017,10 @@ class RequestDeleteView(LoginRequiredMixin, View):
         notificationsToChange = NotifyUser.objects.filter(notify=requestToDelete.toPerson).filter(hasRead=False).filter(offerType="request").filter(offerPk=pk)
         for notificationChange in notificationsToChange:
             notificationChange.offerPk = 0
-            notificationChange.save()
+            notificationChange.save() 
+        servicesToEdit = Service.objects.filter(category=requestToDelete.pk)
+        for serviceToEdit in servicesToEdit:
+            serviceToEdit.category = None
         requestToDelete.delete()
         return redirect('createdrequests')
 
@@ -992,9 +1028,9 @@ class ServiceFilter(View):
     def get(self, request, *args, **kwargs):
         category = self.request.GET.get('category')
         if category != "all":
-            services = Service.objects.filter(category=category)
+            services = Service.objects.filter(category=category).filter(isDeleted=False)
         else:
-            services = Service.objects.all().order_by('-createddate')
+            services = Service.objects.filter(isDeleted=False).order_by('-createddate')
         services_count = len(services)
         currentTime = timezone.now()
         alltags = Tag.objects.all()
@@ -1017,7 +1053,7 @@ class AllUsersView(LoginRequiredMixin, View):
 class UsersServicesListView(LoginRequiredMixin, View):
     def get(self, request, pk, *args, **kwargs):
         profile = UserProfile.objects.get(pk=pk)
-        services = Service.objects.filter(creater=profile.user)
+        services = Service.objects.filter(creater=profile.user).filter(isDeleted=False)
         number_of_services = len(services)
         context = {
             'services': services,
@@ -1029,7 +1065,7 @@ class UsersServicesListView(LoginRequiredMixin, View):
 class UsersEventsListView(LoginRequiredMixin, View):
     def get(self, request, pk, *args, **kwargs):
         profile = UserProfile.objects.get(pk=pk)
-        events = Event.objects.filter(eventcreater=profile.user)
+        events = Event.objects.filter(eventcreater=profile.user).filter(isDeleted=False)
         number_of_events = len(events)
         context = {
             'events': events,
@@ -1038,12 +1074,12 @@ class UsersEventsListView(LoginRequiredMixin, View):
         }
         return render(request, 'social/usersevents.html', context)
 
-
 class AddAdminView(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         profile = UserProfile.objects.get(pk=pk)
         profile.isAdmin = True
         profile.save()
+        log = Log.objects.create(operation="addadmin", itemType="user", itemId=pk, userId=request.user)
         return redirect('profile', pk=pk)
 
 class RemoveAdminView(LoginRequiredMixin, View):
@@ -1051,4 +1087,5 @@ class RemoveAdminView(LoginRequiredMixin, View):
         profile = UserProfile.objects.get(pk=pk)
         profile.isAdmin = False
         profile.save()
+        log = Log.objects.create(operation="removeadmin", itemType="user", itemId=pk, userId=request.user)
         return redirect('profile', pk=pk)
