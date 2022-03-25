@@ -64,7 +64,7 @@ INSTALLED_APPS = [
 
 LOCATION_FIELD = {
     'provider.google.api': '//maps.google.com/maps/api/js?sensor=false',
-    'provider.google.api_key': 'AIzaSyCCMF-2zpHGf_H_5mpYCmSShHkCwmZbZXY',
+    'provider.google.api_key': 'AIzaSyAAsiQaM2KE_UZ_k7gSQZfIGtF0lAiBCBQ',
     'provider.google.api_libraries': '',
     'provider.google.map.type': 'ROADMAP',
 }
