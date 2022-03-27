@@ -190,3 +190,43 @@ class LoggingTest(TestCase):
 
         response = self.client.post(reverse('service-detail', kwargs={'pk': test_service.pk}))
         self.assertEqual(len(Log.objects.filter(operation="createserviceapplication").filter(itemType="service").filter(itemId=test_service.pk).filter(userId=test_user2.pk)), 1)
+
+
+class DashboardViewTests(TestCase):
+    def test_service_detail_shown_proper(self):
+        test_user1 = User.objects.create_user(username='testuser1', password='1X<ISRUkw+tuK')
+        test_user2 = User.objects.create_user(username='testuser2', password='2HJ1vRV0Z&3iD')
+        test_user3 = User.objects.create_user(username='testuser3', password='52J1vs0ZiDdRV')
+        test_user1.profile.isAdmin = True
+        test_user1.save()
+        test_user2.save()
+        test_user3.save()
+        test_service = Service.objects.create(
+            creater=test_user1,
+            name="ServiceTest",
+            description="ServiceTestDescription",
+            picture='uploads/service_pictures/default.png',
+            location='41.0255493,28.9742571',
+            servicedate='2030-01-11 10:00:00+03',
+            capacity=5,
+            duration=1,
+            is_given=False,
+            is_taken=False
+        )
+        test_service.save()
+        test_service_application = ServiceApplication.objects.create(
+            applicant=test_user2,
+            service=test_service
+        )
+        test_service_application2 = ServiceApplication.objects.create(
+            applicant=test_user3,
+            service=test_service
+        )
+        test_service_application.save()
+        test_service_application2.save()
+
+        login = self.client.login(username='testuser1', password='1X<ISRUkw+tuK')
+        response = self.client.get(reverse('dashboard-service-detail', kwargs={'pk':test_service.pk}))
+        self.assertEqual(str(response.context['application_number']), '2')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('is_active' in response.context)
