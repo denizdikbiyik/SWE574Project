@@ -190,3 +190,43 @@ class LoggingTest(TestCase):
 
         response = self.client.post(reverse('service-detail', kwargs={'pk': test_service.pk}))
         self.assertEqual(len(Log.objects.filter(operation="createserviceapplication").filter(itemType="service").filter(itemId=test_service.pk).filter(userId=test_user2.pk)), 1)
+
+
+class DashboardViewTests(TestCase):
+    def test_event_detail_shown_proper(self):
+        test_user1 = User.objects.create_user(username='testuser1', password='1X<ISRUkw+tuK')
+        test_user2 = User.objects.create_user(username='testuser2', password='2HJ1vRV0Z&3iD')
+        test_user3 = User.objects.create_user(username='testuser3', password='52J1vs0ZiDdRV')
+        test_user1.profile.isAdmin = True
+        test_user1.save()
+        test_user2.save()
+        test_user3.save()
+        test_event = Event.objects.create(
+            eventcreater=test_user1,
+            eventname="EventTest",
+            eventdescription="EventTestDescription",
+            eventpicture='uploads/service_pictures/default.png',
+            eventlocation='41.0255493,28.9742571',
+            eventdate='2030-01-11 10:00:00+03',
+            eventcapacity=5,
+            eventduration=1
+        )
+        test_event.save()
+        test_event_application = EventApplication.objects.create(
+            applicant=test_user2,
+            event=test_event
+        )
+        test_event_application2 = EventApplication.objects.create(
+            applicant=test_user3,
+            event=test_event
+        )
+        test_event_application.save()
+        test_event_application2.save()
+
+        login = self.client.login(username='testuser1', password='1X<ISRUkw+tuK')
+        response = self.client.get(reverse('dashboard-event-detail', kwargs={'pk': test_event.pk}))
+        self.assertEqual(str(response.context['application_number']), '2')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('is_active' in response.context)
+        self.assertTrue('isDeleted' in response.context)
+

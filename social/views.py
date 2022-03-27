@@ -1089,3 +1089,24 @@ class RemoveAdminView(LoginRequiredMixin, View):
         profile.save()
         log = Log.objects.create(operation="removeadmin", itemType="user", itemId=pk, userId=request.user)
         return redirect('profile', pk=pk)
+
+class DashboardEventDetailView(View):
+    def get(self, request, pk, *args, **kwargs):
+        event = Event.objects.get(pk=pk)
+        applications = EventApplication.objects.filter(event=pk).order_by('-date')
+        number_of_accepted = len(applications.filter(approved=True))
+        application_number = len(applications)
+        is_active = True
+        if event.eventcreateddate <= timezone.now():
+            is_active = False
+        logs = Log.objects.filter(itemType="event").filter(itemId=pk)
+        context = {
+            'event': event,
+            'applications': applications,
+            'number_of_accepted': number_of_accepted,
+            'is_active': is_active,
+            'application_number': application_number,
+            'logs': logs,
+            'isDeleted': event.isDeleted
+        }
+        return render(request, 'social/dashboard_event_detail.html', context)
