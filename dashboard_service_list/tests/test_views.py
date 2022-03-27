@@ -8,20 +8,22 @@ from django.contrib.auth.models import User
 
 
 class TestViews(TestCase):
-
+    # P
     def test_url_accessible_by_name(self):
         client = Client()
         response = client.get(reverse("servicelist"))
         self.assertEquals(response.status_code, 200)
 
+    # P
     def test_view_uses_correct_template(self):
         client = Client()
         response = client.get(reverse("servicelist"))
-        self.assertTemplateUsed(response, "dasboard_list/servicelist.html")
+        self.assertTemplateUsed(response, "dasboard_service_list/servicelist.html")
 
+    # P
     def test_url_exists(self):
         client = Client()
-        response = client.get("/servicelist/")
+        response = client.get("/dashboard/servicelist/")
         self.assertEqual(response.status_code, 200)
 
     def test_make_context_for_service_list(self):
@@ -80,7 +82,8 @@ class TestViews(TestCase):
         field1 = "all"
         field2 = None
         field3 = None
-        context = make_context_for_service_list(field1, field2, field3)
+        field4 = "createddate"
+        context = make_context_for_service_list(field1, field2, field3, field4)
         service_count = context["services"].count()
         print(context["services"].count())
         self.assertEquals(service_count, 3)
@@ -89,7 +92,8 @@ class TestViews(TestCase):
         field1 = "week"
         field2 = None
         field3 = None
-        context = make_context_for_service_list(field1, field2, field3)
+        field4 = "createddate"
+        context = make_context_for_service_list(field1, field2, field3, field4)
         service_count = context["services"].count()
         print(context["services"].count())
         self.assertEquals(service_count, 1)
@@ -98,7 +102,8 @@ class TestViews(TestCase):
         field1 = "month"
         field2 = None
         field3 = None
-        context = make_context_for_service_list(field1, field2, field3)
+        field4 = "createddate"
+        context = make_context_for_service_list(field1, field2, field3, field4)
         service_count = context["services"].count()
         print(context["services"].count())
         self.assertEquals(service_count, 2)
@@ -107,7 +112,8 @@ class TestViews(TestCase):
         field1 = "select"
         field2 = '2020-01-10'
         field3 = '2020-01-12'
-        context = make_context_for_service_list(field1, field2, field3)
+        field4 = "createddate"
+        context = make_context_for_service_list(field1, field2, field3, field4)
         service_count = context["services"].count()
         print(context["services"].count())
         self.assertEquals(service_count, 1)

@@ -61,7 +61,7 @@ def list_services(request):
             context = make_context_for_service_list(form_field1, form_field2, form_field3, form_field4)
             context["form"] = form
             context["applications"] = applications
-            return render(request, 'dasboard_list/servicelist.html', context)
+            return render(request, 'dasboard_service_list/servicelist.html', context)
     else:
         form = PeriodPicker()
-    return render(request, 'dasboard_list/servicelist.html', {'form': form})
+    return render(request, 'dasboard_service_list/servicelist.html', {'form': form})

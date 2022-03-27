@@ -5,7 +5,6 @@ class DateInput(forms.DateInput):
     input_type = "date"
 
 
-activity_choices = [("service", "Services"), ("event", "Events")]
 period_choices = [("week", "Last 7 Days"), ("month", "Last 30 Days"), ("all", "All"), ("select", "Select Dates")]
 sort_choices = [("createddate", "Creation Date"), ("servicedate", "Delivery Date")]
 
