@@ -1,120 +1,120 @@
-{% load crispy_forms_filters %}
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'landing/base.html' %}
+
+{% block content %}
+    {% load crispy_forms_filters %}
 
 
-{% load bootstrap5 %}
-{# Load CSS and JavaScript #}
-{% bootstrap_css %}
-{% bootstrap_javascript %}
+    {% load bootstrap5 %}
+    {# Load CSS and JavaScript #}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
 
 
-<head>
-    <title>Services</title>
-</head>
-<body>
-<br>
-
-<div class="container bg-light">
-    <form method="POST">
-        <table>
-            <div class="form-group">
-                {{ form.period.label }}
-                {{ form.period }}
-            </div>
-            <br>
-            <div class="form-group">
-                {{ form.sort.label }}
-                {{ form.sort }}
-            </div>
-            <br>
-            <div class="form-group">
-                {% if is_pick_date == True %}
-                    {{ form.date_old.label }}
-                    {{ form.date_old }}
-                    {{ form.date_new.label }}
-                    {{ form.date_new }}
-
-                {% endif %}
-            </div>
-            <br>
-            {% csrf_token %}
-            <button type="submit" class="btn btn-sm btn-primary">Submit</button>
-        </table>
-    </form>
-</div>
-<br>
-
-<div class="container-sm">
-
-    {{ text }}
+    <head>
+        <title>Services</title>
+    </head>
+    <body>
     <br>
-    Number of Services found: {{ service_count }}
 
+    <div class="container bg-light">
+        <form method="POST">
+            <table>
+                <div class="form-group">
+                    {{ form.period.label }}
+                    {{ form.period }}
+                </div>
+                <br>
+                <div class="form-group">
+                    {{ form.sort.label }}
+                    {{ form.sort }}
+                </div>
+                <br>
+                <div class="form-group">
+                    {% if is_pick_date == True %}
+                        {{ form.date_old.label }}
+                        {{ form.date_old }}
+                        {{ form.date_new.label }}
+                        {{ form.date_new }}
 
-</div>
-<br>
-
-
-<div class="container-sm">
-    <table class="table table-bordered">
-        <thead>
-        <tr>
-            <th scope="col">#</th>
-            <th scope="col">Service Name</th>
-            <th scope="col">Creator</th>
-            <th scope="col">Creation Date</th>
-            <th scope="col">Delivery Date</th>
-            <th scope="col">Status</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for service in services %}
-            <tr>
-                <!--1. column -->
-                <th scope="row">{{ forloop.counter }}</th>
-                <!--2. column -->
-                <td><a href="{{ offer.get_absolute_url }}">{{ service.name }}</a></td>
-                <!--3. column -->
-                <td><a href="#">{{ service.creater }}</a></td> <!--3. column -->
-                <!--4. column -->
-                <td> {{ service.createddate }}</td>
-                <!--5. column -->
-                <td> {{ service.servicedate }}</td>
-                <!--6. column -->
-                <td>
-                    {% if service.is_given == True and service.is_taken == True %}
-                        Handshake
-                    {% elif service.is_given == True and service.is_taken == False %}
-                        Waiting for Service Taker confirmation.
-                    {% elif service.is_given == False and service.is_taken == True %}
-                        Waiting for Service Provider confirmation.
-                    {% elif service.is_given == False and service.is_taken == False %}
-                        {% for application in applications %}
-                            {% if application.service.id == service.id %}
-                                {% if application.approved == True %}
-                                    Approved Application(s)
-                                {% else %}
-                                    {% if forloop.last %}
-                                        {{ forloop.counter }} Application(s) Waiting
-                                    {% endif %}
-                                {% endif %}
-                            {% else %}
-                                No applications yet.
-                            {% endif %}
-                        {% endfor %}
                     {% endif %}
-                </td>
+                </div>
+                <br>
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+            </table>
+        </form>
+    </div>
+    <br>
+
+    <div class="container-sm">
+
+        {{ text }}
+        <br>
+        Number of Services found: {{ service_count }}
+
+
+    </div>
+    <br>
+
+
+    <div class="container-sm">
+        <table class="table table-bordered">
+            <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Service Name</th>
+                <th scope="col">Creator</th>
+                <th scope="col">Creation Date</th>
+                <th scope="col">Delivery Date</th>
+                <th scope="col">Status</th>
             </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-</div>
-<br>
+            </thead>
+            <tbody>
+            {% for service in services %}
+                <tr>
+                    <!--1. column -->
+                    <th scope="row">{{ forloop.counter }}</th>
+                    <!--2. column -->
+                    <td><a href="{{ offer.get_absolute_url }}">{{ service.name }}</a></td>
+                    <!--3. column -->
+                    <td><a href="#">{{ service.creater }}</a></td> <!--3. column -->
+                    <!--4. column -->
+                    <td> {{ service.createddate }}</td>
+                    <!--5. column -->
+                    <td> {{ service.servicedate }}</td>
+                    <!--6. column -->
+                    <td>
+                        {% if service.is_given == True and service.is_taken == True %}
+                            Handshake
+                        {% elif service.is_given == True and service.is_taken == False %}
+                            Waiting for Service Taker confirmation.
+                        {% elif service.is_given == False and service.is_taken == True %}
+                            Waiting for Service Provider confirmation.
+                        {% elif service.is_given == False and service.is_taken == False %}
+                            {% for application in applications %}
+                                {% if application.service.id == service.id %}
+                                    {% if application.approved == True %}
+                                        Approved Application(s)
+                                    {% else %}
+                                        {% if forloop.last %}
+                                            {{ forloop.counter }} Application(s) Waiting
+                                        {% endif %}
+                                    {% endif %}
+                                {% else %}
+                                    No applications yet.
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <br>
 
 
-</body>
+    </body>
+{% endblock content %}
 
-
-</html>
 
