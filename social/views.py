@@ -1097,7 +1097,7 @@ class DashboardEventDetailView(View):
         number_of_accepted = len(applications.filter(approved=True))
         application_number = len(applications)
         is_active = True
-        if event.eventcreateddate <= timezone.now():
+        if event.eventdate <= timezone.now():
             is_active = False
         logs = Log.objects.filter(itemType="event").filter(itemId=pk)
         context = {
@@ -1110,3 +1110,23 @@ class DashboardEventDetailView(View):
             'isDeleted': event.isDeleted
         }
         return render(request, 'social/dashboard_event_detail.html', context)
+      
+class DashboardServiceDetailView(View):
+    def get(self, request, pk, *args, **kwargs):
+        service = Service.objects.get(pk=pk)
+        applications = ServiceApplication.objects.filter(service=pk).order_by('-date')
+        number_of_accepted = len(applications.filter(approved=True))
+        application_number = len(applications)
+        is_active = True
+        if service.servicedate <= timezone.now():
+            is_active = False
+        logs = Log.objects.filter(itemType="service").filter(itemId=pk)
+        context = {
+            'service': service,
+            'applications': applications,
+            'number_of_accepted': number_of_accepted,
+            'is_active': is_active,
+            'application_number': application_number,
+            'logs': logs
+        }
+        return render(request, 'social/dashboard_service_detail.html', context)

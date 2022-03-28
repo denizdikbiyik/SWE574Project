@@ -20,7 +20,6 @@ env.read_env(env_file='CommUnitySocial/.env')
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
@@ -31,7 +30,6 @@ SECRET_KEY = env('DJANGO_SECRET_KEY', default='m!rockf+snbas+3$6iwo#54&x@&@rw7x=
 DEBUG = env('DJANGO_DEBUG', default=True)
 
 ALLOWED_HOSTS = ['*']
-
 
 # Application definition
 
@@ -59,7 +57,9 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'django_static_fontawesome',
     'corsheaders',
-    'location_field.apps.DefaultConfig'
+    'location_field.apps.DefaultConfig',
+    'dashboard_service_list',  # AT
+    "bootstrap5",  # AT
 ]
 
 LOCATION_FIELD = {
@@ -103,24 +103,22 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'CommUnitySocial.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
 DATABASES = {
     'default': {
-        'ENGINE': env('DB_ENGINE', default = 'django.db.backends.postgresql_psycopg2'),
-        'NAME': env('DB_NAME', default='CommUnitySocial'), 
-        'USER': env('DB_USER', default='postgres'), 
+        'ENGINE': env('DB_ENGINE', default='django.db.backends.postgresql_psycopg2'),
+        'NAME': env('DB_NAME', default='CommUnitySocial'),
+        'USER': env('DB_USER', default='postgres'),
         'PASSWORD': env('DB_PASSWORD', default='admin'),
-        #'HOST': env('DB_HOST', default='127.0.0.1'), 
-        'HOST': env('DB_HOST'), 
+        # 'HOST': env('DB_HOST', default='127.0.0.1'),
+        'HOST': env('DB_HOST'),
         'PORT': env('DB_PORT', default='5432'),
     }
 }
 
 CORS_ALLOW_ALL_ORIGINS = True
-
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
@@ -140,7 +138,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
 
@@ -153,7 +150,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = False
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/

@@ -6,18 +6,24 @@ from django.dispatch import receiver
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from location_field.models.plain import PlainLocationField
+from django.urls import reverse
+
 
 def validate_date(date):
     if date < timezone.now():
         raise ValidationError("Date cannot be in the past.")
 
+
 class Tag(models.Model):
     tag = models.TextField(default='', blank=False, null=False)
-    requester = models.ForeignKey(User, verbose_name='user', related_name='requester', blank=True, null=True, on_delete=models.SET_NULL)
-    toPerson = models.ForeignKey(User, verbose_name='user', related_name='toPerson', blank=True, null=True, on_delete=models.SET_NULL)
+    requester = models.ForeignKey(User, verbose_name='user', related_name='requester', blank=True, null=True,
+                                  on_delete=models.SET_NULL)
+    toPerson = models.ForeignKey(User, verbose_name='user', related_name='toPerson', blank=True, null=True,
+                                 on_delete=models.SET_NULL)
 
     def __str__(self):
         return self.tag
+
 
 class Service(models.Model):
     creater = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -31,14 +37,23 @@ class Service(models.Model):
     duration = models.IntegerField(default=1)
     is_given = models.BooleanField(default=False)
     is_taken = models.BooleanField(default=False)
-    category = models.ForeignKey(Tag, verbose_name='category', related_name='category', blank=True, null=True, on_delete=models.SET_NULL)
+    category = models.ForeignKey(Tag, verbose_name='category', related_name='category', blank=True, null=True,
+                                 on_delete=models.SET_NULL)
     isDeleted = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse('service_detail', args=[str(self.pk)])
+
 
 class ServiceApplication(models.Model):
     date = models.DateTimeField(default=timezone.now)
     applicant = models.ForeignKey(User, on_delete=models.CASCADE)
     service = models.ForeignKey('Service', on_delete=models.CASCADE)
     approved = models.BooleanField(default=False)
+
 
 class Event(models.Model):
     eventcreater = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -52,14 +67,17 @@ class Event(models.Model):
     eventduration = models.IntegerField(default=1)
     isDeleted = models.BooleanField(default=False)
 
+
 class EventApplication(models.Model):
     date = models.DateTimeField(default=timezone.now)
     applicant = models.ForeignKey(User, on_delete=models.CASCADE)
     event = models.ForeignKey('Event', on_delete=models.CASCADE)
     approved = models.BooleanField(default=False)
 
+
 class UserProfile(models.Model):
-    user = models.OneToOneField(User, primary_key=True, verbose_name='user', related_name='profile', on_delete=models.CASCADE)
+    user = models.OneToOneField(User, primary_key=True, verbose_name='user', related_name='profile',
+                                on_delete=models.CASCADE)
     name = models.CharField(max_length=30, blank=True, null=True)
     bio = models.TextField(max_length=500, blank=True, null=True)
     birth_date = models.DateTimeField(null=True, blank=True)
@@ -71,6 +89,7 @@ class UserProfile(models.Model):
     unreadcount = models.IntegerField(default=0)
     isAdmin = models.BooleanField(default=False)
 
+
 class UserRatings(models.Model):
     rated = models.ForeignKey(User, verbose_name='user', related_name='rated', on_delete=models.CASCADE)
     rater = models.ForeignKey(User, verbose_name='user', related_name='rater', on_delete=models.SET_NULL, null=True)
@@ -78,14 +97,17 @@ class UserRatings(models.Model):
     service = models.ForeignKey('Service', on_delete=models.SET_NULL, null=True)
     feedback = models.TextField(blank=True, null=True)
 
+
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
         UserProfile.objects.create(user=instance)
 
+
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
     instance.profile.save()
+
 
 class NotifyUser(models.Model):
     notify = models.ForeignKey(User, verbose_name='user', related_name='notify', on_delete=models.CASCADE)
@@ -93,6 +115,7 @@ class NotifyUser(models.Model):
     hasRead = models.BooleanField(default=False)
     offerType = models.TextField(blank=True, null=True)
     offerPk = models.IntegerField(default=0)
+
 
 class Log(models.Model):
     date = models.DateTimeField(default=timezone.now)
