@@ -1,60 +1,70 @@
 <div class="container">
     <nav class="navbar navbar-expand-lg navbar-light" style="background-color:#464b5e; border-radius: 5px;">
         <div class="container-fluid">
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo03" aria-controls="navbarTogglerDemo03" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-          </button>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo03"
+                    aria-controls="navbarTogglerDemo03" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-          <a style="color: white; font-weight: bold;" class="navbar-brand" href="{% url 'index' %}">CommUnity</a>
+            <a style="color: white; font-weight: bold;" class="navbar-brand" href="{% url 'index' %}">CommUnity</a>
 
-          <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-              {% if user.is_authenticated %}
-                <a style="color: white;" class="navbar-brand" href="{% url 'timeline' %}">TimeLine</a>
-                <a style="color: white;" class="navbar-brand" href="{% url 'allusers' %}">All Users</a>
-                <div class="nav-item dropdown">
-                  <a style="color: white;" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="buton" aria-expanded="false">Service</a>
-                  <ul class="dropdown-menu">
-                      <li><a class="dropdown-item" href="{% url 'allservices' %}">Services</a></li>
-                      <li><a class="dropdown-item" href="{% url 'service-create' %}">Create Service</a></li>
-                  </ul>
-                </div>
-                <div class="nav-item dropdown">
-                  <a style="color: white;" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="buton" aria-expanded="false">Event</a>
-                  <ul class="dropdown-menu">
-                      <li><a class="dropdown-item" href="{% url 'allevents' %}">Events</a></li>
-                      <li><a class="dropdown-item" href="{% url 'event-create' %}">Create Event</a></li>
-                  </ul>
-                </div>   
-                <div class="nav-item dropdown">
-                  <a style="color: white;" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="buton" aria-expanded="false">Request</a>
-                  <ul class="dropdown-menu">
-                      <li><a class="dropdown-item" href="{% url 'request-create' %}">Create Request</a></li>
-                      <li><a class="dropdown-item" href="{% url 'createdrequests' %}">Created Requests</a></li>
-                      <li><a class="dropdown-item" href="{% url 'requestsfromme' %}">Requests From Me</a></li>
-                  </ul>
-                </div>     
-              {% else %}
-                <a href="{% url 'account_login' %}" class="btn btn-light mr-2">Login</a>
-                <a style="color: white;" href="{% url 'account_signup' %}" class="btn btn-dark">Register</a> 
-              {% endif %} 
-            </ul>
-            {% if user.is_authenticated %}
-              <ul class="navbar-nav mb-2 mb-lg-0" style="color: white;">Credits: {{request.user.profile.credithour}} &nbsp;&nbsp;&nbsp;|</ul>
-              <a href="{% url 'notifications' %}" class="navbar-nav mb-2 mb-lg-0" style="color: white;">&nbsp;&nbsp;&nbsp; {{request.user.profile.unreadcount}} unread &nbsp;&nbsp;&nbsp;|</a> 
-              <div class="nav-item dropdown">
-                  <a style="color: white;" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="buton" aria-expanded="false">{{request.user.username}}</a>
-                  <ul class="dropdown-menu">
-                      <li><a class="dropdown-item" href="{% url 'profile' request.user.pk %}">Profile</a></li>
-                      <li><a class="dropdown-item" href="{% url 'createdservices' %}">Created Services</a></li>
-                      <li><a class="dropdown-item" href="{% url 'createdevents' %}">Created Events</a></li>
-                      <li><a class="dropdown-item" href="{% url 'appliedservices' %}">Applied Services</a></li>
-                      <li><a class="dropdown-item" href="{% url 'appliedevents' %}">Applied Events</a></li>
-                      <li><a class="dropdown-item" href="{% url 'account_logout' %}">Sign Out</a></li>
-                  </ul>
-              </div>  
-            {% endif %}
-          </div>
+            <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    {% if user.is_authenticated %}
+                        <a style="color: white;" class="navbar-brand" href="{% url 'servicelist' %}">Admin Dashboard</a>
+                        <a style="color: white;" class="navbar-brand" href="{% url 'timeline' %}">TimeLine</a>
+                        <a style="color: white;" class="navbar-brand" href="{% url 'allusers' %}">All Users</a>
+                        <div class="nav-item dropdown">
+                            <a style="color: white;" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"
+                               role="buton" aria-expanded="false">Service</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{% url 'allservices' %}">Services</a></li>
+                                <li><a class="dropdown-item" href="{% url 'service-create' %}">Create Service</a></li>
+                            </ul>
+                        </div>
+                        <div class="nav-item dropdown">
+                            <a style="color: white;" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"
+                               role="buton" aria-expanded="false">Event</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{% url 'allevents' %}">Events</a></li>
+                                <li><a class="dropdown-item" href="{% url 'event-create' %}">Create Event</a></li>
+                            </ul>
+                        </div>
+                        <div class="nav-item dropdown">
+                            <a style="color: white;" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"
+                               role="buton" aria-expanded="false">Request</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{% url 'request-create' %}">Create Request</a></li>
+                                <li><a class="dropdown-item" href="{% url 'createdrequests' %}">Created Requests</a>
+                                </li>
+                                <li><a class="dropdown-item" href="{% url 'requestsfromme' %}">Requests From Me</a></li>
+                            </ul>
+                        </div>
+                    {% else %}
+                        <a href="{% url 'account_login' %}" class="btn btn-light mr-2">Login</a>
+                        <a style="color: white;" href="{% url 'account_signup' %}" class="btn btn-dark">Register</a>
+                    {% endif %}
+                </ul>
+                {% if user.is_authenticated %}
+                    <ul class="navbar-nav mb-2 mb-lg-0" style="color: white;">
+                        Credits: {{ request.user.profile.credithour }} &nbsp;&nbsp;&nbsp;|
+                    </ul>
+                    <a href="{% url 'notifications' %}" class="navbar-nav mb-2 mb-lg-0" style="color: white;">&nbsp;&nbsp;&nbsp; {{ request.user.profile.unreadcount }}
+                        unread &nbsp;&nbsp;&nbsp;|</a>
+                    <div class="nav-item dropdown">
+                        <a style="color: white;" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="buton"
+                           aria-expanded="false">{{ request.user.username }}</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'profile' request.user.pk %}">Profile</a></li>
+                            <li><a class="dropdown-item" href="{% url 'createdservices' %}">Created Services</a></li>
+                            <li><a class="dropdown-item" href="{% url 'createdevents' %}">Created Events</a></li>
+                            <li><a class="dropdown-item" href="{% url 'appliedservices' %}">Applied Services</a></li>
+                            <li><a class="dropdown-item" href="{% url 'appliedevents' %}">Applied Events</a></li>
+                            <li><a class="dropdown-item" href="{% url 'account_logout' %}">Sign Out</a></li>
+                        </ul>
+                    </div>
+                {% endif %}
+            </div>
         </div>
-      </nav>
-    </div>
+    </nav>
+</div>
