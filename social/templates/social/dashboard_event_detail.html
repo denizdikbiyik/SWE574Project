@@ -1,0 +1,99 @@
+<head>
+    <script type="text/javascript" src="/admin/jsi18n/"></script>
+    <script type="text/javascript" src="/static/admin/js/vendor/jquery/jquery.js"></script>
+    <script type="text/javascript" src="/static/admin/js/calendar.js"></script>
+    <script type="text/javascript" src="/static/location_field/js/form.js"></script>
+    <script type="text/javascript" src="/static/admin/js/jquery.init.js"></script>
+    <script type="text/javascript" src="/static/admin/js/admin/DateTimeShortcuts.js"></script>
+    <script type="text/javascript" src="/static/admin/js/core.js"></script>
+    <script type="text/javascript" src="/static/admin/js/admin/RelatedObjectLookups.js"></script>
+    <script type="text/javascript" src="/static/admin/js/actions.js"></script>
+    <script type="text/javascript" src="/static/admin/js/urlify.js"></script>
+    <script type="text/javascript" src="/static/admin/js/prepopulate.js"></script>
+    <script type="text/javascript" src="/static/admin/js/vendor/xregexp/xregexp.js"></script>
+
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/static/admin/css/responsive.css">
+
+    <meta name="robots" content="NONE,NOARCHIVE">
+    <style>
+        table, th, tr, td {
+          border: 1px solid black;
+          border-collapse: collapse;
+        }
+    </style>
+</head>
+
+{% extends 'landing/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="container">
+        <div class="row mt-5">
+            <div class="col-md-5 col-sm-6">
+                <a onClick="javascript:history.go(-1);" class="btn btn-light">Back</a>
+            </div>
+        </div>
+        <div class="row justify-content-center mt-3">
+            <div class="col-md-5 col-sm-12 border-bottom">
+                <p style="text-align: start; color:navy;"> Event Name: <a style="text-decoration: none;" class="text-primary" href="{% url 'event-detail' event.pk %}">{{ event.eventname }}</a></p>
+                <p style="text-align: start; color:navy;"> Organizer: {{ event.eventcreater }} </p>
+                {% if is_active == True %}
+                    <p style="text-align: start; color:navy;"> Status: Passive </p>
+                {% else %}
+                    <p style="text-align: start; color:navy;"> Status: Active </p>
+                {% endif %}
+                {% if isDeleted == True %}
+                    <p style="text-align: start; color:navy;"> Deleted by Creator: Yes </p>
+                {% else %}
+                    <p style="text-align: start; color:navy;"> Deleted by Creator: No </p>
+                {% endif %}
+                <p style="text-align: start; color:navy;"> Number of Applications: {{ application_number }} </p>
+            </div>
+        </div>
+        <div class="row justify-content-center mt-3">
+            <div class="col-md-5 col-sm-12 border-bottom">
+                {% if is_active == True %}
+                    <table>
+                        <tr>
+                            <th>Applications</th>
+                        </tr>
+                        <tr>
+                            <th>Applicant</th>
+                            <th>Status</th>
+                        </tr>
+                        {% for application in applications %}
+                            <tr>
+                                <td>{{ application.applicant }}</td>
+                                {% if application.approved == True %}
+                                    <td>Approved</td>
+                                {% else %}
+                                    <td>Not Approved/Pending</td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% endif %}
+            </div>
+        </div>
+        <div class="row justify-content-center mt-3">
+            <div class="col-md-5 col-sm-12 border-bottom">
+                <table>
+                  <tr>
+                    <th>Activity Type</th>
+                    <th>Datetime</th>
+                    <th>User</th>
+                  </tr>
+                    {% for log in logs %}
+                        <tr>
+                            <td>{{ log.operation }}</td>
+                            <td>{{ log.date }}</td>
+                            <td>{{ log.userId }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+
+    </div>
+{% endblock content %}

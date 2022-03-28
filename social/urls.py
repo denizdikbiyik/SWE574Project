@@ -1,12 +1,5 @@
 from django.urls import path
-from .views import ServiceCreateView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventCreateView, \
-    EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, AddFollower, RemoveFollower, \
-    ApplicationDeleteView, ApplicationEditView, FollowersListView, RemoveMyFollower, TimeLine, AllServicesView, \
-    AllEventsView, CreatedServicesView, CreatedEventsView, AppliedServicesView, ConfirmServiceTaken, \
-    ConfirmServiceGiven, RateUser, RateUserDelete, RateUserEdit, ServiceSearch, EventSearch, Notifications, \
-    EventApplicationDeleteView, AppliedEventsView, RequestCreateView, CreatedRequestsView, RequestsFromMeView, \
-    RequestDetailView, RequestDeleteView, ServiceFilter, AllUsersView, UsersServicesListView, UsersEventsListView, \
-    AddAdminView, RemoveAdminView, DashboardServiceDetailView
+from .views import ServiceCreateView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventCreateView, EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, AddFollower, RemoveFollower, ApplicationDeleteView, ApplicationEditView, FollowersListView, RemoveMyFollower, TimeLine, AllServicesView, AllEventsView, CreatedServicesView, CreatedEventsView, AppliedServicesView, ConfirmServiceTaken, ConfirmServiceGiven, RateUser, RateUserDelete, RateUserEdit, ServiceSearch, EventSearch, Notifications, EventApplicationDeleteView, AppliedEventsView, RequestCreateView, CreatedRequestsView, RequestsFromMeView, RequestDetailView, RequestDeleteView, ServiceFilter, AllUsersView, UsersServicesListView, UsersEventsListView, AddAdminView, RemoveAdminView, DashboardServiceDetailView, DashboardEventDetailView
 
 urlpatterns = [
     path('service/create', ServiceCreateView.as_view(), name='service-create'),
@@ -55,5 +48,6 @@ urlpatterns = [
     path('profile/<int:pk>/admins/add/', AddAdminView.as_view(), name='add-admin'),
     path('profile/<int:pk>/admins/remove/', RemoveAdminView.as_view(), name='remove-admin'),
 
-    path('dashboard/service/<int:pk>', DashboardServiceDetailView.as_view(), name='dashboard-service-detail')
+    path('dashboard/service/<int:pk>', DashboardServiceDetailView.as_view(), name='dashboard-service-detail'),
+    path('dashboard/event/<int:pk>', DashboardEventDetailView.as_view(), name='dashboard-event-detail')
 ]
