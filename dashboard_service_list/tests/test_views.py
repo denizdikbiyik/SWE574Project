@@ -6,6 +6,8 @@ from dashboard_service_list.views import make_context_for_service_list
 from social.models import Service
 from django.contrib.auth.models import User
 
+from django.utils import timezone
+
 
 class TestViews(TestCase):
     # P
@@ -49,7 +51,7 @@ class TestViews(TestCase):
         # 20.03.2022 all & month & week
         test_service2 = Service.objects.create(
             creater=test_user1,
-            createddate='2022-03-20 10:00:00+03',
+            createddate=timezone.now(),
             name="ServiceTest2",
             description="ServiceTestDescription",
             picture='uploads/service_pictures/default.png',
