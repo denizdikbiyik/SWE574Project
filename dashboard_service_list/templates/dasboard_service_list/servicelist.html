@@ -67,7 +67,7 @@
                     <!--1. column -->
                     <th scope="row">{{ forloop.counter }}</th>
                     <!--2. column -->
-                    <td><a href="{{ offer.get_absolute_url }}">{{ service.name }}</a></td>
+                    <td><a href="{{ service.get_absolute_url }}">{{ service.name }}</a></td>
                     <!--3. column -->
                     <td><a href="#">{{ service.creater }}</a></td> <!--3. column -->
                     <!--4. column -->
@@ -83,19 +83,21 @@
                         {% elif service.is_given == False and service.is_taken == True %}
                             Waiting for Service Provider confirmation.
                         {% elif service.is_given == False and service.is_taken == False %}
-                            {% for application in applications %}
-                                {% if application.service.id == service.id %}
-                                    {% if application.approved == True %}
-                                        Approved Application(s)
-                                    {% else %}
-                                        {% if forloop.last %}
-                                            {{ forloop.counter }} Application(s) Waiting
+                            {% if applicationslength == 0 %}
+                                No applications yet.
+                            {% else %}
+                                {% for application in applications %}
+                                    {% if application.service.id == service.id %}
+                                        {% if application.approved == True %}
+                                            Approved Application(s)
+                                        {% else %}
+                                            {% if forloop.last %}
+                                                {{ forloop.counter }} Application(s) Waiting
+                                            {% endif %}
                                         {% endif %}
                                     {% endif %}
-                                {% else %}
-                                    No applications yet.
-                                {% endif %}
-                            {% endfor %}
+                                {% endfor %}
+                            {% endif %}
                         {% endif %}
                     </td>
                 </tr>

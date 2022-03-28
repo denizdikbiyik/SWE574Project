@@ -3,7 +3,6 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.utils import timezone
 from django.core.exceptions import ValidationError
 from location_field.models.plain import PlainLocationField
 from django.urls import reverse
@@ -45,7 +44,7 @@ class Service(models.Model):
         return self.name
 
     def get_absolute_url(self):
-        return reverse('service_detail', args=[str(self.pk)])
+        return reverse('dashboard-service-detail', args=[str(self.pk)])
 
 
 class ServiceApplication(models.Model):
