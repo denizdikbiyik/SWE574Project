@@ -1,6 +1,12 @@
 from django.test import TestCase
 from django.urls import reverse, resolve
-from social.views import ServiceCreateView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventCreateView, EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, AddFollower, RemoveFollower, ApplicationDeleteView, ApplicationEditView, FollowersListView, RemoveMyFollower, TimeLine, AllServicesView, AllEventsView, CreatedServicesView, CreatedEventsView, AppliedServicesView, ConfirmServiceTaken, ConfirmServiceGiven, RateUser, RateUserDelete, RateUserEdit, ServiceSearch, EventSearch, Notifications, EventApplicationDeleteView, AppliedEventsView, RequestCreateView, CreatedRequestsView, RequestsFromMeView, RequestDetailView, RequestDeleteView, ServiceFilter, DashboardServiceDetailView
+from social.views import ServiceCreateView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventCreateView, \
+    EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, AddFollower, RemoveFollower, \
+    ApplicationDeleteView, ApplicationEditView, FollowersListView, RemoveMyFollower, TimeLine, AllServicesView, \
+    AllEventsView, CreatedServicesView, CreatedEventsView, AppliedServicesView, ConfirmServiceTaken, \
+    ConfirmServiceGiven, RateUser, RateUserDelete, RateUserEdit, ServiceSearch, EventSearch, Notifications, \
+    EventApplicationDeleteView, AppliedEventsView, RequestCreateView, CreatedRequestsView, RequestsFromMeView, \
+    RequestDetailView, RequestDeleteView, ServiceFilter, DashboardServiceDetailView, DashboardEventDetailView
 
 from django.contrib.auth.models import User
 from social.models import Service, UserProfile, Event, ServiceApplication, UserRatings, NotifyUser, EventApplication, Tag
@@ -398,6 +404,13 @@ class URLTests(TestCase):
     def test_service_filter_url_resolves(self):
         url = reverse('service-filter')
         self.assertEquals(resolve(url).func.view_class, ServiceFilter)
+
+    def test_dashboard_event_detail_url_resolves(self):
+        test_user1 = User.objects.create_user(username='testuser1', password='1X<ISRUkw+tuK')
+        test_user1.profile.isAdmin = True
+        test_user1.save()
+        url = reverse('dashboard-event-detail', args=[str(test_user1.pk)])
+        self.assertEquals(resolve(url).func.view_class, DashboardEventDetailView)
 
     def test_dashboard_service_detail_url_resolves(self):
         test_user1 = User.objects.create_user(username='testuser1', password='1X<ISRUkw+tuK')
