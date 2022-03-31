@@ -39,6 +39,7 @@ class Service(models.Model):
     category = models.ForeignKey(Tag, verbose_name='category', related_name='category', blank=True, null=True,
                                  on_delete=models.SET_NULL)
     isDeleted = models.BooleanField(default=False)
+    isActive = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name
@@ -65,6 +66,7 @@ class Event(models.Model):
     eventcapacity = models.IntegerField(default=1)
     eventduration = models.IntegerField(default=1)
     isDeleted = models.BooleanField(default=False)
+    isActive = models.BooleanField(default=True)
 
 
 class EventApplication(models.Model):
