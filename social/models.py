@@ -68,6 +68,12 @@ class Event(models.Model):
     isDeleted = models.BooleanField(default=False)
     isActive = models.BooleanField(default=True)
 
+    def __str__(self):
+        return self.eventname
+
+    def get_absolute_url(self):
+        return reverse('dashboard-event-detail', args=[str(self.pk)])
+
 
 class EventApplication(models.Model):
     date = models.DateTimeField(default=timezone.now)
