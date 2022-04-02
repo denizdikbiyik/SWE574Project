@@ -64,5 +64,8 @@ def list_services(request):
             context["applicationslength"] = len(applications)
             return render(request, 'dasboard_service_list/servicelist.html', context)
     else:
-        form = PeriodPicker()
+        if request.user.profile.isAdmin:
+            form = PeriodPicker()
+        else:
+            return redirect('index')
     return render(request, 'dasboard_service_list/servicelist.html', {'form': form})

@@ -132,3 +132,10 @@ class Log(models.Model):
     userId = models.ForeignKey(User, verbose_name='user', related_name='userId', on_delete=models.CASCADE)
     affectedItemType = models.TextField(blank=True, null=True)
     affectedItemId = models.IntegerField(default=0)
+
+class Communication(models.Model):
+    date = models.DateTimeField(default=timezone.now)
+    itemType = models.TextField(blank=True, null=True)
+    itemId = models.IntegerField(default=0)
+    communicated = models.ForeignKey(User, verbose_name='user', related_name='communicated', on_delete=models.CASCADE)
+    message = models.TextField(blank=True, null=True)

@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.views import View
-from .models import Service, UserProfile, Event, ServiceApplication, UserRatings, NotifyUser, EventApplication, Tag, Log
+from .models import Service, UserProfile, Event, ServiceApplication, UserRatings, NotifyUser, EventApplication, Tag, Log, Communication
 from .forms import ServiceForm, EventForm, ServiceApplicationForm, RatingForm, EventApplicationForm, ProfileForm, RequestForm
 from django.views.generic.edit import UpdateView, DeleteView
 from django.http import HttpResponseRedirect
@@ -129,6 +129,8 @@ class ServiceDetailView(View):
             else:
                 is_applied = False
                 is_accepted = False
+        allCommunications = Communication.objects.filter(itemType="service").filter(itemId=service.pk)
+        allCommunicationsLength = len(allCommunications)
         context = {
             'service': service,
             'applications': applications,
@@ -138,7 +140,9 @@ class ServiceDetailView(View):
             'is_accepted': is_accepted,
             'is_active': is_active,
             'application_number': application_number,
-            'accepted_applications': accepted_applications
+            'accepted_applications': accepted_applications,
+            'allCommunications': allCommunications,
+            'allCommunicationsLength': allCommunicationsLength
         }
         return render(request, 'social/service_detail.html', context)
 
@@ -1130,3 +1134,119 @@ class DashboardServiceDetailView(View):
             'logs': logs
         }
         return render(request, 'social/dashboard_service_detail.html', context)
+
+class ServiceDetailCommunicationView(View):
+    def get(self, request, pk, *args, **kwargs):
+        service = Service.objects.get(pk=pk)
+        query = self.request.GET.get('query')
+        if(query == ""):
+            messages.warning(request, 'Please write something to post.')
+        else:
+            communication = Communication.objects.create(itemType="service", itemId=service.pk, communicated=request.user, message=query)
+            notification = NotifyUser.objects.create(notify=service.creater, notification=str(request.user)+' commented on '+str(service.name), offerType="service", offerPk=service.pk)
+            notified_user = UserProfile.objects.get(pk=service.creater)
+            notified_user.unreadcount = notified_user.unreadcount+1
+            notified_user.save()
+            log = Log.objects.create(operation="createservicecommunication", itemType="service", itemId=service.pk, userId=request.user)
+        notifications = NotifyUser.objects.filter(notify=request.user).filter(offerType="service").filter(offerPk=pk).filter(hasRead=False)
+        countNotifications = len(notifications)
+        for notification in notifications:
+            notification.hasRead = True
+            notification.save()
+        userNotified = UserProfile.objects.get(pk=request.user.profile)
+        userNotified.unreadcount = userNotified.unreadcount - countNotifications
+        userNotified.save()
+        applications = ServiceApplication.objects.filter(service=pk).order_by('-date')
+        applications_this = applications.filter(applicant=request.user)
+        number_of_accepted = len(applications.filter(approved=True))
+        accepted_applications = applications.filter(approved=True)
+        application_number = len(applications)
+        is_active = True
+        if service.servicedate <= timezone.now():
+            is_active = False
+        if len(applications) == 0:
+            is_applied = False
+            is_accepted = False
+        for application in applications:
+            if application.applicant == request.user:
+                is_applied = True
+                is_accepted = application.approved
+                break
+            else:
+                is_applied = False
+                is_accepted = False
+        allCommunications = Communication.objects.filter(itemType="service").filter(itemId=service.pk)
+        allCommunicationsLength = len(allCommunications)
+        context = {
+            'service': service,
+            'applications': applications,
+            'number_of_accepted': number_of_accepted,
+            'is_applied': is_applied,
+            'applications_this': applications_this,
+            'is_accepted': is_accepted,
+            'is_active': is_active,
+            'application_number': application_number,
+            'accepted_applications': accepted_applications,
+            'allCommunications': allCommunications,
+            'allCommunicationsLength': allCommunicationsLength
+        }
+        return render(request, 'social/service_detail_communication.html', context)
+
+    def post(self, request, pk, *args, **kwargs):
+        service = Service.objects.get(pk=pk)
+        form = ServiceApplicationForm(request.POST)
+        applications = ServiceApplication.objects.filter(service=pk).order_by('-date')
+        applications_this = applications.filter(applicant=request.user)
+        number_of_accepted = len(applications.filter(approved=True))
+        applicant_user_profile = UserProfile.objects.get(pk=request.user)
+        if len(applications) == 0:
+            is_applied = False
+        for application in applications:
+            if application.applicant == request.user:
+                is_applied = True
+                break
+            else:
+                is_applied = False
+        if form.is_valid():
+            if is_applied == False:
+                oldApplications = ServiceApplication.objects.filter(applicant=request.user).filter(approved=False)
+                for oldApplication in oldApplications:
+                    if oldApplication.service.servicedate <= timezone.now() and oldApplication.service.is_given == False and oldApplication.service.is_taken == False:
+                        applicant_user_profile.reservehour = applicant_user_profile.reservehour + oldApplication.service.duration
+                        oldApplication.service.is_given = True
+                        oldApplication.service.is_taken = True
+                        oldApplication.save()
+                oldServices = Service.objects.filter(creater=request.user).filter(is_given=False).filter(is_taken=False).filter(isDeleted=False)
+                applicationsForOldServiceCheck = ServiceApplication.objects.all()
+                for oldService in oldServices:
+                    if oldService.servicedate <= timezone.now():
+                        if len(applicationsForOldServiceCheck.filter(service=oldService)) == 0 or len(applicationsForOldServiceCheck.filter(service=oldService).filter(approved=True)) == 0:
+                            applicant_user_profile.reservehour = applicant_user_profile.reservehour - oldService.duration
+                            oldService.is_taken = True
+                            oldService.is_given = True
+                            oldService.save()
+                totalcredit = applicant_user_profile.reservehour + applicant_user_profile.credithour
+                if totalcredit >= service.duration:
+                    new_application = form.save(commit=False)
+                    new_application.applicant = request.user
+                    new_application.service = service
+                    new_application.approved = False
+                    new_application.save()
+                    log = Log.objects.create(operation="createserviceapplication", itemType="service", itemId=service.pk, userId=request.user)
+                    applicant_user_profile.reservehour = applicant_user_profile.reservehour - service.duration
+                    applicant_user_profile.save()
+                    notification = NotifyUser.objects.create(notify=service.creater, notification=str(new_application.applicant)+' applied to service '+str(new_application.service.name), offerType="service", offerPk=new_application.service.pk)
+                    notified_user = UserProfile.objects.get(pk=service.creater)
+                    notified_user.unreadcount = notified_user.unreadcount+1
+                    notified_user.save()
+                else:
+                    messages.warning(request, 'You do not have enough credit to apply.')
+        context = {
+            'service': service,
+            'form': form,
+            'applications': applications,
+            'number_of_accepted': number_of_accepted,
+            'is_applied': is_applied,
+            'applications_this': applications_this,
+        }
+        return redirect('service-detail-communication', pk=service.pk)
