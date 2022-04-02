@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'location_field.apps.DefaultConfig',
     'dashboard_service_list',  # AT
     "bootstrap5",  # AT
+    "dashboard_event_list",  # AT
 ]
 
 LOCATION_FIELD = {
@@ -106,6 +107,7 @@ WSGI_APPLICATION = 'CommUnitySocial.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
+
 DATABASES = {
     'default': {
         'ENGINE': env('DB_ENGINE', default='django.db.backends.postgresql_psycopg2'),
@@ -117,6 +119,15 @@ DATABASES = {
         'PORT': env('DB_PORT', default='5432'),
     }
 }
+
+'''
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'swe574'
+    }
+}
+'''
 
 CORS_ALLOW_ALL_ORIGINS = True
 

@@ -1,0 +1,92 @@
+{% extends 'landing/base.html' %}
+
+{% block content %}
+    {% load crispy_forms_filters %}
+    <head>
+        <title>Events</title>
+    </head>
+    <body>
+    <br>
+
+    <div class="container bg-light">
+        <form method="POST">
+            <table>
+                <div>Events:</div>
+                <br>
+                <div class="form-group">
+                    {{ form.period.label }}
+                    {{ form.period }}
+                </div>
+                <br>
+                <div class="form-group">
+                    {{ form.sort.label }}
+                    {{ form.sort }}
+                </div>
+                <br>
+                <div class="form-group">
+                    {% if is_pick_date == True %}
+                        {{ form.date_old.label }}
+                        {{ form.date_old }}
+                        {{ form.date_new.label }}
+                        {{ form.date_new }}
+
+                    {% endif %}
+                </div>
+                <br>
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+            </table>
+        </form>
+    </div>
+    <br>
+
+    <div class="container-sm">
+
+        {{ text }}
+        <br>
+        {% if clear_list == False %}
+            Number of Events found: {{ event_count }}
+        {% endif %}
+
+
+    </div>
+    <br>
+
+
+    <div class="container-sm">
+        <table class="table table-bordered">
+            <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Event Name</th>
+                <th scope="col">Creator</th>
+                <th scope="col">Creation Date</th>
+                <th scope="col">Event Date</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for event in events %}
+                <tr>
+                    <!--1. column -->
+                    <th scope="row">{{ forloop.counter }}</th>
+                    <!--2. column -->
+                    <td><a href="{{ offer.get_absolute_url }}">{{ event.eventname }}</a></td>
+                    <!--3. column -->
+                    <td><a href="#">{{ event.eventcreater }}</a></td> <!--3. column -->
+                    <!--4. column -->
+                    <td> {{ event.eventcreateddate }}</td>
+                    <!--5. column -->
+                    <td> {{ event.eventdate }}</td>
+
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <br>
+
+
+    </body>
+{% endblock content %}
+
+
