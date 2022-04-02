@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'dashboard_service_list',  # AT
     "bootstrap5",  # AT
     "dashboard_event_list",  # AT
+    'dashboard_user_list',
 ]
 
 LOCATION_FIELD = {
