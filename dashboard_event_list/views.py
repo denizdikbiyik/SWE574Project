@@ -2,7 +2,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import generic
 
-from social.models import Service, ServiceApplication, Event, EventApplication
+from social.models import Service, ServiceApplication, Event, EventApplication, User
 from django.core.paginator import Paginator
 import datetime
 
@@ -71,5 +71,8 @@ def list_events(request):
                 context["clear_list"] = False
             return render(request, 'dashboard_event_list/eventlist.html', context)
     else:
-        form = PeriodPicker()
+        if request.user.profile.isAdmin:
+            form = PeriodPicker()
+        else:
+            return redirect('index')
     return render(request, 'dashboard_event_list/eventlist.html', {'form': form})
