@@ -220,14 +220,15 @@
                     </div>
                     {% endfor %}
                 {% endif %}
-                <p></p>
-                <form class="d-flex" method="GET" action="{% url 'service-detail-communication' service.pk %}">
-                    <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Message" aria-label="Message" aria-describedby="basic-addon1" name='query' value="{{ request.GET.query }}">
-                        <button style="border: none; background-color: white; box-shadow: none" type="submit">Add Message</button>
-                    </div>
-                </form>
-
+                {% if is_active %}
+                    <p></p>
+                    <form class="d-flex" method="GET" action="{% url 'service-detail-communication' service.pk %}">
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Message" aria-label="Message" aria-describedby="basic-addon1" name='query' value="{{ request.GET.query }}">
+                            <button style="border: none; background-color: white; box-shadow: none" type="submit">Add Message</button>
+                        </div>
+                    </form>
+                {% endif %}
             </div>
         </div>
 
