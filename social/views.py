@@ -1104,6 +1104,16 @@ class DashboardEventDetailView(View):
         if event.eventcreateddate <= timezone.now():
             is_active = False
         logs = Log.objects.filter(itemType="event").filter(itemId=pk)
+        conversion = {'createevent': 'Event Creation',
+                      'createeventapplication': 'Event Application Creation',
+                      'editevent': 'Event Edition',
+                      'deleteevent': 'Event Deletion',
+                      'editserviceapplication': 'Service Application Edition',
+                      'deleteeventapplication': 'Event Application Deletion',
+                      'spentcredit': 'Credit Spent',
+                      'createeventcommunication': 'Message Sent'}
+        for log in logs:
+            log.operation = conversion[log.operation]
         context = {
             'event': event,
             'applications': applications,
@@ -1125,6 +1135,23 @@ class DashboardServiceDetailView(View):
         if service.servicedate <= timezone.now():
             is_active = False
         logs = Log.objects.filter(itemType="service").filter(itemId=pk)
+        conversion = {'createservice': 'Service Creation',
+                      'createserviceapplication': 'Service Application Creation',
+                      'editservice': 'Service Edition',
+                      'deleteservice': 'Service Deletion',
+                      'editserviceapplication': 'Service Application Edition',
+                      'deleteserviceapplication': 'Service Application Deletion',
+                      'confirmtaken': 'Confirmation of Service Taken',
+                      'confirmgiven': 'Confirmation of Service Given',
+                      'earncredit': 'Credit Earned',
+                      'spentcredit': 'Credit Spent',
+                      'createservicecommunication': 'Message Sent',
+                      'createrating': 'Rating Created',
+                      'editrating': 'Rating Edited',
+                      'deleterating': 'Rating Deleted'}
+        for log in logs:
+            log.operation = conversion[log.operation]
+
         context = {
             'service': service,
             'applications': applications,
