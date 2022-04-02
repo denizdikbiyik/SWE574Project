@@ -1,0 +1,86 @@
+{% extends 'landing/base.html' %}
+
+{% block content %}
+    {% load crispy_forms_filters %}
+    <head>
+        <title>Users</title>
+    </head>
+    <body>
+    <br>
+
+    <div class="container">
+        <form method="POST">
+            <table>
+                <div class="form-group">
+                    {{ form.period.label }}
+                    {{ form.period }}
+                </div>
+                <br>
+                <div class="form-group">
+                    {{ form.sort.label }}
+                    {{ form.sort }}
+                </div>
+                <br>
+                <div class="form-group">
+                    {% if is_pick_date == True %}
+                        {{ form.date_old.label }}
+                        {{ form.date_old }}
+                        {{ form.date_new.label }}
+                        {{ form.date_new }}
+
+                    {% endif %}
+                </div>
+                <br>
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+            </table>
+        </form>
+    </div>
+    <br>
+
+    <div class="container-sm">
+
+        {{ text }}
+        <br>
+        Number of Users found: {{ user_count }}
+
+
+    </div>
+    <br>
+
+
+    <div class="container-sm">
+        <table class="table table-bordered">
+            <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">User Name</th>
+                <th scope="col">Subscribed Date</th>
+               
+
+            </tr>
+            </thead>
+            <tbody>
+            {% for user in users %}
+                <tr>
+                    <!--1. column -->
+                    <th scope="row">{{ forloop.counter }}</th>
+                    <!--2. column -->
+                    <td><a href="{% url 'profile' user.pk %}">{{ user.username }}</a></td>
+                    <!--3. column -->
+                    <td><a>{{ user.date_joined }}</a></td> <!--3. column -->
+
+
+
+
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <br>
+
+
+    </body>
+{% endblock content %}
+
