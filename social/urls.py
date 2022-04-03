@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import ServiceCreateView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventCreateView, EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, AddFollower, RemoveFollower, ApplicationDeleteView, ApplicationEditView, FollowersListView, RemoveMyFollower, TimeLine, AllServicesView, AllEventsView, CreatedServicesView, CreatedEventsView, AppliedServicesView, ConfirmServiceTaken, ConfirmServiceGiven, RateUser, RateUserDelete, RateUserEdit, ServiceSearch, EventSearch, Notifications, EventApplicationDeleteView, AppliedEventsView, RequestCreateView, CreatedRequestsView, RequestsFromMeView, RequestDetailView, RequestDeleteView, ServiceFilter, AllUsersView, UsersServicesListView, UsersEventsListView, AddAdminView, RemoveAdminView, DashboardServiceDetailView, DashboardEventDetailView, ServiceDetailCommunicationView
+from .views import ServiceCreateView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventCreateView, EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, AddFollower, RemoveFollower, ApplicationDeleteView, ApplicationEditView, FollowersListView, RemoveMyFollower, TimeLine, AllServicesView, AllEventsView, CreatedServicesView, CreatedEventsView, AppliedServicesView, ConfirmServiceTaken, ConfirmServiceGiven, RateUser, RateUserDelete, RateUserEdit, ServiceSearch, EventSearch, Notifications, EventApplicationDeleteView, AppliedEventsView, RequestCreateView, CreatedRequestsView, RequestsFromMeView, RequestDetailView, RequestDeleteView, ServiceFilter, AllUsersView, UsersServicesListView, UsersEventsListView, AddAdminView, RemoveAdminView, DashboardServiceDetailView, DashboardEventDetailView, ServiceDetailCommunicationView, EventDetailCommunicationView, ServiceCommunicationDeleteView, EventCommunicationDeleteView
 
 urlpatterns = [
     path('service/create', ServiceCreateView.as_view(), name='service-create'),
@@ -51,5 +51,8 @@ urlpatterns = [
     path('dashboard/service/<int:pk>', DashboardServiceDetailView.as_view(), name='dashboard-service-detail'),
     path('dashboard/event/<int:pk>', DashboardEventDetailView.as_view(), name='dashboard-event-detail'),
 
-    path('service/<int:pk>/communication', ServiceDetailCommunicationView.as_view(), name='service-detail-communication')
+    path('service/<int:pk>/communication', ServiceDetailCommunicationView.as_view(), name='service-detail-communication'),
+    path('event/<int:pk>/communication', EventDetailCommunicationView.as_view(), name='event-detail-communication'),
+    path('service/<int:service_pk>/communication/<int:pk>/delete', ServiceCommunicationDeleteView.as_view(), name='service-communication-delete'),
+    path('event/<int:event_pk>/communication/<int:pk>/delete', EventCommunicationDeleteView.as_view(), name='event-communication-delete')
 ]

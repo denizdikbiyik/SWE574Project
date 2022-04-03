@@ -102,6 +102,9 @@ class AppliedServicesView(LoginRequiredMixin, View):
 class ServiceDetailView(View):
     def get(self, request, pk, *args, **kwargs):
         service = Service.objects.get(pk=pk)
+        showCommunication = False
+        if request.user == service.creater or request.user.profile.isAdmin == True:
+            showCommunication = True
         notifications = NotifyUser.objects.filter(notify=request.user).filter(offerType="service").filter(offerPk=pk).filter(hasRead=False)
         countNotifications = len(notifications)
         for notification in notifications:
@@ -125,6 +128,8 @@ class ServiceDetailView(View):
             if application.applicant == request.user:
                 is_applied = True
                 is_accepted = application.approved
+                if is_accepted:
+                    showCommunication = True
                 break
             else:
                 is_applied = False
@@ -142,7 +147,8 @@ class ServiceDetailView(View):
             'application_number': application_number,
             'accepted_applications': accepted_applications,
             'allCommunications': allCommunications,
-            'allCommunicationsLength': allCommunicationsLength
+            'allCommunicationsLength': allCommunicationsLength,
+            'showCommunication': showCommunication
         }
         return render(request, 'social/service_detail.html', context)
 
@@ -523,6 +529,9 @@ class EventApplicationDeleteView(LoginRequiredMixin, UserPassesTestMixin, Delete
 class EventDetailView(View):
     def get(self, request, pk, *args, **kwargs):
         event = Event.objects.get(pk=pk)
+        showCommunication = False
+        if request.user == event.eventcreater or request.user.profile.isAdmin == True:
+            showCommunication = True
         notifications = NotifyUser.objects.filter(notify=request.user).filter(offerType="event").filter(offerPk=pk).filter(hasRead=False)
         countNotifications = len(notifications)
         for notification in notifications:
@@ -546,10 +555,14 @@ class EventDetailView(View):
             if application.applicant == request.user:
                 is_applied = True
                 is_accepted = application.approved
+                if is_accepted:
+                    showCommunication = True
                 break
             else:
                 is_applied = False
                 is_accepted = False
+        allCommunications = Communication.objects.filter(itemType="event").filter(itemId=event.pk)
+        allCommunicationsLength = len(allCommunications)
         context = {
             'event': event,
             'applications': applications,
@@ -559,7 +572,10 @@ class EventDetailView(View):
             'is_accepted': is_accepted,
             'is_active': is_active,
             'application_number': application_number,
-            'accepted_applications': accepted_applications
+            'accepted_applications': accepted_applications,
+            'allCommunications': allCommunications,
+            'allCommunicationsLength': allCommunicationsLength,
+            'showCommunication': showCommunication
         }
         return render(request, 'social/event_detail.html', context)
 
@@ -1111,7 +1127,8 @@ class DashboardEventDetailView(View):
                       'editserviceapplication': 'Service Application Edition',
                       'deleteeventapplication': 'Event Application Deletion',
                       'spentcredit': 'Credit Spent',
-                      'createeventcommunication': 'Message Sent'}
+                      'createeventcommunication': 'Message Sent',
+                      'delteeventcommunication': 'Message Deleted'}
         for log in logs:
             log.operation = conversion[log.operation]
         context = {
@@ -1146,6 +1163,7 @@ class DashboardServiceDetailView(View):
                       'earncredit': 'Credit Earned',
                       'spentcredit': 'Credit Spent',
                       'createservicecommunication': 'Message Sent',
+                      'delteservicecommunication': 'Message Deleted',
                       'createrating': 'Rating Created',
                       'editrating': 'Rating Edited',
                       'deleterating': 'Rating Deleted'}
@@ -1166,14 +1184,18 @@ class ServiceDetailCommunicationView(View):
     def get(self, request, pk, *args, **kwargs):
         service = Service.objects.get(pk=pk)
         query = self.request.GET.get('query')
+        showCommunication = False
+        if request.user == service.creater or request.user.profile.isAdmin == True:
+            showCommunication = True
         if(query == ""):
             messages.warning(request, 'Please write something to post.')
         else:
             communication = Communication.objects.create(itemType="service", itemId=service.pk, communicated=request.user, message=query)
-            notification = NotifyUser.objects.create(notify=service.creater, notification=str(request.user)+' commented on '+str(service.name), offerType="service", offerPk=service.pk)
-            notified_user = UserProfile.objects.get(pk=service.creater)
-            notified_user.unreadcount = notified_user.unreadcount+1
-            notified_user.save()
+            if request.user != service.creater:
+                notification = NotifyUser.objects.create(notify=service.creater, notification=str(request.user)+' commented on '+str(service.name), offerType="service", offerPk=service.pk)
+                notified_user = UserProfile.objects.get(pk=service.creater)
+                notified_user.unreadcount = notified_user.unreadcount+1
+                notified_user.save()
             log = Log.objects.create(operation="createservicecommunication", itemType="service", itemId=service.pk, userId=request.user)
         notifications = NotifyUser.objects.filter(notify=request.user).filter(offerType="service").filter(offerPk=pk).filter(hasRead=False)
         countNotifications = len(notifications)
@@ -1198,10 +1220,18 @@ class ServiceDetailCommunicationView(View):
             if application.applicant == request.user:
                 is_applied = True
                 is_accepted = application.approved
+                if is_accepted:
+                    showCommunication = True
                 break
             else:
                 is_applied = False
                 is_accepted = False
+        for applicationToNotify in applications:
+            if applicationToNotify.applicant != request.user:
+                notification = NotifyUser.objects.create(notify=applicationToNotify.applicant, notification=str(request.user)+' commented on '+str(service.name), offerType="service", offerPk=service.pk)
+                notified_user = UserProfile.objects.get(pk=applicationToNotify.applicant)
+                notified_user.unreadcount = notified_user.unreadcount+1
+                notified_user.save()
         allCommunications = Communication.objects.filter(itemType="service").filter(itemId=service.pk)
         allCommunicationsLength = len(allCommunications)
         context = {
@@ -1215,7 +1245,8 @@ class ServiceDetailCommunicationView(View):
             'application_number': application_number,
             'accepted_applications': accepted_applications,
             'allCommunications': allCommunications,
-            'allCommunicationsLength': allCommunicationsLength
+            'allCommunicationsLength': allCommunicationsLength,
+            'showCommunication': showCommunication
         }
         return render(request, 'social/service_detail_communication.html', context)
 
@@ -1277,3 +1308,172 @@ class ServiceDetailCommunicationView(View):
             'applications_this': applications_this,
         }
         return redirect('service-detail-communication', pk=service.pk)
+
+class ServiceCommunicationDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Communication
+    template_name = 'social/service_communication_delete.html'
+
+    def get_success_url(self):
+        service_pk = self.kwargs['service_pk']
+        service = Service.objects.get(pk=service_pk)
+        communication = self.get_object()
+        if self.request.user != service.creater:
+            notification = NotifyUser.objects.create(notify=service.creater, notification=str(self.request.user)+' deleted communication message on service '+str(service.name), offerType="service", offerPk=service.pk)
+            notified_user = UserProfile.objects.get(pk=service.creater)
+            notified_user.unreadcount = notified_user.unreadcount+1
+            notified_user.save()
+        approvedApplications = ServiceApplication.objects.filter(approved=True)
+        for approvedApplication in approvedApplications:
+            if self.request.user != approvedApplication.applicant:
+                notification = NotifyUser.objects.create(notify=approvedApplication.applicant, notification=str(self.request.user)+' deleted communication message on service '+str(service.name), offerType="service", offerPk=service.pk)
+                notified_user = UserProfile.objects.get(pk=approvedApplication.applicant)
+                notified_user.unreadcount = notified_user.unreadcount+1
+                notified_user.save()
+        log = Log.objects.create(operation="deleteservicecommunication", itemType="service", itemId=service.pk, userId=self.request.user)
+        return reverse_lazy('service-detail', kwargs={'pk': service_pk})
+    
+    def test_func(self):
+        communication = self.get_object()
+        isOK = False
+        if self.request.user == communication.communicated:
+            isOK = True
+        return isOK
+
+class EventDetailCommunicationView(View):
+    def get(self, request, pk, *args, **kwargs):
+        event = Event.objects.get(pk=pk)
+        query = self.request.GET.get('query')
+        showCommunication = False
+        if request.user == event.eventcreater or request.user.profile.isAdmin == True:
+            showCommunication = True
+        if(query == ""):
+            messages.warning(request, 'Please write something to post.')
+        else:
+            communication = Communication.objects.create(itemType="event", itemId=event.pk, communicated=request.user, message=query)
+            if request.user != event.eventcreater:
+                notification = NotifyUser.objects.create(notify=event.eventcreater, notification=str(request.user)+' commented on '+str(event.eventname), offerType="event", offerPk=event.pk)
+                notified_user = UserProfile.objects.get(pk=event.eventcreater)
+                notified_user.unreadcount = notified_user.unreadcount+1
+                notified_user.save()
+            log = Log.objects.create(operation="createeventcommunication", itemType="event", itemId=event.pk, userId=request.user)
+        notifications = NotifyUser.objects.filter(notify=request.user).filter(offerType="event").filter(offerPk=pk).filter(hasRead=False)
+        countNotifications = len(notifications)
+        for notification in notifications:
+            notification.hasRead = True
+            notification.save()
+        userNotified = UserProfile.objects.get(pk=request.user.profile)
+        userNotified.unreadcount = userNotified.unreadcount - countNotifications
+        userNotified.save()
+        applications = EventApplication.objects.filter(event=pk).order_by('-date')
+        applications_this = applications.filter(applicant=request.user)
+        number_of_accepted = len(applications.filter(approved=True))
+        accepted_applications = applications.filter(approved=True)
+        application_number = len(applications)
+        is_active = True
+        if event.eventdate <= timezone.now():
+            is_active = False
+        if len(applications) == 0:
+            is_applied = False
+            is_accepted = False
+        for application in applications:
+            if application.applicant == request.user:
+                is_applied = True
+                is_accepted = application.approved
+                if is_accepted:
+                    showCommunication = True
+                break
+            else:
+                is_applied = False
+                is_accepted = False
+        for applicationToNotify in applications:
+            if applicationToNotify.applicant != request.user:
+                notification = NotifyUser.objects.create(notify=applicationToNotify.applicant, notification=str(request.user)+' commented on '+str(event.eventname), offerType="event", offerPk=event.pk)
+                notified_user = UserProfile.objects.get(pk=applicationToNotify.applicant)
+                notified_user.unreadcount = notified_user.unreadcount+1
+                notified_user.save()
+        allCommunications = Communication.objects.filter(itemType="event").filter(itemId=event.pk)
+        allCommunicationsLength = len(allCommunications)
+        context = {
+            'event': event,
+            'applications': applications,
+            'number_of_accepted': number_of_accepted,
+            'is_applied': is_applied,
+            'applications_this': applications_this,
+            'is_accepted': is_accepted,
+            'is_active': is_active,
+            'application_number': application_number,
+            'accepted_applications': accepted_applications,
+            'allCommunications': allCommunications,
+            'allCommunicationsLength': allCommunicationsLength,
+            'showCommunication': showCommunication
+        }
+        return render(request, 'social/event_detail_communication.html', context)
+
+    def post(self, request, pk, *args, **kwargs):
+        event = Event.objects.get(pk=pk)
+        form = EventApplicationForm(request.POST)
+        applications = EventApplication.objects.filter(event=pk).order_by('-date')
+        applications_this = applications.filter(applicant=request.user)
+        number_of_accepted = len(applications.filter(approved=True))
+        if len(applications) == 0:
+            is_applied = False
+        for application in applications:
+            if application.applicant == request.user:
+                is_applied = True
+                break
+            else:
+                is_applied = False
+        if form.is_valid():
+            if is_applied == False:
+                new_application = form.save(commit=False)
+                new_application.applicant = request.user
+                new_application.event = event
+                if number_of_accepted < event.eventcapacity:
+                    new_application.approved = True
+                else:
+                    new_application.approved = False
+                new_application.save()
+                log = Log.objects.create(operation="createeventapplication", itemType="event", itemId=event.pk, userId=request.user)
+                notification = NotifyUser.objects.create(notify=event.eventcreater, notification=str(new_application.applicant)+' applied to event '+str(new_application.event.eventname), offerType="event", offerPk=new_application.event.pk)
+                notified_user = UserProfile.objects.get(pk=event.eventcreater)
+                notified_user.unreadcount = notified_user.unreadcount+1
+                notified_user.save()
+        context = {
+            'event': event,
+            'form': form,
+            'applications': applications,
+            'number_of_accepted': number_of_accepted,
+            'is_applied': is_applied,
+            'applications_this': applications_this,
+        }
+        return redirect('event-detail-communication', pk=event.pk)
+
+class EventCommunicationDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Communication
+    template_name = 'social/event_communication_delete.html'
+
+    def get_success_url(self):
+        event_pk = self.kwargs['event_pk']
+        event = Event.objects.get(pk=event_pk)
+        communication = self.get_object()
+        if self.request.user != event.eventcreater:
+            notification = NotifyUser.objects.create(notify=event.eventcreater, notification=str(self.request.user)+' deleted communication message on event '+str(event.eventname), offerType="event", offerPk=event.pk)
+            notified_user = UserProfile.objects.get(pk=event.eventcreater)
+            notified_user.unreadcount = notified_user.unreadcount+1
+            notified_user.save()
+        approvedApplications = EventApplication.objects.filter(approved=True)
+        for approvedApplication in approvedApplications:
+            if self.request.user != approvedApplication.applicant:
+                notification = NotifyUser.objects.create(notify=approvedApplication.applicant, notification=str(self.request.user)+' deleted communication message on event '+str(event.eventname), offerType="event", offerPk=event.pk)
+                notified_user = UserProfile.objects.get(pk=approvedApplication.applicant)
+                notified_user.unreadcount = notified_user.unreadcount+1
+                notified_user.save()
+        log = Log.objects.create(operation="deleteeventcommunication", itemType="event", itemId=event.pk, userId=self.request.user)
+        return reverse_lazy('event-detail', kwargs={'pk': event_pk})
+    
+    def test_func(self):
+        communication = self.get_object()
+        isOK = False
+        if self.request.user == communication.communicated:
+            isOK = True
+        return isOK

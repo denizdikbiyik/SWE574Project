@@ -208,26 +208,31 @@
                     {% endif %}
                 </div>
 
-                <p style="font-weight: bolder;">Communication:</p>
-                {% if allCommunicationsLength == 0 %}
-                    <p>No communication found.</p>
-                {% else %}
-                    {% for communication in allCommunications %}
-                    <div class="row justify-content-center">
-                        <div class="border-bottom">
-                            <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' communication.communicated.profile.pk %}">@{{ communication.communicated }}</a> on {{ communication.date }} wrote "{{ communication.message }}"
+                {% if showCommunication %}
+                    <p style="font-weight: bolder;">Communication:</p>
+                    {% if allCommunicationsLength == 0 %}
+                        <p>No communication found.</p>
+                    {% else %}
+                        {% for communication in allCommunications %}
+                        <div class="row justify-content-center">
+                            <div class="border-bottom">
+                                <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' communication.communicated.profile.pk %}">@{{ communication.communicated }}</a> on {{ communication.date }} wrote "{{ communication.message }}"
+                                {% if communication.communicated == request.user %}
+                                    <a href="{% url 'service-communication-delete' service.pk communication.pk %}" class="btn btn-danger">Delete</a>
+                                {% endif %}
+                            </div>
                         </div>
-                    </div>
-                    {% endfor %}
-                {% endif %}
-                {% if is_active %}
-                    <p></p>
-                    <form class="d-flex" method="GET" action="{% url 'service-detail-communication' service.pk %}">
-                        <div class="input-group">
-                            <input type="text" class="form-control" placeholder="Message" aria-label="Message" aria-describedby="basic-addon1" name='query' value="{{ request.GET.query }}">
-                            <button style="border: none; background-color: white; box-shadow: none" type="submit">Add Message</button>
-                        </div>
-                    </form>
+                        {% endfor %}
+                    {% endif %}
+                    {% if is_active %}
+                        <p></p>
+                        <form class="d-flex" method="GET" action="{% url 'service-detail-communication' service.pk %}">
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Message" aria-label="Message" aria-describedby="basic-addon1" name='query'>
+                                <button style="border: none; background-color: white; box-shadow: none" type="submit">Add Message</button>
+                            </div>
+                        </form>
+                    {% endif %}
                 {% endif %}
             </div>
         </div>
