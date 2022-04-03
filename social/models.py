@@ -51,7 +51,7 @@ class Service(models.Model):
 class ServiceApplication(models.Model):
     date = models.DateTimeField(default=timezone.now)
     applicant = models.ForeignKey(User, on_delete=models.CASCADE)
-    service = models.ForeignKey('Service', on_delete=models.CASCADE)
+    service = models.ForeignKey('Service', on_delete=models.CASCADE, related_name="rel_services")
     approved = models.BooleanField(default=False)
 
 
@@ -132,6 +132,7 @@ class Log(models.Model):
     userId = models.ForeignKey(User, verbose_name='user', related_name='userId', on_delete=models.CASCADE)
     affectedItemType = models.TextField(blank=True, null=True)
     affectedItemId = models.IntegerField(default=0)
+
 
 class Communication(models.Model):
     date = models.DateTimeField(default=timezone.now)
