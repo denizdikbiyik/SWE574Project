@@ -70,9 +70,9 @@
                     <!--1. column -->
                     <th scope="row">{{ forloop.counter }}</th>
                     <!--2. column -->
-                    <td><a href="{{ offer.get_absolute_url }}">{{ event.eventname }}</a></td>
+                    <td><a href="{{ event.get_absolute_url }}">{{ event.eventname }}</a></td>
                     <!--3. column -->
-                    <td><a href="#">{{ event.eventcreater }}</a></td> <!--3. column -->
+                    <td><a href="{% url 'profile' event.eventcreater.profile.pk %}">{{ event.eventcreater }}</a></td> <!--3. column -->
                     <!--4. column -->
                     <td> {{ event.eventcreateddate }}</td>
                     <!--5. column -->
