@@ -73,7 +73,7 @@
                     <!--2. column -->
                     <td><a href="{{ service.get_absolute_url }}">{{ service.name }}</a></td>
                     <!--3. column -->
-                    <td><a href="#">{{ service.creater }}</a></td> <!--3. column -->
+                    <td><a href="{% url 'profile' service.creater.profile.pk %}">{{ service.creater }}</a></td> <!--3. column -->
                     <!--4. column -->
                     <td> {{ service.createddate }}</td>
                     <!--5. column -->

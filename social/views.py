@@ -1128,7 +1128,7 @@ class DashboardEventDetailView(View):
                       'deleteeventapplication': 'Event Application Deletion',
                       'spentcredit': 'Credit Spent',
                       'createeventcommunication': 'Message Sent',
-                      'delteeventcommunication': 'Message Deleted'}
+                      'deleteeventcommunication': 'Message Deleted'}
         for log in logs:
             log.operation = conversion[log.operation]
         context = {
@@ -1163,7 +1163,7 @@ class DashboardServiceDetailView(View):
                       'earncredit': 'Credit Earned',
                       'spentcredit': 'Credit Spent',
                       'createservicecommunication': 'Message Sent',
-                      'delteservicecommunication': 'Message Deleted',
+                      'deleteservicecommunication': 'Message Deleted',
                       'createrating': 'Rating Created',
                       'editrating': 'Rating Edited',
                       'deleterating': 'Rating Deleted'}

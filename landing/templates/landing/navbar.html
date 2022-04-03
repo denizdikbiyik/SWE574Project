@@ -39,7 +39,7 @@
                                 <li><a class="dropdown-item" href="{% url 'requestsfromme' %}">Requests From Me</a></li>
                             </ul>
                         </div>
-                        {% if user.profile.isAdmin %}
+                        {% if request.user.profile.isAdmin %}
                             <div class="nav-item dropdown">
                                 <a style="color:darkkhaki;" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"
                                 role="buton" aria-expanded="false">Admin Dashboard</a>
