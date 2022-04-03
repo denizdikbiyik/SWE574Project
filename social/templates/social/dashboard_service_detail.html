@@ -20,6 +20,8 @@
         table, th, tr, td {
           border: 1px solid black;
           border-collapse: collapse;
+          padding: 10px;
+          white-space: nowrap;
         }
     </style>
 </head>
@@ -53,7 +55,7 @@
         </div>
         <div class="row justify-content-center mt-3">
             <div class="col-md-5 col-sm-12 border-bottom">
-                {% if is_active == True %}
+                {% if application_number > 0 %}
                     <table>
                         <tr>
                             <th>Applications</th>
@@ -81,7 +83,7 @@
                 <table>
                   <tr>
                     <th>Activity Type</th>
-                    <th>Datetime</th>
+                    <th>Date</th>
                     <th>User</th>
                   </tr>
                     {% for log in logs %}
