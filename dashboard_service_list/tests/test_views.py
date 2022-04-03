@@ -1,7 +1,7 @@
 from django.http import HttpRequest
 from django.test import TestCase, Client
 from django.urls import reverse
-
+import datetime
 from dashboard_service_list.views import make_context_for_service_list
 from social.models import Service
 from django.contrib.auth.models import User
@@ -35,16 +35,25 @@ class TestViews(TestCase):
         test_user1.profile.isAdmin = True
         test_user1.save()
         login = self.client.login(username='testuser1', password='1X<ISRUkw+tuK')
+        date_today = datetime.datetime.now()
 
-        # 11.01.2020 / all
+        def create_date_before_given_date(days, date):
+            date_before = (date - datetime.timedelta(days=days))
+            return date_before
+
+        def create_date_after_given_date(days, date):
+            date_after = (date + datetime.timedelta(days=days))
+            return date_after
+
+        # 1. included only in all
         test_service1 = Service.objects.create(
             creater=test_user1,
-            createddate='2020-01-11 10:00:00+03',
+            createddate=create_date_before_given_date(500, date_today),
             name="ServiceTest1",
             description="ServiceTestDescription",
             picture='uploads/service_pictures/default.png',
             location='41.0255493,28.9742571',
-            servicedate='2030-01-11 10:00:00+03',
+            servicedate=create_date_after_given_date(7, create_date_before_given_date(500, date_today)),
             capacity=1,
             duration=1,
             is_given=False,
@@ -52,15 +61,15 @@ class TestViews(TestCase):
         )
         test_service1.save()
 
-        # 20.03.2022 all & month & week
+        # 2. included only in all & month & week
         test_service2 = Service.objects.create(
             creater=test_user1,
-            createddate=timezone.now(),
+            createddate=create_date_before_given_date(2, date_today),
             name="ServiceTest2",
             description="ServiceTestDescription",
             picture='uploads/service_pictures/default.png',
             location='41.0255493,28.9742571',
-            servicedate='2030-01-11 10:00:00+03',
+            servicedate=create_date_after_given_date(7, create_date_before_given_date(2, date_today)),
             capacity=1,
             duration=1,
             is_given=False,
@@ -68,15 +77,15 @@ class TestViews(TestCase):
         )
         test_service2.save()
 
-        # 15.03.2022 all & month
+        # 3. included only in all & month
         test_service3 = Service.objects.create(
             creater=test_user1,
-            createddate='2022-03-15 10:00:00+03',
+            createddate=create_date_before_given_date(15, date_today),
             name="ServiceTest3",
             description="ServiceTestDescription",
             picture='uploads/service_pictures/default.png',
             location='41.0255493,28.9742571',
-            servicedate='2030-01-11 10:00:00+03',
+            servicedate=create_date_after_given_date(7, create_date_before_given_date(15, date_today)),
             capacity=1,
             duration=1,
             is_given=False,
@@ -116,10 +125,10 @@ class TestViews(TestCase):
 
         # test period selection ""select""
         field1 = "select"
-        field2 = '2020-01-10'
-        field3 = '2020-01-12'
+        field2 = create_date_before_given_date(501, date_today)
+        field3 = date_today
         field4 = "createddate"
         context = make_context_for_service_list(field1, field2, field3, field4)
         service_count = context["services"].count()
         print(context["services"].count())
-        self.assertEquals(service_count, 1)
+        self.assertEquals(service_count, 3)

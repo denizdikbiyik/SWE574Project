@@ -46,7 +46,7 @@ class TestViews(TestCase):
             return date_after
 
         # 1. included only in all
-        test_service1 = Event.objects.create(
+        test_event1 = Event.objects.create(
             eventcreater=test_user1,
             eventcreateddate=create_date_before_given_date(500, date_today),
             eventname="ServiceTest1",
@@ -57,35 +57,35 @@ class TestViews(TestCase):
             eventcapacity=1,
             eventduration=1,
         )
-        test_service1.save()
+        test_event1.save()
 
         # 2. included only in all & month & week
-        test_service2 = Event.objects.create(
+        test_event2 = Event.objects.create(
             eventcreater=test_user1,
             eventcreateddate=create_date_before_given_date(2, date_today),
             eventname="ServiceTest1",
             eventdescription="ServiceTestDescription",
             eventpicture='uploads/service_pictures/default.png',
             eventlocation='41.0255493,28.9742571',
-            eventdate=create_date_after_given_date(7, create_date_before_given_date(500, date_today)),
+            eventdate=create_date_after_given_date(7, create_date_before_given_date(2, date_today)),
             eventcapacity=1,
             eventduration=1,
         )
-        test_service2.save()
+        test_event2.save()
 
         # 3. included only in all & month
-        test_service3 = Event.objects.create(
+        test_event3 = Event.objects.create(
             eventcreater=test_user1,
             eventcreateddate=create_date_before_given_date(15, date_today),
             eventname="ServiceTest1",
             eventdescription="ServiceTestDescription",
             eventpicture='uploads/service_pictures/default.png',
             eventlocation='41.0255493,28.9742571',
-            eventdate=create_date_after_given_date(7, create_date_before_given_date(500, date_today)),
+            eventdate=create_date_after_given_date(7, create_date_before_given_date(15, date_today)),
             eventcapacity=1,
             eventduration=1,
         )
-        test_service3.save()
+        test_event3.save()
 
         # test period selection "all"
         field1 = "all"
