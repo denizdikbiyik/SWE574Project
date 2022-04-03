@@ -61,7 +61,12 @@ def list_services(request):
             context = make_context_for_service_list(form_field1, form_field2, form_field3, form_field4)
             context["form"] = form
             context["applications"] = applications
-            context["applicationslength"] = len(applications)
+            # Clears the list when "Select Dates" is selected and submitted
+            if form.cleaned_data.get("period") == "select" and form.cleaned_data.get("date_old") == None:
+                context["services"] = None
+                context["clear_list"] = True
+            else:
+                context["clear_list"] = False
             return render(request, 'dasboard_service_list/servicelist.html', context)
     else:
         if request.user.profile.isAdmin:

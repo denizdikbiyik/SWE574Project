@@ -44,7 +44,9 @@
 
         {{ text }}
         <br>
-        Number of Services found: {{ service_count }}
+        {% if clear_list == False %}
+            Number of Services found: {{ service_count }}
+        {% endif %}
 
 
     </div>
@@ -78,27 +80,28 @@
                     <td> {{ service.servicedate }}</td>
                     <!--6. column -->
                     <td>
-                        {% if service.is_given == True and service.is_taken == True %}
-                            Handshake
-                        {% elif service.is_given == True and service.is_taken == False %}
-                            Waiting for Service Taker confirmation.
-                        {% elif service.is_given == False and service.is_taken == True %}
-                            Waiting for Service Provider confirmation.
-                        {% elif service.is_given == False and service.is_taken == False %}
-                            {% if applicationslength == 0 %}
-                                No applications yet.
-                            {% else %}
-                                {% for application in applications %}
-                                    {% if application.service.id == service.id %}
-                                        {% if application.approved == True %}
-                                            Approved Application(s)
-                                        {% else %}
-                                            {% if forloop.last %}
-                                                {{ forloop.counter }} Application(s) Waiting
-                                            {% endif %}
+                        {% if service.isDeleted == True %}
+                            Service was deleted.
+                        {% else %}
+                            {% if service.is_given == True and service.is_taken == True %}
+                                Handshake
+                            {% elif service.is_given == True and service.is_taken == False %}
+                                Waiting for Service Taker confirmation.
+                            {% elif service.is_given == False and service.is_taken == True %}
+                                Waiting for Service Provider confirmation.
+                            {% elif service.is_given == False and service.is_taken == False %}
+                                {% for application in service.rel_services.all %}
+                                    {% if application.approved == True %}
+                                        Approved Application(s)
+                                    {% else %}
+                                        {% if forloop.last %}
+                                            {{ forloop.counter }} Application(s) Waiting
                                         {% endif %}
                                     {% endif %}
+                                {% empty %}
+                                    No Applications yet.
                                 {% endfor %}
+
                             {% endif %}
                         {% endif %}
                     </td>
