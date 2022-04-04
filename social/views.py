@@ -1117,7 +1117,7 @@ class DashboardEventDetailView(View):
         number_of_accepted = len(applications.filter(approved=True))
         application_number = len(applications)
         is_active = True
-        if event.eventcreateddate <= timezone.now():
+        if event.eventdate <= timezone.now():
             is_active = False
         logs = Log.objects.filter(itemType="event").filter(itemId=pk)
         conversion = {'createevent': 'Event Creation',
