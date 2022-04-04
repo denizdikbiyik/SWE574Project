@@ -6,16 +6,13 @@ from social.models import Service, ServiceApplication, Event, EventApplication, 
 from django.core.paginator import Paginator
 import datetime
 
-from .forms import PeriodPicker
+from .forms import PeriodPickerEvent
 
 
 def make_context_for_event_list(*args):
     date_today = datetime.datetime.now()
     is_pick_date = False
-    if args[3] == "createdate":
-        order_by = "eventcreateddate"
-    else:
-        order_by = "eventdate"
+    order_by = args[3]
     events = Event.objects.all().order_by(
         order_by)
     context = {}
@@ -54,7 +51,7 @@ def make_context_for_event_list(*args):
 def list_events(request):
     if request.method == 'POST':
         applications = EventApplication.objects.all()
-        form = PeriodPicker(request.POST)
+        form = PeriodPickerEvent(request.POST)
         if form.is_valid():
             form_field1 = form.cleaned_data.get("period")
             form_field2 = form.cleaned_data.get("date_old")
@@ -72,7 +69,7 @@ def list_events(request):
             return render(request, 'dashboard_event_list/eventlist.html', context)
     else:
         if request.user.profile.isAdmin:
-            form = PeriodPicker()
+            form = PeriodPickerEvent()
         else:
             return redirect('index')
     return render(request, 'dashboard_event_list/eventlist.html', {'form': form})

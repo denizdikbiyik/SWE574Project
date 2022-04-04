@@ -6,10 +6,10 @@ class DateInput(forms.DateInput):
 
 
 period_choices = [("week", "Last 7 Days"), ("month", "Last 30 Days"), ("all", "All"), ("select", "Select Dates")]
-sort_choices = [("createddate", "Creation Date"), ("servicedate", "Delivery Date")]
+sort_choices = [("eventcreateddate", "Creation Date"), ("eventdate", "Delivery Date")]
 
 
-class PeriodPicker(forms.Form):
+class PeriodPickerEvent(forms.Form):
     period = forms.CharField(label="Choose a Period:", widget=forms.Select(choices=period_choices))
     date_old = forms.DateField(label="Beginning Date:", widget=DateInput, required=False)
     date_new = forms.DateField(label="Ending Date:", widget=DateInput, required=False)

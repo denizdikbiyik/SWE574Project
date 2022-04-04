@@ -73,7 +73,8 @@
                     <!--2. column -->
                     <td><a href="{{ service.get_absolute_url }}">{{ service.name }}</a></td>
                     <!--3. column -->
-                    <td><a href="{% url 'profile' service.creater.profile.pk %}">{{ service.creater }}</a></td> <!--3. column -->
+                    <td><a href="{% url 'profile' service.creater.profile.pk %}">{{ service.creater }}</a></td>
+                    <!--3. column -->
                     <!--4. column -->
                     <td> {{ service.createddate }}</td>
                     <!--5. column -->
@@ -83,26 +84,27 @@
                         {% if service.isDeleted == True %}
                             Service was deleted.
                         {% else %}
-                            {% if service.is_given == True and service.is_taken == True %}
-                                Handshake
-                            {% elif service.is_given == True and service.is_taken == False %}
-                                Waiting for Service Taker confirmation.
-                            {% elif service.is_given == False and service.is_taken == True %}
-                                Waiting for Service Provider confirmation.
-                            {% elif service.is_given == False and service.is_taken == False %}
-                                {% for application in service.rel_services.all %}
-                                    {% if application.approved == True %}
-                                        Approved Application(s)
-                                    {% else %}
+                            {% if service in outdated_services %}
+                                Delivery Date passed.
+                            {% else %}
+                                {% if service.is_given == True and service.is_taken == True %}
+                                    Handshake
+                                {% elif service.is_given == True and service.is_taken == False %}
+                                    Waiting for Service Taker confirmation.
+                                {% elif service.is_given == False and service.is_taken == True %}
+                                    Waiting for Service Provider confirmation.
+                                {% elif service.is_given == False and service.is_taken == False %}
+                                    {% for application in service.rel_services.all %}
                                         {% if forloop.last %}
-                                            {{ forloop.counter }} Application(s) Waiting
+                                            {{ forloop.counter }} Application(s) for The Service
                                         {% endif %}
-                                    {% endif %}
-                                {% empty %}
-                                    No Applications yet.
-                                {% endfor %}
-
+                                    {% empty %}
+                                        No Applications yet.
+                                    {% endfor %}
+                                {% endif %}
                             {% endif %}
+
+
                         {% endif %}
                     </td>
                 </tr>
