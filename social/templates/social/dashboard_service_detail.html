@@ -41,9 +41,9 @@
                 <p style="text-align: start; color:navy;"> Service Name: <a style="text-decoration: none;" class="text-primary" href="{% url 'service-detail' service.pk %}">{{ service.name }}</a></p>
                 <p style="text-align: start; color:navy;"> Creator: {{ service.creater }} </p>
                 {% if is_active == True %}
-                    <p style="text-align: start; color:navy;"> Status: Passive </p>
-                {% else %}
                     <p style="text-align: start; color:navy;"> Status: Active </p>
+                {% else %}
+                    <p style="text-align: start; color:navy;"> Status: Passive </p>
                 {% endif %}
                 {% if isDeleted == True %}
                     <p style="text-align: start; color:navy;"> Deleted by Creator: Yes </p>
