@@ -117,13 +117,13 @@ class ServiceApplicationForm(forms.ModelForm):
 
     class Meta:
         model = ServiceApplication
-        fields = []
+        fields = ['approved']
 
 class EventApplicationForm(forms.ModelForm):    
 
     class Meta:
         model = EventApplication
-        fields = []
+        fields = ['approved']
 
 class ProfileForm(forms.ModelForm):
     name = forms.CharField(
