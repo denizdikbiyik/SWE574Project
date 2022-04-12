@@ -239,11 +239,13 @@ class ApplicationDeleteView(LoginRequiredMixin, View):
             notified_user = UserProfile.objects.get(pk=service.creater)
             notified_user.unreadcount = notified_user.unreadcount+1
             notified_user.save()
+            application.deletionInfo = "cancel"
         elif request.user == application.service.creater:
             notification = NotifyUser.objects.create(notify=application.applicant, notification=str(service_creater_profile.user.username)+' rejected your application for service '+str(service.name), offerType="service", offerPk=service.pk)
             notified_user = UserProfile.objects.get(pk=application.applicant)
             notified_user.unreadcount = notified_user.unreadcount+1
             notified_user.save()
+            application.deletionInfo = "reject"
         log = Log.objects.create(operation="deleteserviceapplication", itemType="service", itemId=service.pk, affectedItemType="user", affectedItemId=application.applicant.pk, userId=self.request.user)
         application.isDeleted = True
         application.save()
@@ -430,6 +432,7 @@ class ServiceDeleteView(LoginRequiredMixin, View):
                 notificationChange.offerPk = 0
                 notificationChange.save()
             log1 = Log.objects.create(operation="deleteserviceapplication", itemType="service", itemId=service.pk, affectedItemType="user", affectedItemId=application.applicant.pk, userId=request.user)
+            application.deletionInfo = "serviceDeleted"
             application.isDeleted = True
             application.save()
         log2 = Log.objects.create(operation="deleteservice", itemType="service", itemId=service.pk, userId=request.user)
@@ -542,11 +545,13 @@ class EventApplicationDeleteView(LoginRequiredMixin, View):
             notified_user = UserProfile.objects.get(pk=event.eventcreater)
             notified_user.unreadcount = notified_user.unreadcount+1
             notified_user.save()
+            application.deletionInfo = "cancel"
         elif request.user == application.event.eventcreater:
             notification = NotifyUser.objects.create(notify=application.applicant, notification=str(event_creater_profile.user.username)+' rejected your application for event '+str(event.eventname), offerType="event", offerPk=event.pk)
             notified_user = UserProfile.objects.get(pk=application.applicant)
             notified_user.unreadcount = notified_user.unreadcount+1
             notified_user.save()
+            application.deletionInfo = "reject"
         log = Log.objects.create(operation="deleteeventapplication", itemType="event", itemId=event.pk, affectedItemType="user", affectedItemId=application.applicant.pk, userId=self.request.user)
         applicationsNext = EventApplication.objects.filter(event=event).filter(approved=False).filter(isDeleted=False).order_by('-date')
         count = 0
@@ -723,6 +728,7 @@ class EventDeleteView(LoginRequiredMixin, View):
             notified_user.save()
             notificationsToChange = NotifyUser.objects.filter(notify=application.applicant).filter(hasRead=False).filter(offerType="event").filter(offerPk=pk)
             log1 = Log.objects.create(operation="deleteeventapplication", itemType="event", itemId=event.pk, affectedItemType="user", affectedItemId=application.applicant.pk, userId=request.user)
+            application.deletionInfo = "eventDeleted"
             application.isDeleted = True
             application.save()
             for notificationChange in notificationsToChange:

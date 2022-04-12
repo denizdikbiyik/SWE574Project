@@ -54,6 +54,7 @@ class ServiceApplication(models.Model):
     service = models.ForeignKey('Service', on_delete=models.CASCADE, related_name="rel_services")
     approved = models.BooleanField(default=False)
     isDeleted = models.BooleanField(default=False)
+    deletionInfo = models.TextField(blank=True, null=True)
 
 class Event(models.Model):
     eventcreater = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -81,6 +82,7 @@ class EventApplication(models.Model):
     event = models.ForeignKey('Event', on_delete=models.CASCADE)
     approved = models.BooleanField(default=False)
     isDeleted = models.BooleanField(default=False)
+    deletionInfo = models.TextField(blank=True, null=True)
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, primary_key=True, verbose_name='user', related_name='profile',
