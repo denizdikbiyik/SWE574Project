@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.views import View
-from .models import Service, UserProfile, Event, ServiceApplication, UserRatings, NotifyUser, EventApplication, Tag, Log, Communication
+from .models import Service, UserProfile, Event, ServiceApplication, UserRatings, NotifyUser, EventApplication, Tag, Log, Communication, Like
 from .forms import ServiceForm, EventForm, ServiceApplicationForm, RatingForm, EventApplicationForm, ProfileForm, RequestForm
 from django.views.generic.edit import UpdateView, DeleteView
 from django.http import HttpResponseRedirect
@@ -136,6 +136,9 @@ class ServiceDetailView(View):
                 is_accepted = False
         allCommunications = Communication.objects.filter(itemType="service").filter(itemId=service.pk)
         allCommunicationsLength = len(allCommunications)
+        is_like = Like.objects.filter(itemType="service").filter(itemId=pk).filter(liked=request.user)
+        likes = Like.objects.filter(itemType="service").filter(itemId=pk)
+        likesCount = len(likes)
         context = {
             'service': service,
             'applications': applications,
@@ -148,7 +151,10 @@ class ServiceDetailView(View):
             'accepted_applications': accepted_applications,
             'allCommunications': allCommunications,
             'allCommunicationsLength': allCommunicationsLength,
-            'showCommunication': showCommunication
+            'showCommunication': showCommunication,
+            'is_like': is_like,
+            'likes': likes,
+            'likesCount': likesCount
         }
         return render(request, 'social/service_detail.html', context)
 
@@ -601,6 +607,9 @@ class EventDetailView(View):
                 is_accepted = False
         allCommunications = Communication.objects.filter(itemType="event").filter(itemId=event.pk)
         allCommunicationsLength = len(allCommunications)
+        is_like = Like.objects.filter(itemType="event").filter(itemId=pk).filter(liked=request.user)
+        likes = Like.objects.filter(itemType="event").filter(itemId=pk)
+        likesCount = len(likes)
         context = {
             'event': event,
             'applications': applications,
@@ -613,7 +622,10 @@ class EventDetailView(View):
             'accepted_applications': accepted_applications,
             'allCommunications': allCommunications,
             'allCommunicationsLength': allCommunicationsLength,
-            'showCommunication': showCommunication
+            'showCommunication': showCommunication,
+            'is_like': is_like,
+            'likes': likes,
+            'likesCount': likesCount
         }
         return render(request, 'social/event_detail.html', context)
 
@@ -1517,3 +1529,98 @@ class EventCommunicationDeleteView(LoginRequiredMixin, UserPassesTestMixin, Dele
         if self.request.user == communication.communicated:
             isOK = True
         return isOK
+
+class ServiceLike(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        service = Service.objects.get(pk=pk)
+        like = Like.objects.create(itemType="service", itemId=pk, liked=request.user)
+        notification = NotifyUser.objects.create(notify=service.creater, notification=str(request.user)+' liked service '+str(service.name), offerType="service", offerPk=service.pk)
+        notified_user = UserProfile.objects.get(pk=service.creater)
+        notified_user.unreadcount = notified_user.unreadcount+1
+        notified_user.save()
+        log = Log.objects.create(operation="like", itemType="service", itemId=pk, userId=request.user)
+        return redirect('service-detail', pk=pk)
+
+class ServiceUnlike(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        service = Service.objects.get(pk=pk)
+        like = Like.objects.get(itemType="service", itemId=pk, liked=request.user)
+        like.delete()
+        notification = NotifyUser.objects.create(notify=service.creater, notification=str(request.user)+' unliked service '+str(service.name), offerType="service", offerPk=service.pk)
+        notified_user = UserProfile.objects.get(pk=service.creater)
+        notified_user.unreadcount = notified_user.unreadcount+1
+        notified_user.save()
+        log = Log.objects.create(operation="unlike", itemType="service", itemId=pk, userId=request.user)
+        return redirect('service-detail', pk=pk)
+
+class EventLike(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        event = Event.objects.get(pk=pk)
+        like = Like.objects.create(itemType="event", itemId=pk, liked=request.user)
+        notification = NotifyUser.objects.create(notify=event.eventcreater, notification=str(request.user)+' liked event '+str(event.eventname), offerType="event", offerPk=event.pk)
+        notified_user = UserProfile.objects.get(pk=event.eventcreater)
+        notified_user.unreadcount = notified_user.unreadcount+1
+        notified_user.save()
+        log = Log.objects.create(operation="like", itemType="event", itemId=pk, userId=request.user)
+        return redirect('event-detail', pk=pk)
+
+class EventUnlike(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        event = Event.objects.get(pk=pk)
+        like = Like.objects.get(itemType="event", itemId=pk, liked=request.user)
+        like.delete()
+        notification = NotifyUser.objects.create(notify=event.eventcreater, notification=str(request.user)+' unliked event '+str(event.eventname), offerType="event", offerPk=event.pk)
+        notified_user = UserProfile.objects.get(pk=event.eventcreater)
+        notified_user.unreadcount = notified_user.unreadcount+1
+        notified_user.save()
+        log = Log.objects.create(operation="unlike", itemType="event", itemId=pk, userId=request.user)
+        return redirect('event-detail', pk=pk)
+
+class ServiceLikesList(LoginRequiredMixin, View):
+    def get(self, request, pk, *args, **kwargs):
+        service = Service.objects.get(pk=pk)
+        likes = Like.objects.filter(itemType="service").filter(itemId=pk)
+        likesCount = len(likes)
+        context = {
+            'likes': likes,
+            'likesCount': likesCount,
+            'service': service
+        }
+        return render(request, 'social/service_like_list.html', context)
+
+class EventLikesList(LoginRequiredMixin, View):
+    def get(self, request, pk, *args, **kwargs):
+        event = Event.objects.get(pk=pk)
+        likes = Like.objects.filter(itemType="event").filter(itemId=pk)
+        likesCount = len(likes)
+        context = {
+            'likes': likes,
+            'likesCount': likesCount,
+            'event': event
+        }
+        return render(request, 'social/event_like_list.html', context)
+
+class MyLikes(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        likes = Like.objects.filter(liked=request.user)
+        service_likes = likes.filter(itemType="service")
+        event_likes = likes.filter(itemType="event")
+        services = []
+        for service_like in service_likes:
+            serviceToAdd = Service.objects.get(pk=service_like.itemId)
+            services.append(serviceToAdd)
+        events = []
+        for event_like in event_likes:
+            eventToAdd = Event.objects.get(pk=event_like.itemId)
+            events.append(eventToAdd)
+        events_count = len(events)
+        services_count = len(services)
+        currentTime = timezone.now()
+        context = {
+            'services': services,
+            'events': events,
+            'services_count': services_count,
+            'events_count': events_count,
+            'currentTime': currentTime,
+        }
+        return render(request, 'social/mylikes.html', context)

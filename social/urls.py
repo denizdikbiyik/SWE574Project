@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import ServiceCreateView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventCreateView, EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, AddFollower, RemoveFollower, ApplicationDeleteView, ApplicationEditView, FollowersListView, RemoveMyFollower, TimeLine, AllServicesView, AllEventsView, CreatedServicesView, CreatedEventsView, AppliedServicesView, ConfirmServiceTaken, ConfirmServiceGiven, RateUser, RateUserDelete, RateUserEdit, ServiceSearch, EventSearch, Notifications, EventApplicationDeleteView, AppliedEventsView, RequestCreateView, CreatedRequestsView, RequestsFromMeView, RequestDetailView, RequestDeleteView, ServiceFilter, AllUsersView, UsersServicesListView, UsersEventsListView, AddAdminView, RemoveAdminView, DashboardServiceDetailView, DashboardEventDetailView, ServiceDetailCommunicationView, EventDetailCommunicationView, ServiceCommunicationDeleteView, EventCommunicationDeleteView
+from .views import ServiceCreateView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventCreateView, EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, AddFollower, RemoveFollower, ApplicationDeleteView, ApplicationEditView, FollowersListView, RemoveMyFollower, TimeLine, AllServicesView, AllEventsView, CreatedServicesView, CreatedEventsView, AppliedServicesView, ConfirmServiceTaken, ConfirmServiceGiven, RateUser, RateUserDelete, RateUserEdit, ServiceSearch, EventSearch, Notifications, EventApplicationDeleteView, AppliedEventsView, RequestCreateView, CreatedRequestsView, RequestsFromMeView, RequestDetailView, RequestDeleteView, ServiceFilter, AllUsersView, UsersServicesListView, UsersEventsListView, AddAdminView, RemoveAdminView, DashboardServiceDetailView, DashboardEventDetailView, ServiceDetailCommunicationView, EventDetailCommunicationView, ServiceCommunicationDeleteView, EventCommunicationDeleteView, ServiceLike, ServiceUnlike, EventLike, EventUnlike, ServiceLikesList, EventLikesList, MyLikes
 
 urlpatterns = [
     path('service/create', ServiceCreateView.as_view(), name='service-create'),
@@ -54,5 +54,13 @@ urlpatterns = [
     path('service/<int:pk>/communication', ServiceDetailCommunicationView.as_view(), name='service-detail-communication'),
     path('event/<int:pk>/communication', EventDetailCommunicationView.as_view(), name='event-detail-communication'),
     path('service/<int:service_pk>/communication/<int:pk>/delete', ServiceCommunicationDeleteView.as_view(), name='service-communication-delete'),
-    path('event/<int:event_pk>/communication/<int:pk>/delete', EventCommunicationDeleteView.as_view(), name='event-communication-delete')
+    path('event/<int:event_pk>/communication/<int:pk>/delete', EventCommunicationDeleteView.as_view(), name='event-communication-delete'),
+
+    path('service/<int:pk>/like', ServiceLike.as_view(), name='service-like'),
+    path('event/<int:pk>/like', EventLike.as_view(), name='event-like'),
+    path('service/<int:pk>/unlike', ServiceUnlike.as_view(), name='service-unlike'),
+    path('event/<int:pk>/unlike', EventUnlike.as_view(), name='event-unlike'),
+    path('service/<int:pk>/likelist', ServiceLikesList.as_view(), name='service-liked-list'),
+    path('event/<int:pk>/likelist', EventLikesList.as_view(), name='event-liked-list'),
+    path('mylikes', MyLikes.as_view(), name='mylikes'),
 ]

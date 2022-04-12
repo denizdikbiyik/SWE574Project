@@ -45,12 +45,34 @@
                         <img width="150" height="150" src="{{ service.picture.url }}"/>
                     </div>
                     <div class="col">
-                        {% if request.user == service.creater %}
-                            {% if is_active %}
-                                <a href="{% url 'service-edit' service.pk %}" class="btn btn-primary">Edit</a>
-                                <a href="{% url 'service-delete' service.pk %}" class="btn btn-danger">Delete</a>
+                        <div class="row">
+                            <div class="col">
+                                {% if request.user == service.creater %}
+                                    {% if is_active %}
+                                        <a href="{% url 'service-edit' service.pk %}" class="btn btn-primary">Edit</a>
+                                        <a href="{% url 'service-delete' service.pk %}" class="btn btn-danger">Delete</a>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <p></p>
+                            {% if is_like %}
+                                <form method="POST" action="{% url 'service-unlike' service.pk %}">
+                                    {% csrf_token %}
+                                    <button class="btn btn-outline-danger" type=submit>Unlike</button>
+                                </form>
+                            {% else %}
+                                <form method="POST" action="{% url 'service-like' service.pk %}">
+                                    {% csrf_token %}
+                                    <button class="btn btn-outline-success" type=submit>Like</button>
+                                </form>
                             {% endif %}
-                        {% endif %}
+                            <p></p>
+                            <div class="mb-3">
+                                <a href="{% url 'service-liked-list' service.pk %}">Likes: {{ likesCount }}</a>
+                            </div>
+                        </div>
                     </div>                  
                 </div>
                 </br>
