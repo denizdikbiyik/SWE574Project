@@ -35,12 +35,34 @@
                         <img width="150" height="150" src="{{ event.eventpicture.url }}"/>
                     </div>
                     <div class="col">
-                        {% if request.user == event.eventcreater %}
-                            {% if is_active %}
-                                <a href="{% url 'event-edit' event.pk %}" class="btn btn-primary">Edit</a>
-                                <a href="{% url 'event-delete' event.pk %}" class="btn btn-danger">Delete</a>
-                            {% endif %}         
-                        {% endif %}
+                        <div class="row">
+                            <div class="col">
+                                {% if request.user == event.eventcreater %}
+                                    {% if is_active %}
+                                        <a href="{% url 'event-edit' event.pk %}" class="btn btn-primary">Edit</a>
+                                        <a href="{% url 'event-delete' event.pk %}" class="btn btn-danger">Delete</a>
+                                    {% endif %}         
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <p></p>
+                            {% if is_like %}
+                                <form method="POST" action="{% url 'event-unlike' event.pk %}">
+                                    {% csrf_token %}
+                                    <button class="btn btn-outline-danger" type=submit>Unlike</button>
+                                </form>
+                            {% else %}
+                                <form method="POST" action="{% url 'event-like' event.pk %}">
+                                    {% csrf_token %}
+                                    <button class="btn btn-outline-success" type=submit>Like</button>
+                                </form>
+                            {% endif %}
+                            <p></p>
+                            <div class="mb-3">
+                                <a href="{% url 'event-liked-list' event.pk %}">Likes: {{ likesCount }}</a>
+                            </div>
+                        </div>
                     </div>                  
                 </div>
                 </br>

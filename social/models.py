@@ -142,3 +142,9 @@ class Communication(models.Model):
     itemId = models.IntegerField(default=0)
     communicated = models.ForeignKey(User, verbose_name='user', related_name='communicated', on_delete=models.CASCADE)
     message = models.TextField(blank=True, null=True)
+
+class Like(models.Model):
+    date = models.DateTimeField(default=timezone.now)
+    itemType = models.TextField(blank=True, null=True)
+    itemId = models.IntegerField(default=0)
+    liked = models.ForeignKey(User, verbose_name='user', related_name='liked', on_delete=models.CASCADE)
