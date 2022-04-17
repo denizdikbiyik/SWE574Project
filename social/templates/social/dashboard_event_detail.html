@@ -66,11 +66,15 @@
                         </tr>
                         {% for application in applications %}
                             <tr>
-                                <td>{{ application.applicant }}</td>
+                                <td><a style="text-decoration: none;" class="text-primary" href="{% url 'profile' application.applicant.id %}">{{ application.applicant }}</a></td>
                                 {% if application.approved == True %}
                                     <td>Approved</td>
                                 {% else %}
-                                    <td>Not Approved/Pending</td>
+                                    {% if application.isDeleted == True %}
+                                        <td>Declined</td>
+                                    {% else %}
+                                        <td>Pending</td>
+                                    {% endif %}
                                 {% endif %}
                             </tr>
                         {% endfor %}
@@ -90,7 +94,7 @@
                         <tr>
                             <td>{{ log.operation }}</td>
                             <td>{{ log.date }}</td>
-                            <td>{{ log.userId }}</td>
+                            <td><a style="text-decoration: none;" class="text-primary" href="{% url 'profile' log.userId.id %}">{{ log.userId }}</a></td>
                         </tr>
                     {% endfor %}
                 </table>
