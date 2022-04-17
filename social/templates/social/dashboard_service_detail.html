@@ -67,11 +67,15 @@
                         {% for application in applications %}
                             <tr>
                                 <td><a style="text-decoration: none;" class="text-primary" href="{% url 'profile' application.applicant.id %}">{{ application.applicant }}</a></td>
-                                {% if application.approved == True %}
-                                    <td>Approved</td>
-                                {% else %}
-                                    {% if application.isDeleted == True %}
+                                {% if application.isDeleted == True %}
+                                    {% if application.deletionInfo == "reject" %}
                                         <td>Declined</td>
+                                    {% else %}
+                                        <td>Canceled</td>
+                                    {% endif %}
+                                {% else %}
+                                    {% if application.approved == True %}
+                                        <td>Approved</td>
                                     {% else %}
                                         <td>Pending</td>
                                     {% endif %}
