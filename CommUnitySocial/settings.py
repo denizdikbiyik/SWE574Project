@@ -62,6 +62,8 @@ INSTALLED_APPS = [
     "bootstrap5",  # AT
     "dashboard_event_list",  # AT
     'dashboard_user_list',
+    'online_users',
+    'matplotlib',
 ]
 
 LOCATION_FIELD = {
@@ -83,6 +85,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'online_users.middleware.OnlineNowMiddleware',
 ]
 
 ROOT_URLCONF = 'CommUnitySocial.urls'
