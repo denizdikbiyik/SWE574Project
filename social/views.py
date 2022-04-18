@@ -2,8 +2,8 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.views import View
-from .models import Service, UserProfile, Event, ServiceApplication, UserRatings, NotifyUser, EventApplication, Tag, Log, Communication, Like
-from .forms import ServiceForm, EventForm, ServiceApplicationForm, RatingForm, EventApplicationForm, ProfileForm, RequestForm
+from .models import Service, UserProfile, Event, ServiceApplication, UserRatings, NotifyUser, EventApplication, Tag, Log, Communication, Like, UserComplaints
+from .forms import ServiceForm, EventForm, ServiceApplicationForm, RatingForm, EventApplicationForm, ProfileForm, RequestForm, ComplaintForm
 from django.views.generic.edit import UpdateView, DeleteView
 from django.http import HttpResponseRedirect
 from django.contrib import messages
@@ -1500,3 +1500,79 @@ class OnlineUsersList(LoginRequiredMixin, View):
             'users': users,
         }
         return render(request, 'social/onlineusers.html', context)
+
+
+class ComplaintUser(LoginRequiredMixin, View):
+    def get(self, request, *args, pk, **kwargs):
+        form = ComplaintForm()
+        complainted = UserProfile.objects.get(user=pk)
+        complaintRecord = UserComplaints.objects.filter(complainted=complainted.user).filter(complainter=request.user).filter(isDeleted=False)
+        isComplainted = len(complaintRecord)
+        context = {
+            'form': form,
+            'complaintRecord': complaintRecord,
+            'isComplainted': isComplainted,
+            'complainted': complainted,
+        }
+        return render(request, 'social/complaint.html', context)
+    
+    def post(self, request, *args, pk, **kwargs):
+        form = ComplaintForm(request.POST)
+        complainted = UserProfile.objects.get(user=pk)
+        if form.is_valid():
+            new_complaint = form.save(commit=False)
+            new_complaint.complainter = request.user
+            new_complaint.complainted = complainted.user
+            new_complaint.save()
+            log = Log.objects.create(operation="createcomplaint", itemType="user", itemId=complainted.pk, userId=request.user)
+            messages.success(request, 'Complaint is successful.')
+        return redirect('profile', pk=pk)
+
+class ComplaintUserEdit(LoginRequiredMixin, View):
+    def get(self, request, *args, pk, **kwargs):
+        complaint = UserComplaints.objects.get(pk=pk)
+        form = ComplaintForm(instance = complaint)     
+        context = {
+            'form': form,
+            'complaint': complaint,
+        }
+        return render(request, 'social/complaint-edit.html', context)
+
+    def post(self, request, *args, pk, **kwargs):
+        form = ComplaintForm(request.POST)
+        complaint = UserComplaints.objects.get(pk=pk)
+        if form.is_valid():
+            edit_complaint = form.save(commit=False)
+            complaint.feedback = edit_complaint.feedback
+            complaint.save()     
+            log = Log.objects.create(operation="editcomplaint", itemType="user", itemId=complaint.complainted.pk, userId=request.user) 
+        context = {
+            'form': form,
+        }
+        return redirect('complaintuser', pk=complaint.complainted.pk)
+
+class ComplaintUserDelete(LoginRequiredMixin, View):
+    def get(self, request, *args, pk, **kwargs):
+        complaint = UserComplaints.objects.get(pk=pk)
+        form = ComplaintForm(instance = complaint)
+        context = {
+            'form': form,
+        }
+        return render(request, 'social/complaint-delete.html', context)
+
+    def post(self, request, *args, pk, **kwargs):
+        complaint = UserComplaints.objects.get(pk=pk)
+        complaint.isDeleted = True
+        complaint.save()
+        log = Log.objects.create(operation="deletecomplaint", itemType="user", itemId=complaint.complainted.pk, userId=request.user)
+        return redirect('profile', pk=complaint.complainted.pk)
+
+class Complaints(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        complaints = UserComplaints.objects.all()
+        complaints_count = len(complaints)
+        context = {
+            'complaints_count': complaints_count,
+            'complaints': complaints,
+        }
+        return render(request, 'social/complaints.html', context)

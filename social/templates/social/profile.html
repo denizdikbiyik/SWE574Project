@@ -60,6 +60,10 @@
                                 </form>
                             {% endif %}
                         {% endif %}
+                        {% if request.user.profile.isAdmin %}
+                        {% else %}
+                            <a class="btn btn-primary mt-3" href="{% url 'complaintuser' profile.pk %}">Complaint</a>
+                        {% endif %}
                     {% endif %}
                 </div>
             </div>
