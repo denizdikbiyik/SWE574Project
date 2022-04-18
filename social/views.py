@@ -779,10 +779,21 @@ class ProfileView(View):
         events = Event.objects.filter(eventcreater=profile.user).filter(isDeleted=False)
         number_of_events = len(events)
         comments = UserRatings.objects.filter(rated=profile.user)
+
+        followings = []
+        allUsers = UserProfile.objects.all()
+        for userTo in allUsers:
+            userFollowers = userTo.followers.all()
+            for userFollower in userFollowers:
+                if profile.user.pk == userFollower.pk:
+                    followings.append(userTo)
+        number_of_followings = len(followings)
+
         context = {
             'user': user,
             'profile': profile,
             'number_of_followers': number_of_followers,
+            'number_of_followings': number_of_followings,
             'is_following': is_following,
             'ratings_average': ratings_average,
             'comments': comments,
@@ -839,7 +850,7 @@ class RemoveFollower(LoginRequiredMixin, View):
         profile = UserProfile.objects.get(pk=follow_pk)
         profile.followers.remove(request.user)
         log = Log.objects.create(operation="unfollow", itemType="user", itemId=follow_pk, userId=request.user)
-        return redirect('profile', pk=follow_pk)
+        return redirect('followings', pk=request.user.pk)
 
 class RemoveMyFollower(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
@@ -861,6 +872,24 @@ class FollowersListView(LoginRequiredMixin, View):
             'number_of_followers': number_of_followers
         }
         return render(request, 'social/followers_list.html', context)
+
+class FollowingsListView(LoginRequiredMixin, View):
+    def get(self, request, pk, *args, **kwargs):
+        profile = UserProfile.objects.get(pk=pk)
+        followings = []
+        allUsers = UserProfile.objects.all()
+        for userTo in allUsers:
+            userFollowers = userTo.followers.all()
+            for userFollower in userFollowers:
+                if profile.user.pk == userFollower.pk:
+                    followings.append(userTo)
+        number_of_followings = len(followings)
+        context = {
+            'followings': followings,
+            'profile': profile,
+            'number_of_followings': number_of_followings
+        }
+        return render(request, 'social/followings_list.html', context)
 
 class RateUser(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
