@@ -2,7 +2,7 @@ from django.http import HttpRequest
 from django.test import TestCase, Client
 from django.urls import reverse
 import datetime
-from dashboard_service_list.views import make_context_for_service_list, make_query_for_service_list
+from dashboard_service_list.views import make_query_for_service_list
 from social.models import Service
 from django.contrib.auth.models import User
 
