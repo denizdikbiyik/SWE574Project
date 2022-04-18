@@ -9,6 +9,14 @@ from django.http import HttpResponseRedirect
 from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Avg, Q
+from datetime import timedelta
+from online_users.models import OnlineUserActivity
+
+# MatPlotLib
+import matplotlib
+matplotlib.use('Agg')
+from matplotlib import pyplot as plt
+import numpy as np
 
 class ServiceCreateView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
@@ -1436,3 +1444,59 @@ class MyLikes(LoginRequiredMixin, View):
             'currentTime': currentTime,
         }
         return render(request, 'social/mylikes.html', context)
+
+
+class AdminDashboardIndex(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        # user_activity_objects_15min = OnlineUserActivity.get_user_activities()
+        # number_of_active_users_15min = user_activity_objects_15min.count()
+
+        # user_activity_objects_60min = OnlineUserActivity.get_user_activities(timedelta(minutes=60))
+        # users_60min = (user for user in user_activity_objects_60min)
+
+        user_activity_objects = OnlineUserActivity.get_user_activities(timedelta(seconds=5))
+        number_of_active_users = user_activity_objects.count()
+        activeUsers = (user for user in user_activity_objects)
+
+        allUsers = UserProfile.objects.all()
+        allUsersCount = len(allUsers)
+
+        labels = []
+        data = []
+
+        labels.append("All Users")
+        labels.append("Active Users")
+
+        data.append(allUsersCount)
+        data.append(number_of_active_users)
+
+        explode = (0.1, 0)  # only "explode" the 2nd slice (i.e. 'Hogs')
+        fig1, ax1 = plt.subplots()
+        ax1.pie(data, explode=explode, labels=labels, autopct='%1.1f%%', shadow=True, startangle=90)
+        ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+        plt.savefig('media/users_chart.png',dpi=100)
+
+        context = {
+            'activeUsers': activeUsers,
+            'number_of_active_users': number_of_active_users,
+            'allUsers': allUsers,
+            'allUsersCount': allUsersCount,
+        }
+        return render(request, 'social/admindashboardindex.html', context)
+
+class OnlineUsersList(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        user_activity_objects = OnlineUserActivity.get_user_activities(timedelta(seconds=5))
+        number_of_active_users = user_activity_objects.count()
+        activeUsers = (user for user in user_activity_objects)
+        users = []
+        for user in activeUsers:
+            profile = UserProfile.objects.get(pk=user.pk)
+            users.append(profile)
+
+        context = {
+            'activeUsers': activeUsers,
+            'number_of_active_users': number_of_active_users,
+            'users': users,
+        }
+        return render(request, 'social/onlineusers.html', context)

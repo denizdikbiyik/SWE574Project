@@ -7,6 +7,8 @@ from social.forms import ServiceForm, EventForm, ServiceApplicationForm
 from django.views.generic.edit import UpdateView, DeleteView
 from django.http import HttpResponseRedirect
 from django.utils import timezone
+from datetime import timedelta
+from online_users.models import OnlineUserActivity
 
 class Index(View):
     def get(self, request, *args, **kwargs):
