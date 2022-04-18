@@ -1295,6 +1295,8 @@ class ServiceCommunicationDeleteView(LoginRequiredMixin, UserPassesTestMixin, De
         isOK = False
         if self.request.user == communication.communicated:
             isOK = True
+        if self.request.user.profile.isAdmin:
+            isOK = True
         return isOK
 
 class EventDetailCommunicationView(View):
@@ -1347,6 +1349,8 @@ class EventCommunicationDeleteView(LoginRequiredMixin, UserPassesTestMixin, Dele
         communication = self.get_object()
         isOK = False
         if self.request.user == communication.communicated:
+            isOK = True
+        if self.request.user.profile.isAdmin:
             isOK = True
         return isOK
 

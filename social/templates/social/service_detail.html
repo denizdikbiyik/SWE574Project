@@ -238,10 +238,21 @@
                         {% for communication in allCommunications %}
                         <div class="row justify-content-center">
                             <div class="border-bottom">
-                                <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' communication.communicated.profile.pk %}">@{{ communication.communicated }}</a> on {{ communication.date }} wrote "{{ communication.message }}"
-                                {% if communication.communicated == request.user %}
-                                    <a href="{% url 'service-communication-delete' service.pk communication.pk %}" class="btn btn-danger">Delete</a>
-                                {% endif %}
+                                <p>
+                                    <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' communication.communicated.profile.pk %}">@{{ communication.communicated }}</a> on {{ communication.date }} wrote:
+                                </p>
+                                <p>
+                                    <div class="row">
+                                        <div class="col">
+                                            "{{ communication.message }}"
+                                        </div>
+                                        <div class="col text-right">
+                                            {% if communication.communicated == request.user or request.user.profile.isAdmin %}
+                                                <a href="{% url 'service-communication-delete' service.pk communication.pk %}" class="btn btn-danger btn-sm">Delete</a>
+                                            {% endif %}
+                                        </div>
+                                    </div>  
+                                </p>
                             </div>
                         </div>
                         {% endfor %}
