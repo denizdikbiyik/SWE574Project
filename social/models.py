@@ -106,6 +106,11 @@ class UserRatings(models.Model):
     service = models.ForeignKey('Service', on_delete=models.SET_NULL, null=True)
     feedback = models.TextField(blank=True, null=True)
 
+class UserComplaints(models.Model):
+    complainted = models.ForeignKey(User, verbose_name='user', related_name='complainted', on_delete=models.CASCADE)
+    complainter = models.ForeignKey(User, verbose_name='user', related_name='complainter', on_delete=models.SET_NULL, null=True)
+    feedback = models.TextField(blank=True, null=True)
+    isDeleted = models.BooleanField(default=False)
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):

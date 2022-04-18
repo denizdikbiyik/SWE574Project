@@ -1,0 +1,37 @@
+{% extends 'landing/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container">
+    <div class="row mt-5">
+        <div class="col-md-3 col-sm-6">
+            <a onClick="javascript:history.go(-1);" class="btn btn-light">Back</a>
+        </div>
+    </div>
+    <div class="row justify-content-center mt-3">
+        <div class="col-md-5 col-sm-12 border-bottom">
+            <h5>Update Your Complaint</h5>
+        </div>
+    </div>
+    <div class="row justify-content-center mt-3 mb-5">
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <p style="text-align: center; color:navy"  {% if message.tags %} class=" {{ message.tags }} " {% endif %}> {{ message }} </p>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <div class="col-md-5 col-sm-12 border-bottom">
+            <p></p>
+            <p><b>User:</b> {{ complaint.complainted }}</p>
+            <form method="POST" enctype='multipart/form-data'>
+                {% csrf_token %}
+                {{ form | crispy }}
+                <div class="d-grid gap-2">
+                    <button class="btn btn-success mt-3">Submit!</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

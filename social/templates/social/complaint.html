@@ -1,0 +1,44 @@
+{% extends 'landing/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="container">
+        <div class="row mt-5">
+            <div class="col-md-5 col-sm-6">
+                <a onClick="javascript:history.go(-1);" class="btn btn-light">Back</a>
+            </div>
+        </div>
+        <div class="row justify-content-center mt-3">
+            <div class="col-md-5 col-sm-12">
+                <h5>Complaint!</h5>
+            </div>
+        </div>
+        <div class="row justify-content-center mt-3 mb-5">
+            <div class="col-md-5 col-sm-12">
+                {% if isComplainted == 0 %}
+                    <p></p>
+                    <p><b>User:</b> {{ complainted.user.username }}</p>
+                    <form method="POST" enctype='multipart/form-data'>
+                        {% csrf_token %}
+                        {{ form | crispy }}
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-success mt-3">Submit!</button>
+                        </div>
+                    </form>
+                {% else %}
+                    {% for record in complaintRecord %}
+                        <b>You already created.</b>
+                        <p></p>
+                        <p><b>User:</b> {{ record.complainted }}</p>
+                        <p><b>Comment was:</b> {{ record.feedback }}</p>
+                        {% if request.user.profile.isAdmin %}
+                        {% else %}
+                            <a href="{% url 'complaint-edit' record.pk %}" class="btn btn-primary">Edit</a>
+                            <a href="{% url 'complaint-delete' record.pk %}" class="btn btn-danger">Delete</a>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}  
+            </div>
+        </div>
+    </div>
+{% endblock content %}
