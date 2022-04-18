@@ -1483,3 +1483,20 @@ class AdminDashboardIndex(LoginRequiredMixin, View):
             'allUsersCount': allUsersCount,
         }
         return render(request, 'social/admindashboardindex.html', context)
+
+class OnlineUsersList(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        user_activity_objects = OnlineUserActivity.get_user_activities(timedelta(seconds=5))
+        number_of_active_users = user_activity_objects.count()
+        activeUsers = (user for user in user_activity_objects)
+        users = []
+        for user in activeUsers:
+            profile = UserProfile.objects.get(pk=user.pk)
+            users.append(profile)
+
+        context = {
+            'activeUsers': activeUsers,
+            'number_of_active_users': number_of_active_users,
+            'users': users,
+        }
+        return render(request, 'social/onlineusers.html', context)
