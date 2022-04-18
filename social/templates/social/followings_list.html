@@ -1,0 +1,42 @@
+{% extends 'landing/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="container">
+        <div class="row justify-content-center mt-3">
+            <div class="col-md-5 col-sm-12">
+                <h5>Followings of {{ profile.user.username }}</h5>
+            </div>
+        </div>
+        {% if number_of_followings == 0 %}
+        <div class="row justify-content-center mt-3">
+            <div class="col-md-5 col-sm-12 border-bottom position-relative">
+                <p>No followings found.</p>
+            </div>
+        </div>
+        {% else %}
+            {% for following in followings %}
+            <div class="row justify-content-center mt-3">
+                <div class="col-md-5 col-sm-12 border-bottom position-relative">
+
+                    <div class="row">
+                        <div class="col">
+                            <p><a style="text-decoration: none;" class="text-primary" href="{% url 'profile' following.pk %}">@{{ following.user.username }}</a></p>
+                        </div>
+                        <div class="col">
+                            {% if profile.user == request.user %}
+                                <form method="POST" action="{% url 'remove-follower' request.user.pk following.pk %}">
+                                    {% csrf_token %}
+                                    <button class="btn btn-outline-danger" type=submit>Unfollow</button>
+                                </form>
+                            {% else %}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+{% endblock content %}

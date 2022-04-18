@@ -86,6 +86,9 @@
                 <a href="{% url 'followers' profile.pk %}">Followers: {{ number_of_followers }}</a>
             </div>
             <div class="mb-3">
+                <a href="{% url 'followings' profile.pk %}">Followings: {{ number_of_followings }}</a>
+            </div>
+            <div class="mb-3">
                 <a href="{% url 'usersservices' profile.pk %}">Services created: {{ number_of_services }}</a>
             </div>
             <div class="mb-3">
