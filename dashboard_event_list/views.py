@@ -1,75 +1,127 @@
-from django.http import HttpResponseRedirect
+from django.contrib.postgres.search import SearchVector
 from django.shortcuts import render, get_object_or_404, redirect
-from django.views import generic
-
-from social.models import Service, ServiceApplication, Event, EventApplication, User
-from django.core.paginator import Paginator
+from social.models import Event
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 import datetime
 
-from .forms import PeriodPickerEvent
 
-
-def make_context_for_event_list(*args):
+def make_query_for_event_list(*args):
     date_today = datetime.datetime.now()
-    is_pick_date = False
-    order_by = args[3]
-    events = Event.objects.all().order_by(
-        order_by)
     context = {}
     if args[0] == "week":
         time_delta = 7
         date_old = (date_today - datetime.timedelta(days=time_delta)).date()
-        events = events.filter(eventcreateddate__gte=date_old, eventcreateddate__lte=date_today).order_by(
-            order_by)
-        context["text"] = "Showing the events created in the last 7 days."
+        date_new = date_today
+        context["text"] = "Period: Last 7 days"
     elif args[0] == "month":
         time_delta = 30
         date_old = (date_today - datetime.timedelta(days=time_delta)).date()
-        events = events.filter(eventcreateddate__gte=date_old, eventcreateddate__lte=date_today).order_by(
-            order_by)
-        context["text"] = "Showing the events created in the last 30 days."
-    elif args[0] == "all":
-        events = events
-        context["text"] = "Showing all the events created."
+        date_new = date_today
+        context["text"] = "Period: Last 30 days."
+    elif args[0] == "year":
+        time_delta = 365
+        date_old = (date_today - datetime.timedelta(days=time_delta)).date()
+        date_new = date_today
+        context["text"] = "Period: Last 365 days."
     else:
-        is_pick_date = True
         date_old = args[1]
         date_new = args[2]
-        if date_new != None and date_old != None:
-            events = events.filter(eventcreateddate__gte=date_old, eventcreateddate__lte=date_new).order_by(
-                order_by)
-            context["text"] = "Showing the events created between the selected dates."
-    context["is_pick_date"] = is_pick_date
-    event_count = events.count()
-    if event_count == 0:
-        context["text"] = ""
-    context["events"] = events
-    context["event_count"] = event_count
+        context["text"] = "Period: Between the selected dates."
+    context["date_old"] = date_old
+    context["date_new"] = date_new
     return context
 
 
 def list_events(request):
-    if request.method == 'POST':
-        applications = EventApplication.objects.all()
-        form = PeriodPickerEvent(request.POST)
-        if form.is_valid():
-            form_field1 = form.cleaned_data.get("period")
-            form_field2 = form.cleaned_data.get("date_old")
-            form_field3 = form.cleaned_data.get("date_new")
-            form_field4 = form.cleaned_data.get("sort")
-            context = make_context_for_event_list(form_field1, form_field2, form_field3, form_field4)
-            context["form"] = form
-            context["applications"] = applications
-            # Clears the list when "Select Dates" is selected and submitted
-            if form.cleaned_data.get("period") == "select" and form.cleaned_data.get("date_old") == None:
-                context["events"] = None
-                context["clear_list"] = True
-            else:
-                context["clear_list"] = False
-            return render(request, 'dashboard_event_list/eventlist.html', context)
-    else:
-        if request.user.profile.isAdmin:
-            form = PeriodPickerEvent()
+    if request.user.profile.isAdmin:
+        is_admin = True
+        type = request.GET.get("type")
+        periods = request.GET.get("periods")
+        beginning = request.GET.get("beginning")
+        ending = request.GET.get("ending")
+        status = request.GET.get("status")
+        q = request.GET.get("q")
+        sort = request.GET.get("sort")
+        submit = request.GET.get("submitted")
+        events = Event.objects.all()
+        status_message = ""
+        period_message = ""
+        date_today = datetime.datetime.now()
+        outdated_events = Event.objects.all().filter(eventdate__lte=date_today)
+        period = make_query_for_event_list(periods, beginning, ending)
+        show_count = False
+
+        if 'submit' in request.GET and ((beginning == "" and ending == "") or (periods == "") or (
+                periods == None and beginning == None and ending == None)):
+            period_message = "Please choose a period!"
+            show_count = show_count
+
+        if (periods == None and beginning == None and ending == None) or (
+                periods == None and beginning == "" and ending == "") or (
+                period["date_old"] == "" and period["date_new"] == "") or (periods == ""):
+            events = Event.objects.none()
+            show_count = show_count
         else:
-            return redirect('index')
-    return render(request, 'dashboard_event_list/eventlist.html', {'form': form})
+            if periods == "all":
+                events = events
+                period_message = "Period: All times"
+                show_count = True
+            elif (beginning != "" and ending == "") or (beginning == "" and ending != ""):
+                events = Event.objects.none()
+                period_message = "You must choose two dates!"
+            elif periods == None and (period["date_old"] > period["date_new"]):
+                events = Event.objects.none()
+                period_message = "Beginning date can't be older than ending date!"
+            else:
+                events = events.filter(eventcreateddate__gte=period["date_old"],
+                                       eventcreateddate__lte=period["date_new"])
+                period_message = period["text"]
+                show_count = True
+
+        if status == "all":
+            events = events
+            status_message = "Status: All"
+        elif status == "isDeleted":
+            events = events.filter(isDeleted=True)
+            status_message = "Status: Deleted"
+        elif status == "isActive":
+            events = events.filter(isActive=False)
+            status_message = "Status: Inactive"
+        else:
+            events = events
+            status_message = status_message
+
+        if q == None or q == "":
+            events = events
+        else:
+            events = events.annotate(
+                search=SearchVector("eventcreater", "eventname", "eventdescription")).filter(
+                search=q)
+
+        if sort == "name":
+            events = events.order_by("eventname")
+        elif sort == "createddate":
+            events = events.order_by("eventcreateddate")
+        else:
+            events = events.order_by("eventdate")
+
+        event_count = events.count()
+        object_list = events
+        page_num = request.GET.get('page', 1)
+        paginator = Paginator(object_list, 2)  # 6 employees per page
+        try:
+            page_obj = paginator.page(page_num)
+        except PageNotAnInteger:
+            # if page is not an integer, deliver the first page
+            page_obj = paginator.page(1)
+        except EmptyPage:
+            # if the page is out of range, deliver the last page
+            page_obj = paginator.page(paginator.num_pages)
+        return render(request, 'dashboard_event_list/eventlist.html',
+                      {'page_obj': page_obj, "type": type, "periods": periods, "beginning": beginning, "ending": ending,
+                       "status": status, "q": q, "sort": sort, "submit": submit, "event_count": event_count,
+                       "is_admin": is_admin, "status_message": status_message, "period_message": period_message,
+                       "outdated_events": outdated_events, "show_count": show_count})
+
+    else:
+        return redirect('index')
