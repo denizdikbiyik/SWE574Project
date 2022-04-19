@@ -1,79 +1,130 @@
-from django.http import HttpResponseRedirect
+from django.contrib.postgres.search import SearchVector
 from django.shortcuts import render, get_object_or_404, redirect
-from django.views import generic
-
-from social.models import Service, ServiceApplication
-from django.core.paginator import Paginator
+from social.models import Service
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 import datetime
 
-from .forms import PeriodPicker
 
-
-# helper function to get context from the form
-def make_context_for_service_list(*args):
+def make_query_for_service_list(*args):
     date_today = datetime.datetime.now()
-    is_pick_date = False
-    order_by = args[3]
-    services = Service.objects.all().order_by(
-        order_by)
     context = {}
     if args[0] == "week":
         time_delta = 7
         date_old = (date_today - datetime.timedelta(days=time_delta)).date()
-        services = services.filter(createddate__gte=date_old, createddate__lte=date_today).order_by(
-            order_by)
-        context["text"] = "Showing the services created in the last 7 days."
+        date_new = date_today
+        context["text"] = "Period: Last 7 days"
     elif args[0] == "month":
         time_delta = 30
         date_old = (date_today - datetime.timedelta(days=time_delta)).date()
-        services = services.filter(createddate__gte=date_old, createddate__lte=date_today).order_by(
-            order_by)
-        context["text"] = "Showing the services created in the last 30 days."
-    elif args[0] == "all":
-        services = services
-        context["text"] = "Showing all the services created."
+        date_new = date_today
+        context["text"] = "Period: Last 30 days."
+    elif args[0] == "year":
+        time_delta = 365
+        date_old = (date_today - datetime.timedelta(days=time_delta)).date()
+        date_new = date_today
+        context["text"] = "Period: Last 365 days."
     else:
-        is_pick_date = True
         date_old = args[1]
         date_new = args[2]
-        if date_new != None and date_old != None:
-            services = services.filter(createddate__gte=date_old, createddate__lte=date_new).order_by(
-                order_by)
-            context["text"] = "Showing the services created between the selected dates."
-    context["is_pick_date"] = is_pick_date
-    service_count = services.count()
-    if service_count == 0:
-        context["text"] = ""
-    context["services"] = services
-    context["service_count"] = service_count
+        context["text"] = "Period: Between the selected dates."
+    context["date_old"] = date_old
+    context["date_new"] = date_new
     return context
 
 
 def list_services(request):
-    if request.method == 'POST':
-        applications = ServiceApplication.objects.all()
-        form = PeriodPicker(request.POST)
-        if form.is_valid():
-            form_field1 = form.cleaned_data.get("period")
-            form_field2 = form.cleaned_data.get("date_old")
-            form_field3 = form.cleaned_data.get("date_new")
-            form_field4 = form.cleaned_data.get("sort")
-            context = make_context_for_service_list(form_field1, form_field2, form_field3, form_field4)
-            context["form"] = form
-            context["applications"] = applications
-            date_today = datetime.datetime.now()
-            context["outdated_services"] = Service.objects.all().filter(servicedate__lte=date_today)
+    if request.user.profile.isAdmin:
+        is_admin = True
+        type = request.GET.get("type")
+        periods = request.GET.get("periods")
+        beginning = request.GET.get("beginning")
+        ending = request.GET.get("ending")
+        status = request.GET.get("status")
+        q = request.GET.get("q")
+        sort = request.GET.get("sort")
+        submit = request.GET.get("submitted")
+        services = Service.objects.all()
+        status_message = ""
+        period_message = ""
+        date_today = datetime.datetime.now()
+        outdated_services = Service.objects.all().filter(servicedate__lte=date_today)
+        period = make_query_for_service_list(periods, beginning, ending)
+        show_count = False
 
-            # Clears the list when "Select Dates" is selected and submitted
-            if form.cleaned_data.get("period") == "select" and form.cleaned_data.get("date_old") == None:
-                context["services"] = None
-                context["clear_list"] = True
-            else:
-                context["clear_list"] = False
-            return render(request, 'dasboard_service_list/servicelist.html', context)
-    else:
-        if request.user.profile.isAdmin:
-            form = PeriodPicker()
+        if 'submit' in request.GET and ((beginning == "" and ending == "") or (periods == "") or (
+                periods == None and beginning == None and ending == None)):
+            period_message = "Please choose a period!"
+            show_count = show_count
+
+        if (periods == None and beginning == None and ending == None) or (
+                periods == None and beginning == "" and ending == "") or (
+                period["date_old"] == "" and period["date_new"] == "") or (periods == ""):
+            services = Service.objects.none()
+            show_count = show_count
         else:
-            return redirect('index')
-    return render(request, 'dasboard_service_list/servicelist.html', {'form': form})
+            if periods == "all":
+                services = services
+                period_message = "Period: All times"
+                show_count = True
+            elif (beginning != "" and ending == "") or (beginning == "" and ending != ""):
+                services = Service.objects.none()
+                period_message = "You must choose two dates!"
+            elif periods == None and (period["date_old"] > period["date_new"]):
+                services = Service.objects.none()
+                period_message = "Beginning date can't be older than ending date!"
+            else:
+                services = services.filter(createddate__gte=period["date_old"],
+                                           createddate__lte=period["date_new"])
+                period_message = period["text"]
+                show_count = True
+
+        if status == "all":
+            services = services
+            status_message = "Status: All"
+        elif status == "handshake":
+            services = services.filter(is_taken=True, is_given=True)
+            status_message = "Status: Handshake"
+        elif status == "isDeleted":
+            services = services.filter(isDeleted=True)
+            status_message = "Status: Deleted"
+        elif status == "isActive":
+            services = services.filter(isActive=False)
+            status_message = "Status: Inactive"
+        else:
+            services = services
+            status_message = status_message
+
+        if q == None or q == "":
+            services = services
+        else:
+            services = services.annotate(
+                search=SearchVector("creater", "name", "description", "category")).filter(
+                search=q)
+
+        if sort == "name":
+            services = services.order_by("name")
+        elif sort == "createddate":
+            services = services.order_by("createddate")
+        else:
+            services = services.order_by("servicedate")
+
+        service_count = services.count()
+        object_list = services
+        page_num = request.GET.get('page', 1)
+        paginator = Paginator(object_list, 2)  # 6 employees per page
+        try:
+            page_obj = paginator.page(page_num)
+        except PageNotAnInteger:
+            # if page is not an integer, deliver the first page
+            page_obj = paginator.page(1)
+        except EmptyPage:
+            # if the page is out of range, deliver the last page
+            page_obj = paginator.page(paginator.num_pages)
+        return render(request, 'dasboard_service_list/servicelist.html',
+                      {'page_obj': page_obj, "type": type, "periods": periods, "beginning": beginning, "ending": ending,
+                       "status": status, "q": q, "sort": sort, "submit": submit, "service_count": service_count,
+                       "is_admin": is_admin, "status_message": status_message, "period_message": period_message,
+                       "outdated_services": outdated_services, "show_count": show_count})
+
+    else:
+        return redirect('index')

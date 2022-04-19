@@ -2,7 +2,7 @@ from django.http import HttpRequest
 from django.test import TestCase, Client
 from django.urls import reverse
 import datetime
-from dashboard_service_list.views import make_context_for_service_list
+from dashboard_service_list.views import make_query_for_service_list
 from social.models import Service
 from django.contrib.auth.models import User
 
@@ -10,25 +10,12 @@ from django.utils import timezone
 
 
 class TestViews(TestCase):
-    '''
-    # P
-    def test_url_accessible_by_name(self):
-        client = Client()
-        response = client.get(reverse("servicelist"))
-        self.assertEquals(response.status_code, 404)
-
-    # P
-    def test_view_uses_correct_template(self):
-        client = Client()
-        response = client.get(reverse("servicelist"))
-        self.assertTemplateUsed(response, "dasboard_service_list/servicelist.html")
 
     # P
     def test_url_exists(self):
         client = Client()
         response = client.get("/dashboard/servicelist/")
         self.assertEqual(response.status_code, 404)
-    '''
 
     def test_make_context_for_service_list(self):
         test_user1 = User.objects.create_user(username='testuser1', password='1X<ISRUkw+tuK')
@@ -95,40 +82,55 @@ class TestViews(TestCase):
 
         # test period selection "all"
         field1 = "all"
-        field2 = None
-        field3 = None
-        field4 = "createddate"
-        context = make_context_for_service_list(field1, field2, field3, field4)
-        service_count = context["services"].count()
-        print(context["services"].count())
+        field2 = create_date_before_given_date(501, date_today)
+        field3 = date_today
+        period = make_query_for_service_list(field1, field2, field3)
+        services = Service.objects.filter(createddate__gte=period["date_old"],
+                                          createddate__lte=period["date_new"])
+        service_count = services.count()
+        print(service_count)
         self.assertEquals(service_count, 3)
 
         # test period selection "week"
         field1 = "week"
-        field2 = None
-        field3 = None
-        field4 = "createddate"
-        context = make_context_for_service_list(field1, field2, field3, field4)
-        service_count = context["services"].count()
-        print(context["services"].count())
+        field2 = create_date_before_given_date(501, date_today)
+        field3 = date_today
+        period = make_query_for_service_list(field1, field2, field3)
+        services = Service.objects.filter(createddate__gte=period["date_old"],
+                                          createddate__lte=period["date_new"])
+        service_count = services.count()
+        print(service_count)
         self.assertEquals(service_count, 1)
 
         # test period selection "month"
         field1 = "month"
-        field2 = None
-        field3 = None
-        field4 = "createddate"
-        context = make_context_for_service_list(field1, field2, field3, field4)
-        service_count = context["services"].count()
-        print(context["services"].count())
+        field2 = create_date_before_given_date(501, date_today)
+        field3 = date_today
+        period = make_query_for_service_list(field1, field2, field3)
+        services = Service.objects.filter(createddate__gte=period["date_old"],
+                                          createddate__lte=period["date_new"])
+        service_count = services.count()
+        print(service_count)
+        self.assertEquals(service_count, 2)
+
+        # test period selection "year"
+        field1 = "year"
+        field2 = create_date_before_given_date(501, date_today)
+        field3 = date_today
+        period = make_query_for_service_list(field1, field2, field3)
+        services = Service.objects.filter(createddate__gte=period["date_old"],
+                                          createddate__lte=period["date_new"])
+        service_count = services.count()
+        print(service_count)
         self.assertEquals(service_count, 2)
 
         # test period selection ""select""
-        field1 = "select"
+        field1 = ""
         field2 = create_date_before_given_date(501, date_today)
         field3 = date_today
-        field4 = "createddate"
-        context = make_context_for_service_list(field1, field2, field3, field4)
-        service_count = context["services"].count()
-        print(context["services"].count())
+        period = make_query_for_service_list(field1, field2, field3)
+        services = Service.objects.filter(createddate__gte=period["date_old"],
+                                          createddate__lte=period["date_new"])
+        service_count = services.count()
+        print(service_count)
         self.assertEquals(service_count, 3)
