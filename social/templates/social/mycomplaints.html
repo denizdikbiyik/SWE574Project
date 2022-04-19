@@ -1,0 +1,36 @@
+{% extends 'landing/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="container">
+        <br/>
+        <div class="row">
+            <h5 style="text-align:center;">Your Complaints</h5>
+            </br>
+            {% if complaints_count != 0 %}
+                {% for complaint in complaints %}
+                    <div class="row justify-content-center mt-3">
+                        <div class="card col-md-10 col-sm-12 border-bottom position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
+                            <div class="row">
+                                <div class="col-md-8">    
+                                    {% if complaint.feedback %}
+                                        <a>Feedback: "{{ complaint.feedback }}"</a>           
+                                    {% else %}
+                                    {% endif %}
+                                    for <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' complaint.complainted.pk %}">@{{ complaint.complainted.username }}</a>  
+                                    {% if complaint.isDeleted %}
+                                    {% else %}
+                                        <a class="stretched-link" href="{% url 'profile' complaint.complainted.pk %}"></a> 
+                                    {% endif %}                  
+                                </div>         
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="row justify-content-center mt-3">No complaints found!</p>
+            {% endif %}
+        </div>
+        
+    </div>
+{% endblock content %}

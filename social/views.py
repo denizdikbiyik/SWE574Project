@@ -1497,7 +1497,7 @@ class AdminDashboardIndex(LoginRequiredMixin, View):
         labels = []
         data = []
 
-        labels.append("All Users")
+        labels.append("Not Active Users")
         labels.append("Active Users")
 
         data.append(allUsersCount)
@@ -1609,3 +1609,13 @@ class Complaints(LoginRequiredMixin, View):
             'complaints': complaints,
         }
         return render(request, 'social/complaints.html', context)
+
+class MyComplaints(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        complaints = UserComplaints.objects.filter(complainter=request.user).filter(isDeleted=False)
+        complaints_count = len(complaints)
+        context = {
+            'complaints_count': complaints_count,
+            'complaints': complaints,
+        }
+        return render(request, 'social/mycomplaints.html', context)
