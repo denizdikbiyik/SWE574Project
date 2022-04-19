@@ -60,7 +60,7 @@
                             {% endif %}
                             <p></p>
                             <div class="mb-3">
-                                <a href="{% url 'event-liked-list' event.pk %}">Likes: {{ likesCount }}</a>
+                                <a style="text-decoration: none;" class="text-primary" href="{% url 'event-liked-list' event.pk %}">Likes: {{ likesCount }}</a>
                             </div>
                         </div>
                     </div>                  
