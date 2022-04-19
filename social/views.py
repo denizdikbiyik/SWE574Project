@@ -1497,7 +1497,7 @@ class AdminDashboardIndex(LoginRequiredMixin, View):
         labels = []
         data = []
 
-        labels.append("All Users")
+        labels.append("Not Active Users")
         labels.append("Active Users")
 
         data.append(allUsersCount)
