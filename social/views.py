@@ -789,6 +789,15 @@ class ProfileView(View):
                     followings.append(userTo)
         number_of_followings = len(followings)
 
+        notifications = NotifyUser.objects.filter(notify=request.user).filter(offerType="user").filter(offerPk=pk).filter(hasRead=False)
+        countNotifications = len(notifications)
+        for notification in notifications:
+            notification.hasRead = True
+            notification.save()
+        userNotified = UserProfile.objects.get(pk=request.user.profile)
+        userNotified.unreadcount = userNotified.unreadcount - countNotifications
+        userNotified.save()
+
         context = {
             'user': user,
             'profile': profile,
@@ -1558,6 +1567,12 @@ class ComplaintUser(LoginRequiredMixin, View):
             new_complaint.complainted = complainted.user
             new_complaint.save()
             log = Log.objects.create(operation="createcomplaint", itemType="user", itemId=complainted.pk, userId=request.user)
+            allAdmins = UserProfile.objects.filter(isAdmin=True)
+            for admin in allAdmins:
+                notification = NotifyUser.objects.create(notify=admin.user, notification=str(request.user)+' complainted for '+str(complainted.user), offerType="user", offerPk=complainted.user.pk)
+                notified_user = UserProfile.objects.get(pk=admin.user)
+                notified_user.unreadcount = notified_user.unreadcount+1
+                notified_user.save()
             messages.success(request, 'Complaint is successful.')
         return redirect('profile', pk=pk)
 
@@ -1579,6 +1594,12 @@ class ComplaintUserEdit(LoginRequiredMixin, View):
             complaint.feedback = edit_complaint.feedback
             complaint.save()     
             log = Log.objects.create(operation="editcomplaint", itemType="user", itemId=complaint.complainted.pk, userId=request.user) 
+            allAdmins = UserProfile.objects.filter(isAdmin=True)
+            for admin in allAdmins:
+                notification = NotifyUser.objects.create(notify=admin.user, notification=str(request.user)+' edited complaint for '+str(complaint.complainted), offerType="user", offerPk=complaint.complainted.pk)
+                notified_user = UserProfile.objects.get(pk=admin.user)
+                notified_user.unreadcount = notified_user.unreadcount+1
+                notified_user.save()
         context = {
             'form': form,
         }
@@ -1598,6 +1619,12 @@ class ComplaintUserDelete(LoginRequiredMixin, View):
         complaint.isDeleted = True
         complaint.save()
         log = Log.objects.create(operation="deletecomplaint", itemType="user", itemId=complaint.complainted.pk, userId=request.user)
+        allAdmins = UserProfile.objects.filter(isAdmin=True)
+        for admin in allAdmins:
+            notification = NotifyUser.objects.create(notify=admin.user, notification=str(request.user)+' deleted complaint for '+str(complaint.complainted), offerType="user", offerPk=complaint.complainted.pk)
+            notified_user = UserProfile.objects.get(pk=admin.user)
+            notified_user.unreadcount = notified_user.unreadcount+1
+            notified_user.save()
         return redirect('profile', pk=complaint.complainted.pk)
 
 class Complaints(LoginRequiredMixin, View):
