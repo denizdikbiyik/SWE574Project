@@ -26,6 +26,13 @@
                                         {% else %}  
                                             <p><span style="font-weight: bolder;">Notification:</span> {{ notification.notification }}</p>
                                         {% endif %}
+                                    {% elif notification.offerType == "user" %}   
+                                        {% if notification.offerPk != 0 %}
+                                            <p><span style="font-weight: bolder;">Notification:</span> {{ notification.notification }}</p>
+                                            <a class="stretched-link" href="{% url 'profile' notification.offerPk %}"></a>  
+                                        {% else %}  
+                                            <p><span style="font-weight: bolder;">Notification:</span> {{ notification.notification }}</p>
+                                        {% endif %}
                                     {% else %} 
                                         {% if notification.offerPk != 0 %}
                                             <p><span style="font-weight: bolder;">Notification:</span> {{ notification.notification }}</p>
