@@ -1829,3 +1829,21 @@ class DeactivateEventApplication(LoginRequiredMixin, View):
                 count = 1
         log = Log.objects.create(operation="deactivateeventapplication", itemType="event", itemId=theeventApplication.event.pk, userId=request.user)
         return redirect('event-detail', pk=theeventApplication.event.pk)
+
+class Deactivateds(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        services = Service.objects.filter(isActive=False)
+        services_count = len(services)
+        events = Event.objects.filter(isActive=False)
+        events_count = len(events)
+        profiles = UserProfile.objects.filter(isActive=False)
+        profiles_count = len(profiles)
+        context = {
+            'services': services,
+            'services_count': services_count,
+            'events': events,
+            'events_count': events_count,
+            'profiles': profiles,
+            'profiles_count': profiles_count,
+        }
+        return render(request, 'social/deactivateds.html', context)
