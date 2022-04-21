@@ -52,6 +52,17 @@
                                     {% csrf_token %}
                                     <button class="btn btn-outline-danger" type=submit>Deactivate</button>
                                 </form>
+                                {% if is_featured %}
+                                    <form method="POST" action="{% url 'remove-event-featured' event.pk %}">
+                                        {% csrf_token %}
+                                        <button class="btn btn-outline-danger" type=submit>Remove Featured</button>
+                                    </form>
+                                {% else %}
+                                    <form method="POST" action="{% url 'add-event-featured' event.pk %}">
+                                        {% csrf_token %}
+                                        <button class="btn btn-outline-success" type=submit>Add Featured</button>
+                                    </form>
+                                {% endif %}
                             {% endif %}
                             {% if event.isActive %}
                                 {% if is_like %}

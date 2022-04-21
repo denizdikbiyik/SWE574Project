@@ -155,3 +155,9 @@ class Like(models.Model):
     itemType = models.TextField(blank=True, null=True)
     itemId = models.IntegerField(default=0)
     liked = models.ForeignKey(User, verbose_name='user', related_name='liked', on_delete=models.CASCADE)
+
+class Featured(models.Model):
+    date = models.DateTimeField(default=timezone.now)
+    operation = models.TextField(blank=True, null=True)
+    itemType = models.TextField(blank=True, null=True)
+    itemId = models.IntegerField(default=0)
