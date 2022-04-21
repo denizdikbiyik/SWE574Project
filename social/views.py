@@ -1218,18 +1218,19 @@ class DashboardEventDetailView(View):
         if event.eventdate <= timezone.now():
             is_active = False
         logs = Log.objects.filter(itemType="event").filter(itemId=pk)
-        conversion = {'createevent': 'Event Creation',
-                      'createeventapplication': 'Event Application Creation',
-                      'editevent': 'Event Edition',
-                      'deleteevent': 'Event Deletion',
-                      'editserviceapplication': 'Service Application Edition',
-                      'deleteeventapplication': 'Event Application Deletion',
-                      'spentcredit': 'Credit Spent',
-                      'createeventcommunication': 'Message Sent',
-                      'deleteeventcommunication': 'Message Deleted',
-                      'like': 'Liked',
-                      'unlike': 'Unliked',
-                      'deactivate': 'Deactivated'}
+        conversion = {'createevent': 'Event is created.',
+                      'createeventapplication': 'Application done to event.',
+                      'editevent': 'Event is edited.',
+                      'deleteevent': 'Event is deleted.',
+                      'editserviceapplication': 'Service application is edited.',
+                      'deleteeventapplication': 'Event application is deleted.',
+                      'spentcredit': 'Credit spent.',
+                      'createeventcommunication': 'A message sent under event.',
+                      'deleteeventcommunication': 'A message under event is deleted.',
+                      'like': 'Event is liked.',
+                      'unlike': 'Event is unliked.',
+                      'deactivate': 'Event is deactivated.',
+                      'deactivateeventapplication': 'An application to event is deactivated.'}
         for log in logs:
             log.operation = conversion[log.operation]
         context = {
@@ -1253,24 +1254,25 @@ class DashboardServiceDetailView(View):
         if service.servicedate <= timezone.now():
             is_active = False
         logs = Log.objects.filter(itemType="service").filter(itemId=pk)
-        conversion = {'createservice': 'Service Creation',
-                      'createserviceapplication': 'Service Application Creation',
-                      'editservice': 'Service Edition',
-                      'deleteservice': 'Service Deletion',
-                      'editserviceapplication': 'Service Application Edition',
-                      'deleteserviceapplication': 'Service Application Deletion',
-                      'confirmtaken': 'Confirmation of Service Taken',
-                      'confirmgiven': 'Confirmation of Service Given',
-                      'earncredit': 'Credit Earned',
-                      'spentcredit': 'Credit Spent',
-                      'createservicecommunication': 'Message Sent',
-                      'deleteservicecommunication': 'Message Deleted',
-                      'createrating': 'Rating Created',
-                      'editrating': 'Rating Edited',
-                      'deleterating': 'Rating Deleted',
-                      'like': 'Liked',
-                      'unlike': 'Unliked',
-                      'deactivate': 'Deactivated'}
+        conversion = {'createservice': 'Service is created.',
+                      'createserviceapplication': 'Application done to service.',
+                      'editservice': 'Service is edited.',
+                      'deleteservice': 'Service is deleted.',
+                      'editserviceapplication': 'An application to service is edited.',
+                      'deleteserviceapplication': 'An application to service is deleted.',
+                      'confirmtaken': 'Service taken is confirmed.',
+                      'confirmgiven': 'Service given is confirmed.',
+                      'earncredit': 'Credit earned.',
+                      'spentcredit': 'Credit spent.',
+                      'createservicecommunication': 'A message sent under service.',
+                      'deleteservicecommunication': 'A message under service is deleted.',
+                      'createrating': 'A rating is created.',
+                      'editrating': 'A rating is edited.',
+                      'deleterating': 'A rating is deleted.',
+                      'like': 'Service is liked.',
+                      'unlike': 'Service is unliked.',
+                      'deactivate': 'Service is deactivated.',
+                      'deactivateserviceapplication': 'An application to service is deactivated.'}
         for log in logs:
             log.operation = conversion[log.operation]
 
