@@ -1,0 +1,59 @@
+{% extends 'landing/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="container">
+        <br/>
+        <div class="row text-center">
+            <div class="col">
+                <h5 style="text-align:center;">Accounts</h5>
+                </br>
+                {% if profiles_count != 0 %}
+                    {% for profile in profiles %}
+                        <div class="row justify-content-center mt-3">
+                            <div class="card col-md-10 col-sm-12 border-bottom position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
+                                <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' profile.pk %}">@{{ profile.user.username }}</a>  
+                                <a class="stretched-link" href="{% url 'profile' profile.pk %}"></a> 
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="row justify-content-center mt-3">No profile found!</p>
+                {% endif %}
+            </div>
+            <div class="col">
+                <h5 style="text-align:center;">Services</h5>
+                </br>
+                {% if services_count != 0 %}
+                    {% for service in services %}
+                        <div class="row justify-content-center mt-3">
+                            <div class="card col-md-10 col-sm-12 border-bottom position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
+                                <a style="text-decoration: none;" class="text-primary" href="{% url 'service-detail' service.pk %}">@{{ service.name }}</a>  
+                                <a class="stretched-link" href="{% url 'service-detail' service.pk %}"></a> 
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="row justify-content-center mt-3">No service found!</p>
+                {% endif %}
+            </div>
+            <div class="col">
+                <h5 style="text-align:center;">Events</h5>
+                </br>
+                {% if events_count != 0 %}
+                    {% for event in events %}
+                        <div class="row justify-content-center mt-3">
+                            <div class="card col-md-10 col-sm-12 border-bottom position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
+                                <a style="text-decoration: none;" class="text-primary" href="{% url 'event-detail' event.pk %}">@{{ event.eventname }}</a>  
+                                <a class="stretched-link" href="{% url 'event-detail' event.pk %}"></a> 
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="row justify-content-center mt-3">No event found!</p>
+                {% endif %}
+            </div>
+        </div>
+        
+    </div>
+{% endblock content %}
