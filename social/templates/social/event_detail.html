@@ -117,42 +117,69 @@
                         {% endif %}
 
                     {% else %}
-                        <p><strong>Participants:</strong></p>
-                        {% for accepted in accepted_applications %}
-                        <div class="row justify-content-center">
-                            <div class="border-bottom">
-                                <p style="text-decoration: none;" class="text-primary" href="{% url 'profile' accepted.applicant.profile.pk %}">@{{ accepted.applicant }}</p>
+
+                    
+                        {% if request.user.profile.isAdmin %}
+
+                            <p></p>
+                            <p style="font-weight: bolder;">Applicants:</p>
+                            {% for application_done in applications %}
+                            <div class="row justify-content-center">
+                                <div class="border-bottom" style="display: flex;">
+                                    <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' application_done.applicant.profile.pk %}">@{{ application_done.applicant }}</a> &nbsp; on {{ application_done.date.date }}&nbsp;&nbsp;
+                                    {% if is_active and event.isActive %}
+                                        <form method="POST" action="{% url 'deactivate-event-application' application_done.pk %}">
+                                            {% csrf_token %}
+                                            <button class="btn btn-danger btn-sm" type=submit>Deactivate</button>
+                                        </form>
+                                    {% endif %}
+                                </div>
                             </div>
-                        </div>
-                        {% endfor %}
-                                    
-                        {% if is_applied %}
-                            {% if is_accepted %}               
-                                <p><strong>Your application is accepted.</strong></p>
-                            {% else %}
-                                <p><strong>Your application is not accepted or rejected yet.</strong></p>
+                            {% endfor %}
+                            {% if application_number == 0 %}
+                                <p>No active application found.</p>
                             {% endif %}
-                            {% if is_active %}
-                                {% for application in applications_this %}
-                                    {% if event.isActive %}
-                                        <div class="d-grid gap-2">
-                                            <a class="btn btn-danger mt-3" href="{% url 'event-application-delete' event.pk application.pk %}">Cancel Application</a>
-                                        </div>
-                                    {% endif %}
-                                {% endfor %}
-                            {% endif %}
+
                         {% else %}
-                            <form method="POST">
-                                {% csrf_token %}
-                                {{ form | crispy}}
-                                {% if is_active %}
-                                    {% if event.isActive %}
-                                        <div class="d-grid gap-2">
-                                            <button class="btn btn-success mt-3">Apply</button>
-                                        </div>
-                                    {% endif %}
+
+                
+                            <p><strong>Participants:</strong></p>
+                            {% for accepted in accepted_applications %}
+                            <div class="row justify-content-center">
+                                <div class="border-bottom">
+                                    <p style="text-decoration: none;" class="text-primary" href="{% url 'profile' accepted.applicant.profile.pk %}">@{{ accepted.applicant }}</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                                        
+                            {% if is_applied %}
+                                {% if is_accepted %}               
+                                    <p><strong>Your application is accepted.</strong></p>
+                                {% else %}
+                                    <p><strong>Your application is not accepted or rejected yet.</strong></p>
                                 {% endif %}
-                            </form>
+                                {% if is_active %}
+                                    {% for application in applications_this %}
+                                        {% if event.isActive %}
+                                            <div class="d-grid gap-2">
+                                                <a class="btn btn-danger mt-3" href="{% url 'event-application-delete' event.pk application.pk %}">Cancel Application</a>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                            {% else %}
+                                <form method="POST">
+                                    {% csrf_token %}
+                                    {{ form | crispy}}
+                                    {% if is_active %}
+                                        {% if event.isActive %}
+                                            <div class="d-grid gap-2">
+                                                <button class="btn btn-success mt-3">Apply</button>
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
+                                </form>
+                            {% endif %}
                         {% endif %}
                     {% endif %}
                 </div>

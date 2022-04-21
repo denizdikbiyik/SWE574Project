@@ -178,64 +178,88 @@
                         {% endif %}
 
                     {% else %}
+                        {% if request.user.profile.isAdmin %}
 
-                        <p><strong>Participants:</strong></p>
-                        {% for accepted in accepted_applications %}
-                        <div class="row justify-content-center">
-                            <div class="border-bottom">
-                                <p style="text-decoration: none;" class="text-primary" href="{% url 'profile' accepted.applicant.profile.pk %}">@{{ accepted.applicant }}</p>
-                            </div>
-                        </div>
-                        {% endfor %}
-                                    
-
-                        {% if is_applied %}
-                            {% if is_accepted %}               
-                                <p><strong>Your application is accepted.</strong></p>
-
-                                {% if is_active == False %}
-                                    {% if service.is_given == False %}
-                                        <p>Service owner is not confirmed service is given yet.</p>
-                                    {% else %}
-                                        <p>Service owner confirmed service is given.</p>
-                                    {% endif %}
-
-                                    {% if service.is_taken == False %}
-                                        <form method="POST" action="{% url 'confirm-service-taken' service.pk %}">
+                            <p></p>
+                            <p style="font-weight: bolder;">Applicants:</p>
+                            {% for application_done in applications %}
+                            <div class="row justify-content-center">
+                                <div class="border-bottom" style="display: flex;">
+                                    <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' application_done.applicant.profile.pk %}">@{{ application_done.applicant }}</a> &nbsp; on {{ application_done.date.date }}&nbsp;&nbsp;
+                                    {% if is_active and service.isActive %}
+                                        <form method="POST" action="{% url 'deactivate-service-application' application_done.pk %}">
                                             {% csrf_token %}
-                                            <div class="d-grid gap-2">
-                                                <button class="btn btn-success mt-3" type=submit>Confirm Service Taken</button>
-                                            </div>
+                                            <button class="btn btn-danger btn-sm" type=submit>Deactivate</button>
                                         </form>
-                                    {% else %}
-                                        <p>Participants confirmed service is taken.</p>
-                                        <a class="btn btn-primary mt-3" href="{% url 'rateuser' service.pk service.creater.pk %}">Rating</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                            {% if application_number == 0 %}
+                                <p>No active application found.</p>
+                            {% endif %}
+
+                        {% else %}
+
+                            <p><strong>Participants:</strong></p>
+                            {% for accepted in accepted_applications %}
+                            <div class="row justify-content-center">
+                                <div class="border-bottom">
+                                    <p style="text-decoration: none;" class="text-primary" href="{% url 'profile' accepted.applicant.profile.pk %}">@{{ accepted.applicant }}</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                                        
+
+                            {% if is_applied %}
+                                {% if is_accepted %}               
+                                    <p><strong>Your application is accepted.</strong></p>
+
+                                    {% if is_active == False %}
+                                        {% if service.is_given == False %}
+                                            <p>Service owner is not confirmed service is given yet.</p>
+                                        {% else %}
+                                            <p>Service owner confirmed service is given.</p>
+                                        {% endif %}
+
+                                        {% if service.is_taken == False %}
+                                            <form method="POST" action="{% url 'confirm-service-taken' service.pk %}">
+                                                {% csrf_token %}
+                                                <div class="d-grid gap-2">
+                                                    <button class="btn btn-success mt-3" type=submit>Confirm Service Taken</button>
+                                                </div>
+                                            </form>
+                                        {% else %}
+                                            <p>Participants confirmed service is taken.</p>
+                                            <a class="btn btn-primary mt-3" href="{% url 'rateuser' service.pk service.creater.pk %}">Rating</a>
+                                        {% endif %}
+
                                     {% endif %}
 
+                                {% else %}
+                                    <p><strong>Your application is not accepted or rejected yet.</strong></p>
                                 {% endif %}
-
-                            {% else %}
-                                <p><strong>Your application is not accepted or rejected yet.</strong></p>
-                            {% endif %}
-                            {% if is_active and service.isActive %}
-                                {% for application in applications_this %}
-                                    <div class="d-grid gap-2">
-                                        <a class="btn btn-danger mt-3" href="{% url 'application-delete' service.pk application.pk %}">Cancel Application</a>
-                                    </div>
-                                {% endfor %}
-                            {% endif %}
-                        {% else %}
-                            <form method="POST">
-                                {% csrf_token %}
-                                {{ form | crispy}}
                                 {% if is_active and service.isActive %}
-                                    <div class="d-grid gap-2">
-                                        <button class="btn btn-success mt-3">Apply</button>
-                                    </div>
+                                    {% for application in applications_this %}
+                                        <div class="d-grid gap-2">
+                                            <a class="btn btn-danger mt-3" href="{% url 'application-delete' service.pk application.pk %}">Cancel Application</a>
+                                        </div>
+                                    {% endfor %}
                                 {% endif %}
-                            </form>
+                            {% else %}
+                                <form method="POST">
+                                    {% csrf_token %}
+                                    {{ form | crispy}}
+                                    {% if is_active and service.isActive %}
+                                        <div class="d-grid gap-2">
+                                            <button class="btn btn-success mt-3">Apply</button>
+                                        </div>
+                                    {% endif %}
+                                </form>
+                            {% endif %}
                         {% endif %}
                     {% endif %}
+
                 </div>
 
                 {% if showCommunication and service.isActive %}
