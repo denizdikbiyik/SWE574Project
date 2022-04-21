@@ -55,6 +55,7 @@ class ServiceApplication(models.Model):
     approved = models.BooleanField(default=False)
     isDeleted = models.BooleanField(default=False)
     deletionInfo = models.TextField(blank=True, null=True)
+    isActive = models.BooleanField(default=True)
 
 class Event(models.Model):
     eventcreater = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -83,6 +84,7 @@ class EventApplication(models.Model):
     approved = models.BooleanField(default=False)
     isDeleted = models.BooleanField(default=False)
     deletionInfo = models.TextField(blank=True, null=True)
+    isActive = models.BooleanField(default=True)
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, primary_key=True, verbose_name='user', related_name='profile',
@@ -97,7 +99,7 @@ class UserProfile(models.Model):
     reservehour = models.IntegerField(default=0)
     unreadcount = models.IntegerField(default=0)
     isAdmin = models.BooleanField(default=False)
-
+    isActive = models.BooleanField(default=True)
 
 class UserRatings(models.Model):
     rated = models.ForeignKey(User, verbose_name='user', related_name='rated', on_delete=models.CASCADE)

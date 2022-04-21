@@ -42,27 +42,44 @@
                                 <button class="btn btn-outline-danger" type=submit>UnFollow</button>
                             </form>
                         {% else %}
-                            <form method="POST" action="{% url 'add-follower' request.user.pk profile.pk %}">
-                                {% csrf_token %}
-                                <button class="btn btn-outline-success" type=submit>Follow</button>
-                            </form>
+                            {% if profile.isActive %}
+                                <form method="POST" action="{% url 'add-follower' request.user.pk profile.pk %}">
+                                    {% csrf_token %}
+                                    <button class="btn btn-outline-success" type=submit>Follow</button>
+                                </form>
+                            {% endif %}
                         {% endif %}
                         {% if request.user.profile.isAdmin %}
-                            {% if profile.isAdmin %}
-                                <form method="POST" action="{% url 'remove-admin' profile.pk %}">
+                            {% if profile.isActive %}
+                                {% if profile.isAdmin %}
+                                    <form method="POST" action="{% url 'remove-admin' profile.pk %}">
+                                        {% csrf_token %}
+                                        <button class="btn btn-outline-danger" type=submit>Remove Admin</button>
+                                    </form>
+                                {% else %}
+                                    <form method="POST" action="{% url 'add-admin' profile.pk %}">
+                                        {% csrf_token %}
+                                        <button class="btn btn-outline-success" type=submit>Make Admin</button>
+                                    </form>
+                                {% endif %}
+                            {% endif %}
+                            {% if profile.isActive %}
+                                <form method="POST" action="{% url 'deactivate-user' profile.pk %}">
                                     {% csrf_token %}
-                                    <button class="btn btn-outline-danger" type=submit>Remove Admin</button>
+                                    <button class="btn btn-outline-danger" type=submit>Deactivate</button>
                                 </form>
                             {% else %}
-                                <form method="POST" action="{% url 'add-admin' profile.pk %}">
+                                <form method="POST" action="{% url 'activate-user' profile.pk %}">
                                     {% csrf_token %}
-                                    <button class="btn btn-outline-success" type=submit>Make Admin</button>
+                                    <button class="btn btn-outline-success" type=submit>Activate</button>
                                 </form>
                             {% endif %}
                         {% endif %}
                         {% if request.user.profile.isAdmin %}
                         {% else %}
-                            <a class="btn btn-primary mt-3" href="{% url 'complaintuser' profile.pk %}">Complaint</a>
+                            {% if profile.isActive %}
+                                <a class="btn btn-primary mt-3" href="{% url 'complaintuser' profile.pk %}">Complaint</a>
+                            {% endif %}
                         {% endif %}
                     {% endif %}
                 </div>
@@ -70,6 +87,10 @@
 
             <p></p>
 
+            {% if profile.isActive %}
+            {% else %}
+                <h5><a style="font-weight: bolder;">DEACTIVATED</a></h5>
+            {% endif %}
             {% if request.user.profile.isAdmin %}
                 {% if profile.isAdmin %}
                     <h5><a style="font-weight: bolder;">ADMIN</a></h5>
