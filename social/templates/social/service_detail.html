@@ -48,7 +48,7 @@
                         <div class="row">
                             <div class="col">
                                 {% if request.user == service.creater %}
-                                    {% if is_active %}
+                                    {% if is_active and service.isActive %}
                                         <a href="{% url 'service-edit' service.pk %}" class="btn btn-primary">Edit</a>
                                         <a href="{% url 'service-delete' service.pk %}" class="btn btn-danger">Delete</a>
                                     {% endif %}
@@ -57,16 +57,24 @@
                         </div>
                         <div class="row">
                             <p></p>
-                            {% if is_like %}
-                                <form method="POST" action="{% url 'service-unlike' service.pk %}">
+                            {% if service.isActive and is_active and request.user.profile.isAdmin %}
+                                <form method="POST" action="{% url 'deactivate-service' service.pk %}">
                                     {% csrf_token %}
-                                    <button class="btn btn-outline-danger" type=submit>Unlike</button>
+                                    <button class="btn btn-outline-danger" type=submit>Deactivate</button>
                                 </form>
-                            {% else %}
-                                <form method="POST" action="{% url 'service-like' service.pk %}">
-                                    {% csrf_token %}
-                                    <button class="btn btn-outline-success" type=submit>Like</button>
-                                </form>
+                            {% endif %}
+                            {% if service.isActive %}
+                                {% if is_like %}
+                                    <form method="POST" action="{% url 'service-unlike' service.pk %}">
+                                        {% csrf_token %}
+                                        <button class="btn btn-outline-danger" type=submit>Unlike</button>
+                                    </form>
+                                {% else %}
+                                    <form method="POST" action="{% url 'service-like' service.pk %}">
+                                        {% csrf_token %}
+                                        <button class="btn btn-outline-success" type=submit>Like</button>
+                                    </form>
+                                {% endif %}
                             {% endif %}
                             <p></p>
                             <div class="mb-3">
@@ -108,7 +116,7 @@
                         <div class="row justify-content-center">
                             <div class="border-bottom">
                                 <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' application_done.applicant.profile.pk %}">@{{ application_done.applicant }}</a> on {{ application_done.date.date }}
-                                {% if is_active %}
+                                {% if is_active and service.isActive %}
                                     {% if application_done.approved %}
                                         <a href="{% url 'application-edit' service.pk application_done.pk %}" class="btn btn-danger">Delete Approval</a>
                                     {% else %}
@@ -209,7 +217,7 @@
                             {% else %}
                                 <p><strong>Your application is not accepted or rejected yet.</strong></p>
                             {% endif %}
-                            {% if is_active %}
+                            {% if is_active and service.isActive %}
                                 {% for application in applications_this %}
                                     <div class="d-grid gap-2">
                                         <a class="btn btn-danger mt-3" href="{% url 'application-delete' service.pk application.pk %}">Cancel Application</a>
@@ -220,7 +228,7 @@
                             <form method="POST">
                                 {% csrf_token %}
                                 {{ form | crispy}}
-                                {% if is_active %}
+                                {% if is_active and service.isActive %}
                                     <div class="d-grid gap-2">
                                         <button class="btn btn-success mt-3">Apply</button>
                                     </div>
@@ -230,7 +238,7 @@
                     {% endif %}
                 </div>
 
-                {% if showCommunication %}
+                {% if showCommunication and service.isActive %}
                     <p style="font-weight: bolder;">Communication:</p>
                     {% if allCommunicationsLength == 0 %}
                         <p>No communication found.</p>

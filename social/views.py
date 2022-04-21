@@ -27,15 +27,15 @@ class ServiceCreateView(LoginRequiredMixin, View):
         return render(request, 'social/service_create.html', context)
     
     def post(self, request, *args, **kwargs):
-        services = Service.objects.filter(isDeleted=False).order_by('-createddate')
+        services = Service.objects.filter(isDeleted=False).filter(isActive=True).order_by('-createddate')
         creater_user_profile = UserProfile.objects.get(pk=request.user)
         form = ServiceForm(request.POST, request.FILES)
         if form.is_valid():
             totalcredit = creater_user_profile.reservehour + creater_user_profile.credithour
             new_service = form.save(commit=False)
             if totalcredit + new_service.duration <= 15:
-                sameDateServices = Service.objects.filter(creater=request.user).filter(servicedate=new_service.servicedate).filter(isDeleted=False)
-                sameDateEvents = Event.objects.filter(eventcreater=request.user).filter(eventdate=new_service.servicedate).filter(isDeleted=False)
+                sameDateServices = Service.objects.filter(creater=request.user).filter(servicedate=new_service.servicedate).filter(isDeleted=False).filter(isActive=True)
+                sameDateEvents = Event.objects.filter(eventcreater=request.user).filter(eventdate=new_service.servicedate).filter(isDeleted=False).filter(isActive=True)
                 if len(sameDateServices) > 0 or  len(sameDateEvents) > 0:
                     messages.warning(request, 'You cannot create this service because you have one with the same datetime.')
                 else:
@@ -60,7 +60,7 @@ class ServiceCreateView(LoginRequiredMixin, View):
 
 class AllServicesView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        services = Service.objects.all().order_by('-createddate').filter(isDeleted=False)
+        services = Service.objects.all().order_by('-createddate').filter(isDeleted=False).filter(isActive=True)
         alltags = Tag.objects.all()
         form = ServiceForm()
         services_count = len(services)
@@ -75,7 +75,7 @@ class AllServicesView(LoginRequiredMixin, View):
 
 class CreatedServicesView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        services = Service.objects.filter(creater=request.user).filter(isDeleted=False).order_by('-createddate')
+        services = Service.objects.filter(creater=request.user).filter(isDeleted=False).filter(isActive=True).order_by('-createddate')
         form = ServiceForm()
         number_of_createdservice = len(services)
         currentTime = timezone.now()
@@ -89,7 +89,7 @@ class CreatedServicesView(LoginRequiredMixin, View):
 class AppliedServicesView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         services = Service.objects.filter(isDeleted=False)
-        serviceapplications = ServiceApplication.objects.filter(isDeleted=False)
+        serviceapplications = ServiceApplication.objects.filter(isDeleted=False).filter(isActive=True)
         servicesapplied = []
         for serviceapplication in serviceapplications:
             for service in services:
@@ -121,7 +121,7 @@ class ServiceDetailView(View):
         userNotified = UserProfile.objects.get(pk=request.user.profile)
         userNotified.unreadcount = userNotified.unreadcount - countNotifications
         userNotified.save()
-        applications = ServiceApplication.objects.filter(service=pk).filter(isDeleted=False).order_by('-date')
+        applications = ServiceApplication.objects.filter(service=pk).filter(isDeleted=False).filter(isActive=True).order_by('-date')
         applications_this = applications.filter(applicant=request.user)
         number_of_accepted = len(applications.filter(approved=True))
         accepted_applications = applications.filter(approved=True)
@@ -169,7 +169,7 @@ class ServiceDetailView(View):
     def post(self, request, pk, *args, **kwargs):
         service = Service.objects.get(pk=pk)
         form = ServiceApplicationForm(request.POST)
-        applications = ServiceApplication.objects.filter(service=pk).filter(isDeleted=False).order_by('-date')
+        applications = ServiceApplication.objects.filter(service=pk).filter(isDeleted=False).filter(isActive=True).order_by('-date')
         applications_this = applications.filter(applicant=request.user)
         number_of_accepted = len(applications.filter(approved=True))
         applicant_user_profile = UserProfile.objects.get(pk=request.user)
@@ -183,15 +183,15 @@ class ServiceDetailView(View):
                 is_applied = False
         if form.is_valid():
             if is_applied == False:
-                oldApplications = ServiceApplication.objects.filter(applicant=request.user).filter(approved=False).filter(isDeleted=False)
+                oldApplications = ServiceApplication.objects.filter(applicant=request.user).filter(approved=False).filter(isDeleted=False).filter(isActive=True)
                 for oldApplication in oldApplications:
                     if oldApplication.service.servicedate <= timezone.now() and oldApplication.service.is_given == False and oldApplication.service.is_taken == False:
                         applicant_user_profile.reservehour = applicant_user_profile.reservehour + oldApplication.service.duration
                         oldApplication.service.is_given = True
                         oldApplication.service.is_taken = True
                         oldApplication.save()
-                oldServices = Service.objects.filter(creater=request.user).filter(is_given=False).filter(is_taken=False).filter(isDeleted=False)
-                applicationsForOldServiceCheck = ServiceApplication.objects.filter(isDeleted=False)
+                oldServices = Service.objects.filter(creater=request.user).filter(is_given=False).filter(is_taken=False).filter(isDeleted=False).filter(isActive=True)
+                applicationsForOldServiceCheck = ServiceApplication.objects.filter(isDeleted=False).filter(isActive=True)
                 for oldService in oldServices:
                     if oldService.servicedate <= timezone.now():
                         if len(applicationsForOldServiceCheck.filter(service=oldService)) == 0 or len(applicationsForOldServiceCheck.filter(service=oldService).filter(approved=True)) == 0:
@@ -300,7 +300,7 @@ class ConfirmServiceTaken(LoginRequiredMixin, View):
         service.is_taken = True
         service.save()
         CreditExchange(service)
-        applications = ServiceApplication.objects.filter(service=pk).filter(approved=True).filter(isDeleted=False)
+        applications = ServiceApplication.objects.filter(service=pk).filter(approved=True).filter(isDeleted=False).filter(isActive=True)
         for application in applications:
             notification = NotifyUser.objects.create(notify=application.applicant, notification=str(service.name)+' taken confirmation done.', offerType="service", offerPk=service.pk)
             notified_user = UserProfile.objects.get(pk=application.applicant)
@@ -319,7 +319,7 @@ class ConfirmServiceGiven(LoginRequiredMixin, View):
         service.is_given = True
         service.save()
         CreditExchange(service)
-        applications = ServiceApplication.objects.filter(service=pk).filter(approved=True).filter(isDeleted=False)
+        applications = ServiceApplication.objects.filter(service=pk).filter(approved=True).filter(isDeleted=False).filter(isActive=True)
         for application in applications:
             notification = NotifyUser.objects.create(notify=application.applicant, notification=str(service.name)+' given confirmation done.', offerType="service", offerPk=service.pk)
             notified_user = UserProfile.objects.get(pk=application.applicant)
@@ -329,8 +329,8 @@ class ConfirmServiceGiven(LoginRequiredMixin, View):
         return redirect('service-detail', pk=pk)
     
 def CreditExchange(service):
-    applications = ServiceApplication.objects.filter(service=service.pk).filter(approved=True).filter(isDeleted=False)
-    notConfirmedApplications = ServiceApplication.objects.filter(service=service.pk).filter(approved=False).filter(isDeleted=False)
+    applications = ServiceApplication.objects.filter(service=service.pk).filter(approved=True).filter(isDeleted=False).filter(isActive=True)
+    notConfirmedApplications = ServiceApplication.objects.filter(service=service.pk).filter(approved=False).filter(isDeleted=False).filter(isActive=True)
     if service.is_taken == True:
         if service.is_given == True:
             service_giver = UserProfile.objects.get(pk=service.creater.pk)
@@ -370,11 +370,11 @@ class ServiceEditView(LoginRequiredMixin, View):
         service = Service.objects.get(pk=pk)
         if form.is_valid():
             service_creater_profile = UserProfile.objects.get(pk=service.creater)
-            applications = ServiceApplication.objects.filter(service=service).filter(isDeleted=False)
+            applications = ServiceApplication.objects.filter(service=service).filter(isDeleted=False).filter(isActive=True)
             totalcredit = service_creater_profile.reservehour + service_creater_profile.credithour - service.duration
             edit_service = form.save(commit=False)
             if totalcredit + edit_service.duration <= 15:
-                applications = ServiceApplication.objects.filter(service=service).filter(isDeleted=False)
+                applications = ServiceApplication.objects.filter(service=service).filter(isDeleted=False).filter(isActive=True)
                 number_of_accepted = len(applications.filter(approved=True))
                 if edit_service.capacity < number_of_accepted:
                     messages.warning(request, 'You cannot make capacity below the accepted number, please remove accepted participants.')
@@ -398,7 +398,7 @@ class ServiceEditView(LoginRequiredMixin, View):
                     service.save()
                     log = Log.objects.create(operation="editservice", itemType="service", itemId=service.pk, userId=request.user)
                     messages.success(request, 'Service editing is successful.')
-                    applications = ServiceApplication.objects.filter(service=service).filter(isDeleted=False)
+                    applications = ServiceApplication.objects.filter(service=service).filter(isDeleted=False).filter(isActive=True)
                     for application in applications:
                         notification = NotifyUser.objects.create(notify=application.applicant, notification=str(service.name)+' which you applied is edited.', offerType="service", offerPk=service.pk)
                         notified_user = UserProfile.objects.get(pk=application.applicant)
@@ -432,7 +432,7 @@ class ServiceDeleteView(LoginRequiredMixin, View):
         service_creater_profile = UserProfile.objects.get(pk=service.creater)
         service_creater_profile.reservehour = service_creater_profile.reservehour - service.duration
         service_creater_profile.save()
-        applications = ServiceApplication.objects.filter(service=service).filter(isDeleted=False)
+        applications = ServiceApplication.objects.filter(service=service).filter(isDeleted=False).filter(isActive=True)
         for application in applications:
             service_applicant_profile = UserProfile.objects.get(pk=application.applicant)
             service_applicant_profile.reservehour = service_applicant_profile.reservehour + service.duration
@@ -467,12 +467,12 @@ class EventCreateView(LoginRequiredMixin, View):
         return render(request, 'social/event_create.html', context)
     
     def post(self, request, *args, **kwargs):
-        events = Event.objects.filter(isDeleted=False).order_by('-eventcreateddate')
+        events = Event.objects.filter(isDeleted=False).filter(isActive=True).order_by('-eventcreateddate')
         form = EventForm(request.POST, request.FILES)
         if form.is_valid():
             new_event = form.save(commit=False)
-            sameDateEvents = Event.objects.filter(eventcreater=request.user).filter(eventdate=new_event.eventdate).filter(isDeleted=False)
-            sameDateServices = Service.objects.filter(creater=request.user).filter(servicedate=new_event.eventdate).filter(isDeleted=False)
+            sameDateEvents = Event.objects.filter(eventcreater=request.user).filter(eventdate=new_event.eventdate).filter(isDeleted=False).filter(isActive=True)
+            sameDateServices = Service.objects.filter(creater=request.user).filter(servicedate=new_event.eventdate).filter(isDeleted=False).filter(isActive=True)
             if len(sameDateEvents) > 0 or len(sameDateServices) > 0:
                 messages.warning(request, 'You cannot create this event because you have one with the same datetime.')
             else:
@@ -488,7 +488,7 @@ class EventCreateView(LoginRequiredMixin, View):
 
 class AllEventsView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        events = Event.objects.filter(isDeleted=False).order_by('-eventcreateddate')
+        events = Event.objects.filter(isDeleted=False).filter(isActive=True).order_by('-eventcreateddate')
         form = EventForm()
         events_count = len(events)
         currentTime = timezone.now()
@@ -501,7 +501,7 @@ class AllEventsView(LoginRequiredMixin, View):
 
 class CreatedEventsView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        events = Event.objects.filter(eventcreater=request.user).filter(isDeleted=False).order_by('-eventcreateddate')
+        events = Event.objects.filter(eventcreater=request.user).filter(isDeleted=False).filter(isActive=True).order_by('-eventcreateddate')
         number_of_createdevent = len(events)
         form = EventForm()
         currentTime = timezone.now()
@@ -515,7 +515,7 @@ class CreatedEventsView(LoginRequiredMixin, View):
 class AppliedEventsView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         events = Event.objects.filter(isDeleted=False)
-        eventapplications = EventApplication.objects.filter(isDeleted=False)
+        eventapplications = EventApplication.objects.filter(isDeleted=False).filter(isActive=True)
         eventsapplied = []
         for eventapplication in eventapplications:
             for event in events:
@@ -567,7 +567,7 @@ class EventApplicationDeleteView(LoginRequiredMixin, View):
             notified_user.save()
             application.deletionInfo = "reject"
         log = Log.objects.create(operation="deleteeventapplication", itemType="event", itemId=event.pk, affectedItemType="user", affectedItemId=application.applicant.pk, userId=self.request.user)
-        applicationsNext = EventApplication.objects.filter(event=event).filter(approved=False).filter(isDeleted=False).order_by('-date')
+        applicationsNext = EventApplication.objects.filter(event=event).filter(approved=False).filter(isDeleted=False).filter(isActive=True).order_by('-date')
         count = 0
         for applicationNext in applicationsNext:
             if count == 0:
@@ -592,7 +592,7 @@ class EventDetailView(View):
         userNotified = UserProfile.objects.get(pk=request.user.profile)
         userNotified.unreadcount = userNotified.unreadcount - countNotifications
         userNotified.save()
-        applications = EventApplication.objects.filter(event=pk).filter(isDeleted=False).order_by('-date')
+        applications = EventApplication.objects.filter(event=pk).filter(isDeleted=False).filter(isActive=True).order_by('-date')
         applications_this = applications.filter(applicant=request.user)
         number_of_accepted = len(applications.filter(approved=True))
         accepted_applications = applications.filter(approved=True)
@@ -640,7 +640,7 @@ class EventDetailView(View):
     def post(self, request, pk, *args, **kwargs):
         event = Event.objects.get(pk=pk)
         form = EventApplicationForm(request.POST)
-        applications = EventApplication.objects.filter(event=pk).filter(isDeleted=False).order_by('-date')
+        applications = EventApplication.objects.filter(event=pk).filter(isDeleted=False).filter(isActive=True).order_by('-date')
         applications_this = applications.filter(applicant=request.user)
         number_of_accepted = len(applications.filter(approved=True))
         if len(applications) == 0:
@@ -694,7 +694,7 @@ class EventEditView(LoginRequiredMixin, View):
     def post(self, request, *args, pk, **kwargs):
         form = EventForm(request.POST, request.FILES)
         event = Event.objects.get(pk=pk)
-        applications = EventApplication.objects.filter(event=event).filter(isDeleted=False)
+        applications = EventApplication.objects.filter(event=event).filter(isDeleted=False).filter(isActive=True)
         number_of_accepted = len(applications.filter(approved=True))
         if form.is_valid():
             edit_event = form.save(commit=False)
@@ -740,7 +740,7 @@ class EventDeleteView(LoginRequiredMixin, View):
 
     def post(self, request, *args, pk, **kwargs):
         event = Event.objects.get(pk=pk)
-        applications = EventApplication.objects.filter(event=event).filter(isDeleted=False)
+        applications = EventApplication.objects.filter(event=event).filter(isDeleted=False).filter(isActive=True)
         for application in applications:
             notification = NotifyUser.objects.create(notify=application.applicant, notification=str(event.eventname)+' event which you applied is deleted.', offerType="event")
             notified_user = UserProfile.objects.get(pk=application.applicant)
@@ -774,9 +774,9 @@ class ProfileView(View):
             else:
                 is_following = False
         number_of_followers = len(followers)
-        services = Service.objects.filter(creater=profile.user).filter(isDeleted=False)
+        services = Service.objects.filter(creater=profile.user).filter(isDeleted=False).filter(isActive=True)
         number_of_services = len(services)
-        events = Event.objects.filter(eventcreater=profile.user).filter(isDeleted=False)
+        events = Event.objects.filter(eventcreater=profile.user).filter(isDeleted=False).filter(isActive=True)
         number_of_events = len(events)
         comments = UserRatings.objects.filter(rated=profile.user)
 
@@ -986,8 +986,8 @@ class TimeLine(LoginRequiredMixin, View):
             thisFollowers = UserProfile.objects.get(pk=auser.pk).followers.all()
             if request.user in thisFollowers:
                 followedOnes.append(auser)
-        services = Service.objects.filter(isDeleted=False).order_by('-createddate')
-        events = Event.objects.filter(isDeleted=False).order_by('-eventcreateddate')
+        services = Service.objects.filter(isDeleted=False).filter(isActive=True).order_by('-createddate')
+        events = Event.objects.filter(isDeleted=False).filter(isActive=True).order_by('-eventcreateddate')
         for one in followedOnes:
             for service in services:
                 if service.creater == one.user :
@@ -1010,7 +1010,7 @@ class TimeLine(LoginRequiredMixin, View):
 class ServiceSearch(View):
     def get(self, request, *args, **kwargs):
         query = self.request.GET.get('query')
-        services = Service.objects.filter(isDeleted=False).filter(Q(name__icontains=query))
+        services = Service.objects.filter(isDeleted=False).filter(isActive=True).filter(Q(name__icontains=query))
         services_count = len(services)
         currentTime = timezone.now()
         alltags = Tag.objects.all()
@@ -1025,7 +1025,7 @@ class ServiceSearch(View):
 class EventSearch(View):
     def get(self, request, *args, **kwargs):
         query = self.request.GET.get('query')
-        events = Event.objects.filter(isDeleted=False).filter(Q(eventname__icontains=query))
+        events = Event.objects.filter(isDeleted=False).filter(isActive=True).filter(Q(eventname__icontains=query))
         events_count = len(events)
         currentTime = timezone.now()
         context = {
@@ -1146,9 +1146,9 @@ class ServiceFilter(View):
     def get(self, request, *args, **kwargs):
         category = self.request.GET.get('category')
         if category != "all":
-            services = Service.objects.filter(category=category).filter(isDeleted=False)
+            services = Service.objects.filter(category=category).filter(isDeleted=False).filter(isActive=True)
         else:
-            services = Service.objects.filter(isDeleted=False).order_by('-createddate')
+            services = Service.objects.filter(isDeleted=False).filter(isActive=True).order_by('-createddate')
         services_count = len(services)
         currentTime = timezone.now()
         alltags = Tag.objects.all()
@@ -1162,7 +1162,7 @@ class ServiceFilter(View):
 
 class AllUsersView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        users = UserProfile.objects.all()
+        users = UserProfile.objects.filter(isActive=True)
         context = {
             'users': users,
         }
@@ -1171,7 +1171,7 @@ class AllUsersView(LoginRequiredMixin, View):
 class UsersServicesListView(LoginRequiredMixin, View):
     def get(self, request, pk, *args, **kwargs):
         profile = UserProfile.objects.get(pk=pk)
-        services = Service.objects.filter(creater=profile.user).filter(isDeleted=False)
+        services = Service.objects.filter(creater=profile.user).filter(isDeleted=False).filter(isActive=True)
         number_of_services = len(services)
         context = {
             'services': services,
@@ -1183,7 +1183,7 @@ class UsersServicesListView(LoginRequiredMixin, View):
 class UsersEventsListView(LoginRequiredMixin, View):
     def get(self, request, pk, *args, **kwargs):
         profile = UserProfile.objects.get(pk=pk)
-        events = Event.objects.filter(eventcreater=profile.user).filter(isDeleted=False)
+        events = Event.objects.filter(eventcreater=profile.user).filter(isDeleted=False).filter(isActive=True)
         number_of_events = len(events)
         context = {
             'events': events,
@@ -1228,7 +1228,8 @@ class DashboardEventDetailView(View):
                       'createeventcommunication': 'Message Sent',
                       'deleteeventcommunication': 'Message Deleted',
                       'like': 'Liked',
-                      'unlike': 'Unliked'}
+                      'unlike': 'Unliked',
+                      'deactivate': 'Deactivated'}
         for log in logs:
             log.operation = conversion[log.operation]
         context = {
@@ -1268,7 +1269,8 @@ class DashboardServiceDetailView(View):
                       'editrating': 'Rating Edited',
                       'deleterating': 'Rating Deleted',
                       'like': 'Liked',
-                      'unlike': 'Unliked'}
+                      'unlike': 'Unliked',
+                      'deactivate': 'Deactivated'}
         for log in logs:
             log.operation = conversion[log.operation]
 
@@ -1296,7 +1298,7 @@ class ServiceDetailCommunicationView(View):
                 notified_user.unreadcount = notified_user.unreadcount+1
                 notified_user.save()
             log = Log.objects.create(operation="createservicecommunication", itemType="service", itemId=service.pk, userId=request.user)
-        applications = ServiceApplication.objects.filter(service=pk).filter(isDeleted=False).order_by('-date')
+        applications = ServiceApplication.objects.filter(service=pk).filter(isDeleted=False).filter(isActive=True).order_by('-date')
         for applicationToNotify in applications:
             if applicationToNotify.applicant != request.user:
                 notification = NotifyUser.objects.create(notify=applicationToNotify.applicant, notification=str(request.user)+' commented on '+str(service.name), offerType="service", offerPk=service.pk)
@@ -1318,7 +1320,7 @@ class ServiceCommunicationDeleteView(LoginRequiredMixin, UserPassesTestMixin, De
             notified_user = UserProfile.objects.get(pk=service.creater)
             notified_user.unreadcount = notified_user.unreadcount+1
             notified_user.save()
-        approvedApplications = ServiceApplication.objects.filter(approved=True).filter(isDeleted=False)
+        approvedApplications = ServiceApplication.objects.filter(approved=True).filter(isDeleted=False).filter(isActive=True)
         for approvedApplication in approvedApplications:
             if self.request.user != approvedApplication.applicant:
                 notification = NotifyUser.objects.create(notify=approvedApplication.applicant, notification=str(self.request.user)+' deleted communication message on service '+str(service.name), offerType="service", offerPk=service.pk)
@@ -1351,7 +1353,7 @@ class EventDetailCommunicationView(View):
                 notified_user.unreadcount = notified_user.unreadcount+1
                 notified_user.save()
             log = Log.objects.create(operation="createeventcommunication", itemType="event", itemId=event.pk, userId=request.user)
-        applications = EventApplication.objects.filter(event=pk).filter(isDeleted=False).order_by('-date')
+        applications = EventApplication.objects.filter(event=pk).filter(isDeleted=False).filter(isActive=True).order_by('-date')
         for applicationToNotify in applications:
             if applicationToNotify.applicant != request.user:
                 notification = NotifyUser.objects.create(notify=applicationToNotify.applicant, notification=str(request.user)+' commented on '+str(event.eventname), offerType="event", offerPk=event.pk)
@@ -1373,7 +1375,7 @@ class EventCommunicationDeleteView(LoginRequiredMixin, UserPassesTestMixin, Dele
             notified_user = UserProfile.objects.get(pk=event.eventcreater)
             notified_user.unreadcount = notified_user.unreadcount+1
             notified_user.save()
-        approvedApplications = EventApplication.objects.filter(approved=True).filter(isDeleted=False)
+        approvedApplications = EventApplication.objects.filter(approved=True).filter(isDeleted=False).filter(isActive=True)
         for approvedApplication in approvedApplications:
             if self.request.user != approvedApplication.applicant:
                 notification = NotifyUser.objects.create(notify=approvedApplication.applicant, notification=str(self.request.user)+' deleted communication message on event '+str(event.eventname), offerType="event", offerPk=event.pk)
@@ -1646,3 +1648,146 @@ class MyComplaints(LoginRequiredMixin, View):
             'complaints': complaints,
         }
         return render(request, 'social/mycomplaints.html', context)
+
+class DeactivateService(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        service = Service.objects.get(pk=pk)
+        service.isActive = False
+        service.save()
+        notificationsToChange = NotifyUser.objects.filter(hasRead=False).filter(offerType="service").filter(offerPk=pk)
+        for notificationChange in notificationsToChange:
+            notificationChange.offerPk = 0
+            notificationChange.save()
+        service.creater.profile.reservehour = service.creater.profile.reservehour - service.duration
+        notification = NotifyUser.objects.create(notify=service.creater, notification=str(request.user)+' deactivated your service '+str(service.name), offerType="service", offerPk=0)
+        service.creater.profile.unreadcount = service.creater.profile.unreadcount+1
+        service.creater.profile.save()
+        serviceApplications = ServiceApplication.objects.filter(service=service).filter(isDeleted=False).filter(isActive=True)
+        for serviceApplication in serviceApplications:
+            serviceApplication.isActive = False
+            serviceApplication.save()
+            serviceApplication.applicant.profile.reservehour = serviceApplication.applicant.profile.reservehour + service.duration
+            notification = NotifyUser.objects.create(notify=serviceApplication.applicant, notification=str(request.user)+' deactivated the service '+str(service.name)+' that you applied.', offerType="service", offerPk=0)
+            serviceApplication.applicant.profile.unreadcount = serviceApplication.applicant.profile.unreadcount+1
+            serviceApplication.applicant.profile.save()
+        log = Log.objects.create(operation="deactivate", itemType="service", itemId=pk, userId=request.user)
+        return redirect('service-detail', pk=pk)
+
+class DeactivateEvent(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        event = Event.objects.get(pk=pk)
+        event.isActive = False
+        event.save()
+        notificationsToChange = NotifyUser.objects.filter(hasRead=False).filter(offerType="event").filter(offerPk=pk)
+        for notificationChange in notificationsToChange:
+            notificationChange.offerPk = 0
+            notificationChange.save()
+        notification = NotifyUser.objects.create(notify=event.eventcreater, notification=str(request.user)+' deactivated your event '+str(event.eventname), offerType="event", offerPk=0)
+        event.eventcreater.profile.unreadcount = event.eventcreater.profile.unreadcount+1
+        event.eventcreater.profile.save()
+        eventApplications = EventApplication.objects.filter(event=event).filter(isDeleted=False).filter(isActive=True)
+        for eventApplication in eventApplications:
+            eventApplication.isActive = False
+            eventApplication.save()
+            notification = NotifyUser.objects.create(notify=eventApplication.applicant, notification=str(request.user)+' deactivated the event '+str(event.eventname)+' that you applied.', offerType="event", offerPk=0)
+            eventApplication.applicant.profile.unreadcount = eventApplication.applicant.profile.unreadcount+1
+            eventApplication.applicant.profile.save()
+        log = Log.objects.create(operation="deactivate", itemType="event", itemId=pk, userId=request.user)
+        return redirect('event-detail', pk=pk)
+
+class DeactivateUser(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        profile = UserProfile.objects.get(pk=pk)
+        profile.isActive = False
+        profile.save()
+
+        notification = NotifyUser.objects.create(notify=profile.user, notification=str(request.user)+' deactivated your profile.', offerType="user", offerPk=0)
+        profile.unreadcount = profile.unreadcount+1
+        profile.save()
+
+        profileServices = Service.objects.filter(creater=profile.user).filter(isActive=True).filter(isDeleted=False)
+        for service in profileServices:
+            if service.servicedate > timezone.now():
+                service.isActive = False
+                service.save()
+                notificationsToChange = NotifyUser.objects.filter(hasRead=False).filter(offerType="service").filter(offerPk=service.pk)
+                for notificationChange in notificationsToChange:
+                    notificationChange.offerPk = 0
+                    notificationChange.save()
+                service.creater.profile.reservehour = service.creater.profile.reservehour - service.duration
+                notification = NotifyUser.objects.create(notify=service.creater, notification=str(request.user)+' deactivated your service '+str(service.name), offerType="service", offerPk=0)
+                service.creater.profile.unreadcount = service.creater.profile.unreadcount+1
+                service.creater.profile.save()
+                serviceApplications = ServiceApplication.objects.filter(service=service).filter(isDeleted=False).filter(isActive=True)
+                for serviceApplication in serviceApplications:
+                    serviceApplication.isActive = False
+                    serviceApplication.save()
+                    serviceApplication.applicant.profile.reservehour = serviceApplication.applicant.profile.reservehour + service.duration
+                    notification = NotifyUser.objects.create(notify=serviceApplication.applicant, notification=str(request.user)+' deactivated the service '+str(service.name)+' that you applied.', offerType="service", offerPk=0)
+                    serviceApplication.applicant.profile.unreadcount = serviceApplication.applicant.profile.unreadcount+1
+                    serviceApplication.applicant.profile.save()
+                log = Log.objects.create(operation="deactivate", itemType="service", itemId=service.pk, userId=request.user)
+
+        profileEvents = Event.objects.filter(eventcreater=profile.user).filter(isActive=True).filter(isDeleted=False)
+        for event in profileEvents:
+            if event.eventdate > timezone.now():
+                event.isActive = False
+                event.save()
+                notificationsToChange = NotifyUser.objects.filter(hasRead=False).filter(offerType="event").filter(offerPk=event.pk)
+                for notificationChange in notificationsToChange:
+                    notificationChange.offerPk = 0
+                    notificationChange.save()
+                notification = NotifyUser.objects.create(notify=event.eventcreater, notification=str(request.user)+' deactivated your event '+str(event.eventname), offerType="event", offerPk=0)
+                event.eventcreater.profile.unreadcount = event.eventcreater.profile.unreadcount+1
+                event.eventcreater.profile.save()
+                eventApplications = EventApplication.objects.filter(event=event).filter(isDeleted=False).filter(isActive=True)
+                for eventApplication in eventApplications:
+                    eventApplication.isActive = False
+                    eventApplication.save()
+                    notification = NotifyUser.objects.create(notify=eventApplication.applicant, notification=str(request.user)+' deactivated the event '+str(event.eventname)+' that you applied.', offerType="event", offerPk=0)
+                    eventApplication.applicant.profile.unreadcount = eventApplication.applicant.profile.unreadcount+1
+                    eventApplication.applicant.profile.save()
+                log = Log.objects.create(operation="deactivate", itemType="event", itemId=event.pk, userId=request.user)
+
+        profileServiceApplications = ServiceApplication.objects.filter(applicant=profile.user).filter(isActive=True).filter(isDeleted=False)
+        for theserviceApplication in profileServiceApplications:
+            if theserviceApplication.service.servicedate > timezone.now():
+                theserviceApplication.isActive = False
+                theserviceApplication.save()
+                theserviceApplication.applicant.profile.reservehour = theserviceApplication.applicant.profile.reservehour + theserviceApplication.service.duration
+                notification = NotifyUser.objects.create(notify=theserviceApplication.applicant, notification=str(request.user)+' deactivated your application for service '+str(theserviceApplication.service.name)+'.', offerType="service", offerPk=0)
+                theserviceApplication.applicant.profile.unreadcount = theserviceApplication.applicant.profile.unreadcount+1
+                theserviceApplication.applicant.profile.save()
+                notification = NotifyUser.objects.create(notify=theserviceApplication.service.creater, notification=str(request.user)+' deactivated the application of '+str(theserviceApplication.applicant)+' for your service '+str(theserviceApplication.service.name)+'.', offerType="service", offerPk=0)
+                theserviceApplication.service.creater.profile.unreadcount = theserviceApplication.service.creater.profile.unreadcount+1
+                theserviceApplication.service.creater.profile.save()
+
+        profileEventApplications = EventApplication.objects.filter(applicant=profile.user).filter(isActive=True).filter(isDeleted=False)
+        for theeventApplication in profileEventApplications:
+            if theeventApplication.event.eventdate > timezone.now():
+                theeventApplication.isActive = False
+                theeventApplication.save()
+                notification = NotifyUser.objects.create(notify=theeventApplication.applicant, notification=str(request.user)+' deactivated your application for event '+str(theeventApplication.event.eventname)+'.', offerType="event", offerPk=0)
+                theeventApplication.applicant.profile.unreadcount = theeventApplication.applicant.profile.unreadcount+1
+                theeventApplication.applicant.profile.save()
+                notification = NotifyUser.objects.create(notify=theeventApplication.event.eventcreater, notification=str(request.user)+' deactivated the application of '+str(theeventApplication.applicant)+' for your event '+str(theeventApplication.event.eventname)+'.', offerType="event", offerPk=0)
+                theeventApplication.event.eventcreater.profile.unreadcount = theeventApplication.event.eventcreater.profile.unreadcount+1
+                theeventApplication.event.eventcreater.profile.save()
+                applicationsNext = EventApplication.objects.filter(event=eventApplication.event).filter(approved=False).filter(isDeleted=False).filter(isActive=True).order_by('-date')
+                count = 0
+                for applicationNext in applicationsNext:
+                    if count == 0:
+                        applicationNext.approved = True
+                        applicationNext.save()
+                        count = 1
+
+        log = Log.objects.create(operation="deactivate", itemType="user", itemId=pk, userId=request.user)
+        return redirect('profile', pk=pk)
+
+class ActivateUser(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        profile = UserProfile.objects.get(pk=pk)
+        profile.isActive = True
+        profile.save()
+        log = Log.objects.create(operation="activate", itemType="user", itemId=pk, userId=request.user)
+        return redirect('profile', pk=pk)

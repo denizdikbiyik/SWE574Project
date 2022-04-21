@@ -38,7 +38,7 @@
                         <div class="row">
                             <div class="col">
                                 {% if request.user == event.eventcreater %}
-                                    {% if is_active %}
+                                    {% if is_active and event.isActive %}
                                         <a href="{% url 'event-edit' event.pk %}" class="btn btn-primary">Edit</a>
                                         <a href="{% url 'event-delete' event.pk %}" class="btn btn-danger">Delete</a>
                                     {% endif %}         
@@ -47,16 +47,24 @@
                         </div>
                         <div class="row">
                             <p></p>
-                            {% if is_like %}
-                                <form method="POST" action="{% url 'event-unlike' event.pk %}">
+                            {% if event.isActive and is_active and request.user.profile.isAdmin %}
+                                <form method="POST" action="{% url 'deactivate-event' event.pk %}">
                                     {% csrf_token %}
-                                    <button class="btn btn-outline-danger" type=submit>Unlike</button>
+                                    <button class="btn btn-outline-danger" type=submit>Deactivate</button>
                                 </form>
-                            {% else %}
-                                <form method="POST" action="{% url 'event-like' event.pk %}">
-                                    {% csrf_token %}
-                                    <button class="btn btn-outline-success" type=submit>Like</button>
-                                </form>
+                            {% endif %}
+                            {% if event.isActive %}
+                                {% if is_like %}
+                                    <form method="POST" action="{% url 'event-unlike' event.pk %}">
+                                        {% csrf_token %}
+                                        <button class="btn btn-outline-danger" type=submit>Unlike</button>
+                                    </form>
+                                {% else %}
+                                    <form method="POST" action="{% url 'event-like' event.pk %}">
+                                        {% csrf_token %}
+                                        <button class="btn btn-outline-success" type=submit>Like</button>
+                                    </form>
+                                {% endif %}
                             {% endif %}
                             <p></p>
                             <div class="mb-3">
@@ -126,9 +134,11 @@
                             {% endif %}
                             {% if is_active %}
                                 {% for application in applications_this %}
-                                    <div class="d-grid gap-2">
-                                        <a class="btn btn-danger mt-3" href="{% url 'event-application-delete' event.pk application.pk %}">Cancel Application</a>
-                                    </div>
+                                    {% if event.isActive %}
+                                        <div class="d-grid gap-2">
+                                            <a class="btn btn-danger mt-3" href="{% url 'event-application-delete' event.pk application.pk %}">Cancel Application</a>
+                                        </div>
+                                    {% endif %}
                                 {% endfor %}
                             {% endif %}
                         {% else %}
@@ -136,16 +146,18 @@
                                 {% csrf_token %}
                                 {{ form | crispy}}
                                 {% if is_active %}
-                                    <div class="d-grid gap-2">
-                                        <button class="btn btn-success mt-3">Apply</button>
-                                    </div>
+                                    {% if event.isActive %}
+                                        <div class="d-grid gap-2">
+                                            <button class="btn btn-success mt-3">Apply</button>
+                                        </div>
+                                    {% endif %}
                                 {% endif %}
                             </form>
                         {% endif %}
                     {% endif %}
                 </div>
 
-                {% if showCommunication %}
+                {% if showCommunication and event.isActive %}
                     <p style="font-weight: bolder;">Communication:</p>
                     {% if allCommunicationsLength == 0 %}
                         <p>No communication found.</p>
