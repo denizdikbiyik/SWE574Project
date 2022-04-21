@@ -22,24 +22,17 @@
                 {% if events_count != 0 %}
                     {% for event in events %}
                         <div class="row justify-content-center mt-3">
-                            <div class="card col-md-12 col-sm-12 border-bottom position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
+                            <div class="card col-md-10 col-sm-12 border-bottom position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
                                 <div class="row">
                                     <div class="col-md-4">
                                         <img style="border-radius:10px;" src="{{ event.eventpicture.url }}" width="100" height="100" />
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-8">
                                         <p><a style="text-decoration: none;" class="text-primary" href="{% url 'profile' event.eventcreater.profile.pk %}">@{{ event.eventcreater }}</a> created</p> 
                                         <p style="font-weight:bold;">{{ event.eventname }}</p>       
                                         <p>Time: {{ event.eventdate }}</p>
                                         <a class="stretched-link" href="{% url 'event-detail' event.pk %}"></a>                   
-                                    </div> 
-                                    {% if event.eventdate <= currentTime %}
-                                        <div class="col-md-2">
-                                            <p style="font-weight:bold;">Datetime Passed</p>  
-                                            <p></p> 
-                                            <p></p>                
-                                        </div> 
-                                    {% endif %}           
+                                    </div>         
                                 </div>
                             </div>
                         </div>

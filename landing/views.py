@@ -12,11 +12,11 @@ from online_users.models import OnlineUserActivity
 
 class Index(View):
     def get(self, request, *args, **kwargs):
-        services = Service.objects.filter(isDeleted=False).filter(isActive=True).order_by('-createddate')
-        events = Event.objects.filter(isDeleted=False).filter(isActive=True).order_by('-eventcreateddate')
+        currentTime = timezone.now()
+        services = Service.objects.filter(isDeleted=False).filter(isActive=True).filter(servicedate__gte=currentTime).order_by('-createddate')
+        events = Event.objects.filter(isDeleted=False).filter(isActive=True).filter(eventdate__gte=currentTime).order_by('-eventcreateddate')
         events_count = len(events)
         services_count = len(services)
-        currentTime = timezone.now()
         context = {
             'services': services,
             'events': events,

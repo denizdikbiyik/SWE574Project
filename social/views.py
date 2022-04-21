@@ -60,11 +60,11 @@ class ServiceCreateView(LoginRequiredMixin, View):
 
 class AllServicesView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        services = Service.objects.all().order_by('-createddate').filter(isDeleted=False).filter(isActive=True)
+        currentTime = timezone.now()
+        services = Service.objects.all().order_by('-createddate').filter(isDeleted=False).filter(isActive=True).filter(servicedate__gte=currentTime)
         alltags = Tag.objects.all()
         form = ServiceForm()
         services_count = len(services)
-        currentTime = timezone.now()
         context = {
             'services': services,
             'services_count': services_count,
@@ -488,10 +488,10 @@ class EventCreateView(LoginRequiredMixin, View):
 
 class AllEventsView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        events = Event.objects.filter(isDeleted=False).filter(isActive=True).order_by('-eventcreateddate')
+        currentTime = timezone.now()
+        events = Event.objects.filter(isDeleted=False).filter(isActive=True).filter(eventdate__gte=currentTime).order_by('-eventcreateddate')
         form = EventForm()
         events_count = len(events)
-        currentTime = timezone.now()
         context = {
             'events': events,
             'events_count': events_count,
@@ -977,6 +977,7 @@ class RateUserDelete(LoginRequiredMixin, View):
 
 class TimeLine(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
+        currentTime = timezone.now()
         profile = UserProfile.objects.get(pk=request.user.pk)
         allUsers = UserProfile.objects.all()
         followedOnes = []
@@ -986,8 +987,8 @@ class TimeLine(LoginRequiredMixin, View):
             thisFollowers = UserProfile.objects.get(pk=auser.pk).followers.all()
             if request.user in thisFollowers:
                 followedOnes.append(auser)
-        services = Service.objects.filter(isDeleted=False).filter(isActive=True).order_by('-createddate')
-        events = Event.objects.filter(isDeleted=False).filter(isActive=True).order_by('-eventcreateddate')
+        services = Service.objects.filter(isDeleted=False).filter(isActive=True).filter(servicedate__gte=currentTime).order_by('-createddate')
+        events = Event.objects.filter(isDeleted=False).filter(isActive=True).filter(eventdate__gte=currentTime).order_by('-eventcreateddate')
         for one in followedOnes:
             for service in services:
                 if service.creater == one.user :
@@ -997,7 +998,6 @@ class TimeLine(LoginRequiredMixin, View):
                     events2.append(event)
         events_count = len(events2)
         services_count = len(services2)
-        currentTime = timezone.now()
         context = {
             'services': services2,
             'events': events2,
@@ -1010,9 +1010,9 @@ class TimeLine(LoginRequiredMixin, View):
 class ServiceSearch(View):
     def get(self, request, *args, **kwargs):
         query = self.request.GET.get('query')
-        services = Service.objects.filter(isDeleted=False).filter(isActive=True).filter(Q(name__icontains=query))
-        services_count = len(services)
         currentTime = timezone.now()
+        services = Service.objects.filter(isDeleted=False).filter(isActive=True).filter(servicedate__gte=currentTime).filter(Q(name__icontains=query))
+        services_count = len(services)
         alltags = Tag.objects.all()
         context = {
             'services': services,
@@ -1025,9 +1025,9 @@ class ServiceSearch(View):
 class EventSearch(View):
     def get(self, request, *args, **kwargs):
         query = self.request.GET.get('query')
-        events = Event.objects.filter(isDeleted=False).filter(isActive=True).filter(Q(eventname__icontains=query))
-        events_count = len(events)
         currentTime = timezone.now()
+        events = Event.objects.filter(isDeleted=False).filter(isActive=True).filter(eventdate__gte=currentTime).filter(Q(eventname__icontains=query))
+        events_count = len(events)
         context = {
             'events': events,
             'events_count': events_count,
@@ -1145,12 +1145,12 @@ class RequestDeleteView(LoginRequiredMixin, View):
 class ServiceFilter(View):
     def get(self, request, *args, **kwargs):
         category = self.request.GET.get('category')
-        if category != "all":
-            services = Service.objects.filter(category=category).filter(isDeleted=False).filter(isActive=True)
-        else:
-            services = Service.objects.filter(isDeleted=False).filter(isActive=True).order_by('-createddate')
-        services_count = len(services)
         currentTime = timezone.now()
+        if category != "all":
+            services = Service.objects.filter(category=category).filter(isDeleted=False).filter(isActive=True).filter(servicedate__gte=currentTime)
+        else:
+            services = Service.objects.filter(isDeleted=False).filter(isActive=True).filter(servicedate__gte=currentTime).order_by('-createddate')
+        services_count = len(services)
         alltags = Tag.objects.all()
         context = {
             'services': services,
