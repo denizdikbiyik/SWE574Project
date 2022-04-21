@@ -1,0 +1,37 @@
+{% extends 'landing/base.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+    <div class="container p-3 my-3 bg-secondary ">
+        <form method="get">
+            <label for="admin-search">Search in Wikidata:</label>
+            <input type="search" id="admin-search" name="q"
+                   aria-label="Search through site content" placeholder="service keyword">
+            <button type="submit" name="submit" value="submitted">Submit</button>
+        </form>
+
+        <form method="post">
+            {% csrf_token %}
+            <label for="wikidescriptions">Choose a description:</label>
+            <select name="choose_description" id="wikidescriptions">
+                <option disabled selected>Descriptions</option>
+                {% for description in descriptions %}
+                    <option value="{{ description }}">{{ description }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" name="save" value="submitted"
+            >Save
+            </button>
+        </form>
+        {{ message }} <br>
+        Keyword: {{ q }}
+
+        <ul class="list-group list-group-flush">
+            {% for description in descriptions %}
+                <li class="list-group-item">{{ description }}</li>
+            {% endfor %}
+        </ul>
+
+        <a type="button" class="btn btn-success" href="{% url 'service-create' %}">Back to Form</a>
+    </div>
+
+{% endblock content %}

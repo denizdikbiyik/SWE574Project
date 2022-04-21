@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'dashboard_user_list',
     'online_users',
     'matplotlib',
+    'wiki',
 ]
 
 LOCATION_FIELD = {
@@ -132,7 +133,6 @@ DATABASES = {
     }
 }
 '''
-
 CORS_ALLOW_ALL_ORIGINS = True
 
 # Password validation
