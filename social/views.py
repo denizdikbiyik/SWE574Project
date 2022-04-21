@@ -1491,7 +1491,6 @@ class MyLikes(LoginRequiredMixin, View):
         }
         return render(request, 'social/mylikes.html', context)
 
-
 class AdminDashboardIndex(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         # user_activity_objects_15min = OnlineUserActivity.get_user_activities()
@@ -1505,7 +1504,7 @@ class AdminDashboardIndex(LoginRequiredMixin, View):
         activeUsers = (user for user in user_activity_objects)
 
         allUsers = UserProfile.objects.all()
-        allUsersCount = len(allUsers)
+        allUsersCount = len(allUsers)-number_of_active_users
 
         labels = []
         data = []
@@ -1518,7 +1517,8 @@ class AdminDashboardIndex(LoginRequiredMixin, View):
 
         explode = (0.1, 0)  # only "explode" the 2nd slice (i.e. 'Hogs')
         fig1, ax1 = plt.subplots()
-        ax1.pie(data, explode=explode, labels=labels, autopct='%1.1f%%', shadow=True, startangle=90)
+        #ax1.pie(data, explode=explode, labels=labels, autopct='%1.1f%%', shadow=True, startangle=90)
+        ax1.pie(data, explode=explode, labels=labels, autopct=lambda p: '{:.0f}'.format(p * sum(data) / 100), shadow=True, startangle=90)
         ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
         plt.savefig('media/users_chart.png',dpi=100)
 
@@ -1546,7 +1546,6 @@ class OnlineUsersList(LoginRequiredMixin, View):
             'users': users,
         }
         return render(request, 'social/onlineusers.html', context)
-
 
 class ComplaintUser(LoginRequiredMixin, View):
     def get(self, request, *args, pk, **kwargs):
