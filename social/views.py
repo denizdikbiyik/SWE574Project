@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.views import View
-from .models import Service, UserProfile, Event, ServiceApplication, UserRatings, NotifyUser, EventApplication, Tag, Log, Communication, Like, UserComplaints
+from .models import Service, UserProfile, Event, ServiceApplication, UserRatings, NotifyUser, EventApplication, Tag, Log, Communication, Like, UserComplaints, Featured
 from .forms import ServiceForm, EventForm, ServiceApplicationForm, RatingForm, EventApplicationForm, ProfileForm, RequestForm, ComplaintForm
 from django.views.generic.edit import UpdateView, DeleteView
 from django.http import HttpResponseRedirect
@@ -110,6 +110,10 @@ class AppliedServicesView(LoginRequiredMixin, View):
 class ServiceDetailView(View):
     def get(self, request, pk, *args, **kwargs):
         service = Service.objects.get(pk=pk)
+        is_featured = False
+        featured = Featured.objects.filter(itemId=pk).filter(itemType="service")
+        if len(featured) > 0:
+            is_featured = True
         showCommunication = False
         if request.user == service.creater or request.user.profile.isAdmin == True:
             showCommunication = True
@@ -162,7 +166,8 @@ class ServiceDetailView(View):
             'showCommunication': showCommunication,
             'is_like': is_like,
             'likes': likes,
-            'likesCount': likesCount
+            'likesCount': likesCount,
+            'is_featured': is_featured
         }
         return render(request, 'social/service_detail.html', context)
 
@@ -581,6 +586,10 @@ class EventApplicationDeleteView(LoginRequiredMixin, View):
 class EventDetailView(View):
     def get(self, request, pk, *args, **kwargs):
         event = Event.objects.get(pk=pk)
+        is_featured = False
+        featured = Featured.objects.filter(itemId=pk).filter(itemType="event")
+        if len(featured) > 0:
+            is_featured = True
         showCommunication = False
         if request.user == event.eventcreater or request.user.profile.isAdmin == True:
             showCommunication = True
@@ -633,7 +642,8 @@ class EventDetailView(View):
             'showCommunication': showCommunication,
             'is_like': is_like,
             'likes': likes,
-            'likesCount': likesCount
+            'likesCount': likesCount,
+            'is_featured': is_featured
         }
         return render(request, 'social/event_detail.html', context)
 
@@ -1846,3 +1856,57 @@ class Deactivateds(LoginRequiredMixin, View):
             'profiles_count': profiles_count,
         }
         return render(request, 'social/deactivateds.html', context)
+
+class FeaturedServicesView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        featureds = Featured.objects.filter(itemType="service")
+        services = []
+        currentTime = timezone.now()
+        for featured in featureds:
+            serviceToAdd = Service.objects.get(pk=featured.itemId)
+            services.append(serviceToAdd)
+        services_count = len(services)
+        context = {
+            'services': services,
+            'services_count': services_count,
+            'currentTime': currentTime,
+        }
+        return render(request, 'social/featuredservices.html', context)
+
+class FeaturedEventsView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        featureds = Featured.objects.filter(itemType="event")
+        events = []
+        currentTime = timezone.now()
+        for featured in featureds:
+            eventToAdd = Event.objects.get(pk=featured.itemId)
+            events.append(eventToAdd)
+        events_count = len(events)
+        context = {
+            'events': events,
+            'events_count': events_count,
+            'currentTime': currentTime,
+        }
+        return render(request, 'social/featuredevents.html', context)
+
+class AddServiceFeatured(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        featured = Featured.objects.create(itemType="service", itemId=pk)
+        return redirect('service-detail', pk=pk)
+
+class RemoveServiceFeatured(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        featured = Featured.objects.get(itemType="service", itemId=pk)
+        featured.delete()
+        return redirect('service-detail', pk=pk)
+
+class AddEventFeatured(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        featured = Featured.objects.create(itemType="event", itemId=pk)
+        return redirect('event-detail', pk=pk)
+
+class RemoveEventFeatured(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        featured = Featured.objects.get(itemType="event", itemId=pk)
+        featured.delete()
+        return redirect('event-detail', pk=pk)
