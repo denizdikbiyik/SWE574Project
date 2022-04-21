@@ -1773,7 +1773,7 @@ class DeactivateUser(LoginRequiredMixin, View):
                 notification = NotifyUser.objects.create(notify=theeventApplication.event.eventcreater, notification=str(request.user)+' deactivated the application of '+str(theeventApplication.applicant)+' for your event '+str(theeventApplication.event.eventname)+'.', offerType="event", offerPk=0)
                 theeventApplication.event.eventcreater.profile.unreadcount = theeventApplication.event.eventcreater.profile.unreadcount+1
                 theeventApplication.event.eventcreater.profile.save()
-                applicationsNext = EventApplication.objects.filter(event=eventApplication.event).filter(approved=False).filter(isDeleted=False).filter(isActive=True).order_by('-date')
+                applicationsNext = EventApplication.objects.filter(event=theeventApplication.event).filter(approved=False).filter(isDeleted=False).filter(isActive=True).order_by('-date')
                 count = 0
                 for applicationNext in applicationsNext:
                     if count == 0:
@@ -1791,3 +1791,39 @@ class ActivateUser(LoginRequiredMixin, View):
         profile.save()
         log = Log.objects.create(operation="activate", itemType="user", itemId=pk, userId=request.user)
         return redirect('profile', pk=pk)
+
+class DeactivateServiceApplication(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        theserviceApplication = ServiceApplication.objects.get(pk=pk)
+        theserviceApplication.isActive = False
+        theserviceApplication.save()
+        theserviceApplication.applicant.profile.reservehour = theserviceApplication.applicant.profile.reservehour + theserviceApplication.service.duration
+        notification = NotifyUser.objects.create(notify=theserviceApplication.applicant, notification=str(request.user)+' deactivated your application for service '+str(theserviceApplication.service.name)+'.', offerType="service", offerPk=theserviceApplication.service.pk)
+        theserviceApplication.applicant.profile.unreadcount = theserviceApplication.applicant.profile.unreadcount+1
+        theserviceApplication.applicant.profile.save()
+        notification = NotifyUser.objects.create(notify=theserviceApplication.service.creater, notification=str(request.user)+' deactivated the application of '+str(theserviceApplication.applicant)+' for your service '+str(theserviceApplication.service.name)+'.', offerType="service", offerPk=theserviceApplication.service.pk)
+        theserviceApplication.service.creater.profile.unreadcount = theserviceApplication.service.creater.profile.unreadcount+1
+        theserviceApplication.service.creater.profile.save()
+        log = Log.objects.create(operation="deactivateserviceapplication", itemType="service", itemId=theserviceApplication.service.pk, userId=request.user)
+        return redirect('service-detail', pk=theserviceApplication.service.pk)
+
+class DeactivateEventApplication(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        theeventApplication = EventApplication.objects.get(pk=pk)
+        theeventApplication.isActive = False
+        theeventApplication.save()
+        notification = NotifyUser.objects.create(notify=theeventApplication.applicant, notification=str(request.user)+' deactivated your application for event '+str(theeventApplication.event.eventname)+'.', offerType="event", offerPk=theeventApplication.event.pk)
+        theeventApplication.applicant.profile.unreadcount = theeventApplication.applicant.profile.unreadcount+1
+        theeventApplication.applicant.profile.save()
+        notification = NotifyUser.objects.create(notify=theeventApplication.event.eventcreater, notification=str(request.user)+' deactivated the application of '+str(theeventApplication.applicant)+' for your event '+str(theeventApplication.event.eventname)+'.', offerType="event", offerPk=theeventApplication.event.pk)
+        theeventApplication.event.eventcreater.profile.unreadcount = theeventApplication.event.eventcreater.profile.unreadcount+1
+        theeventApplication.event.eventcreater.profile.save()
+        applicationsNext = EventApplication.objects.filter(event=theeventApplication.event).filter(approved=False).filter(isDeleted=False).filter(isActive=True).order_by('-date')
+        count = 0
+        for applicationNext in applicationsNext:
+            if count == 0:
+                applicationNext.approved = True
+                applicationNext.save()
+                count = 1
+        log = Log.objects.create(operation="deactivateeventapplication", itemType="event", itemId=theeventApplication.event.pk, userId=request.user)
+        return redirect('event-detail', pk=theeventApplication.event.pk)
