@@ -24,6 +24,7 @@ import numpy as np
 
 class ServiceCreateView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
+        request.session["type"] = "service"
         form = ServiceForm()
         context = {
             'form': form,
@@ -62,6 +63,7 @@ class ServiceCreateView(LoginRequiredMixin, View):
                     request.session['description'] = None  # Added by AT
                     new_service.save()
                     messages.success(request, 'Service creation is successful.')
+                    request.session["type"] = None
                     log = Log.objects.create(operation="createservice", itemType="service", itemId=new_service.pk,
                                              userId=request.user)
             else:
@@ -538,6 +540,7 @@ class ServiceDeleteView(LoginRequiredMixin, View):
 
 class EventCreateView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
+        request.session["type"] = "event"
         form = EventForm()
         context = {
             'form': form,
@@ -557,10 +560,13 @@ class EventCreateView(LoginRequiredMixin, View):
                 messages.warning(request, 'You cannot create this event because you have one with the same datetime.')
             else:
                 new_event.eventcreater = request.user
+                new_event.event_wiki_description = request.session['description']  # Added by AT
+                request.session['description'] = None  # Added by AT
                 new_event.save()
                 log = Log.objects.create(operation="createevent", itemType="event", itemId=new_event.pk,
                                          userId=request.user)
                 messages.success(request, 'Event creation is successful.')
+                request.session["type"] = None
         context = {
             'event_list': events,
             'form': form,

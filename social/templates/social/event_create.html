@@ -14,7 +14,7 @@
 
     <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <link rel="stylesheet" type="text/css" href="/static/admin/css/responsive.css">
-    
+
     <meta name="robots" content="NONE,NOARCHIVE">
 </head>
 
@@ -26,13 +26,17 @@
         <div class="row justify-content-center mt-3">
             <div class="col-md-5 col-sm-12">
                 <h5>Add an Event!</h5>
+                <a class="row justify-content-center mt-3 mb-3" href="{% url 'wiki' %}">I
+                    want to add a Wikidata
+                    description.</a>
             </div>
         </div>
         <div class="row justify-content-center mt-3 mb-5">
             {% if messages %}
                 <ul class="messages">
                     {% for message in messages %}
-                        <p style="text-align: center; color:navy;"  {% if message.tags %} class=" {{ message.tags }} " {% endif %}> {{ message }} </p>
+                        <p style="text-align: center; color:navy;"  {% if message.tags %}
+                           class=" {{ message.tags }} " {% endif %}> {{ message }} </p>
                     {% endfor %}
                 </ul>
             {% endif %}
