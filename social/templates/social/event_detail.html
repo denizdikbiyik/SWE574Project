@@ -14,7 +14,7 @@
 
     <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <link rel="stylesheet" type="text/css" href="/static/admin/css/responsive.css">
-    
+
     <meta name="robots" content="NONE,NOARCHIVE">
 </head>
 
@@ -41,7 +41,7 @@
                                     {% if is_active and event.isActive %}
                                         <a href="{% url 'event-edit' event.pk %}" class="btn btn-primary">Edit</a>
                                         <a href="{% url 'event-delete' event.pk %}" class="btn btn-danger">Delete</a>
-                                    {% endif %}         
+                                    {% endif %}
                                 {% endif %}
                             </div>
                         </div>
@@ -79,23 +79,32 @@
                             {% endif %}
                             <p></p>
                             <div class="mb-3">
-                                <a style="text-decoration: none;" class="text-primary" href="{% url 'event-liked-list' event.pk %}">Likes: {{ likesCount }}</a>
+                                <a style="text-decoration: none;" class="text-primary"
+                                   href="{% url 'event-liked-list' event.pk %}">Likes: {{ likesCount }}</a>
                             </div>
                         </div>
-                    </div>                  
+                    </div>
                 </div>
                 </br>
-                <p><a style="text-decoration: none;" class="text-primary" href="{% url 'profile' event.eventcreater.profile.pk %}">@{{ event.eventcreater }}</a> created on {{ event.eventcreateddate}}</p>
+                <p><a style="text-decoration: none;" class="text-primary"
+                      href="{% url 'profile' event.eventcreater.profile.pk %}">@{{ event.eventcreater }}</a> created
+                    on {{ event.eventcreateddate }}</p>
                 <p><a style="font-weight: bolder;">Event Name: </a>{{ event.eventname }}</p>
                 {% if event.eventdescription %}
                     <p><a style="font-weight: bolder;">Description: </a>{{ event.eventdescription }}</p>
                 {% endif %}
+                {% if event.event_wiki_description %}
+                    <p><a style="font-weight: bolder;">Wiki Description: </a>{{ event.event_wiki_description }}</p>
+                {% endif %}
+
                 <p><a style="font-weight: bolder;">Datetime: </a>{{ event.eventdate }}</p>
                 <p><a style="font-weight: bolder;">Duration: </a>{{ event.eventduration }} hour</p>
                 <p><a style="font-weight: bolder;">Location: </a>{{ event.eventlocation }}</p>
                 <div class="form-row field-location">
                     <div>
-                        <input style="visibility: hidden; height: 0px; margin: 0px;" type="text" name="location" value={{ event.eventlocation }} required id="id_location" data-location-field-options="{&quot;map.provider&quot;: &quot;google&quot;, &quot;map.zoom&quot;: 13, &quot;search.provider&quot;: &quot;google&quot;, &quot;search.suffix&quot;: &quot;&quot;, &quot;provider.google.api&quot;: &quot;//maps.google.com/maps/api/js?sensor=false&quot;, &quot;provider.google.api_key&quot;: &quot;AIzaSyAAsiQaM2KE_UZ_k7gSQZfIGtF0lAiBCBQ&quot;, &quot;provider.google.map_type&quot;: &quot;ROADMAP&quot;, &quot;provider.mapbox.access_token&quot;: &quot;&quot;, &quot;provider.mapbox.max_zoom&quot;: 18, &quot;provider.mapbox.id&quot;: &quot;mapbox.streets&quot;, &quot;provider.openstreetmap.max_zoom&quot;: 18, &quot;resources.root_path&quot;: &quot;/static/location_field&quot;, &quot;resources.media&quot;: {&quot;js&quot;: [&quot;/static/location_field/js/form.js&quot;]}, &quot;provider.google.api_libraries&quot;: &quot;&quot;, &quot;provider.google.map.type&quot;: &quot;ROADMAP&quot;, &quot;field_options&quot;: {&quot;based_fields&quot;: [], &quot;prefix&quot;: &quot;&quot;}}">
+                        <input style="visibility: hidden; height: 0px; margin: 0px;" type="text" name="location"
+                               value={{ event.eventlocation }} required id="id_location"
+                               data-location-field-options="{&quot;map.provider&quot;: &quot;google&quot;, &quot;map.zoom&quot;: 13, &quot;search.provider&quot;: &quot;google&quot;, &quot;search.suffix&quot;: &quot;&quot;, &quot;provider.google.api&quot;: &quot;//maps.google.com/maps/api/js?sensor=false&quot;, &quot;provider.google.api_key&quot;: &quot;AIzaSyAAsiQaM2KE_UZ_k7gSQZfIGtF0lAiBCBQ&quot;, &quot;provider.google.map_type&quot;: &quot;ROADMAP&quot;, &quot;provider.mapbox.access_token&quot;: &quot;&quot;, &quot;provider.mapbox.max_zoom&quot;: 18, &quot;provider.mapbox.id&quot;: &quot;mapbox.streets&quot;, &quot;provider.openstreetmap.max_zoom&quot;: 18, &quot;resources.root_path&quot;: &quot;/static/location_field&quot;, &quot;resources.media&quot;: {&quot;js&quot;: [&quot;/static/location_field/js/form.js&quot;]}, &quot;provider.google.api_libraries&quot;: &quot;&quot;, &quot;provider.google.map.type&quot;: &quot;ROADMAP&quot;, &quot;field_options&quot;: {&quot;based_fields&quot;: [], &quot;prefix&quot;: &quot;&quot;}}">
                         <div class="map-widget" style="margin-top: 4px">
                             <div id="map_location" style="width: 500px; height: 250px"></div>
                         </div>
@@ -112,16 +121,18 @@
                         <p></p>
                         <p style="font-weight: bolder;">Applicants:</p>
                         {% for application_done in applications %}
-                        <div class="row justify-content-center">
-                            <div class="border-bottom">
-                                <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' application_done.applicant.profile.pk %}">@{{ application_done.applicant }}</a> on {{ application_done.date.date }}
-                                {% if application_done.approved %}
-                                    <a style="font-weight: bolder;">Approved</a>
-                                {% else %}
-                                    <a style="font-weight: bolder;">Not Approved</a>
-                                {% endif %}
+                            <div class="row justify-content-center">
+                                <div class="border-bottom">
+                                    <a style="text-decoration: none;" class="text-primary"
+                                       href="{% url 'profile' application_done.applicant.profile.pk %}">@{{ application_done.applicant }}</a>
+                                    on {{ application_done.date.date }}
+                                    {% if application_done.approved %}
+                                        <a style="font-weight: bolder;">Approved</a>
+                                    {% else %}
+                                        <a style="font-weight: bolder;">Not Approved</a>
+                                    {% endif %}
+                                </div>
                             </div>
-                        </div>
                         {% endfor %}
                         {% if application_number == 0 %}
                             <p>No application found.</p>
@@ -129,23 +140,26 @@
 
                     {% else %}
 
-                    
+
                         {% if request.user.profile.isAdmin %}
 
                             <p></p>
                             <p style="font-weight: bolder;">Applicants:</p>
                             {% for application_done in applications %}
-                            <div class="row justify-content-center">
-                                <div class="border-bottom" style="display: flex;">
-                                    <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' application_done.applicant.profile.pk %}">@{{ application_done.applicant }}</a> &nbsp; on {{ application_done.date.date }}&nbsp;&nbsp;
-                                    {% if is_active and event.isActive %}
-                                        <form method="POST" action="{% url 'deactivate-event-application' application_done.pk %}">
-                                            {% csrf_token %}
-                                            <button class="btn btn-danger btn-sm" type=submit>Deactivate</button>
-                                        </form>
-                                    {% endif %}
+                                <div class="row justify-content-center">
+                                    <div class="border-bottom" style="display: flex;">
+                                        <a style="text-decoration: none;" class="text-primary"
+                                           href="{% url 'profile' application_done.applicant.profile.pk %}">@{{ application_done.applicant }}</a>
+                                        &nbsp; on {{ application_done.date.date }}&nbsp;&nbsp;
+                                        {% if is_active and event.isActive %}
+                                            <form method="POST"
+                                                  action="{% url 'deactivate-event-application' application_done.pk %}">
+                                                {% csrf_token %}
+                                                <button class="btn btn-danger btn-sm" type=submit>Deactivate</button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
                                 </div>
-                            </div>
                             {% endfor %}
                             {% if application_number == 0 %}
                                 <p>No active application found.</p>
@@ -153,18 +167,20 @@
 
                         {% else %}
 
-                
+
                             <p><strong>Participants:</strong></p>
                             {% for accepted in accepted_applications %}
-                            <div class="row justify-content-center">
-                                <div class="border-bottom">
-                                    <p style="text-decoration: none;" class="text-primary" href="{% url 'profile' accepted.applicant.profile.pk %}">@{{ accepted.applicant }}</p>
+                                <div class="row justify-content-center">
+                                    <div class="border-bottom">
+                                        <p style="text-decoration: none;" class="text-primary"
+                                           href="{% url 'profile' accepted.applicant.profile.pk %}">
+                                            @{{ accepted.applicant }}</p>
+                                    </div>
                                 </div>
-                            </div>
                             {% endfor %}
-                                        
+
                             {% if is_applied %}
-                                {% if is_accepted %}               
+                                {% if is_accepted %}
                                     <p><strong>Your application is accepted.</strong></p>
                                 {% else %}
                                     <p><strong>Your application is not accepted or rejected yet.</strong></p>
@@ -173,7 +189,9 @@
                                     {% for application in applications_this %}
                                         {% if event.isActive %}
                                             <div class="d-grid gap-2">
-                                                <a class="btn btn-danger mt-3" href="{% url 'event-application-delete' event.pk application.pk %}">Cancel Application</a>
+                                                <a class="btn btn-danger mt-3"
+                                                   href="{% url 'event-application-delete' event.pk application.pk %}">Cancel
+                                                    Application</a>
                                             </div>
                                         {% endif %}
                                     {% endfor %}
@@ -181,7 +199,7 @@
                             {% else %}
                                 <form method="POST">
                                     {% csrf_token %}
-                                    {{ form | crispy}}
+                                    {{ form | crispy }}
                                     {% if is_active %}
                                         {% if event.isActive %}
                                             <div class="d-grid gap-2">
@@ -201,33 +219,39 @@
                         <p>No communication found.</p>
                     {% else %}
                         {% for communication in allCommunications %}
-                        <div class="row justify-content-center">
-                            <div class="border-bottom">
-                                <p>
-                                    <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' communication.communicated.profile.pk %}">@{{ communication.communicated }}</a> on {{ communication.date }} wrote:
-                                </p>
-                                <p>
+                            <div class="row justify-content-center">
+                                <div class="border-bottom">
+                                    <p>
+                                        <a style="text-decoration: none;" class="text-primary"
+                                           href="{% url 'profile' communication.communicated.profile.pk %}">@{{ communication.communicated }}</a>
+                                        on {{ communication.date }} wrote:
+                                    </p>
+                                    <p>
                                     <div class="row">
                                         <div class="col">
                                             "{{ communication.message }}"
                                         </div>
                                         <div class="col text-right">
                                             {% if communication.communicated == request.user or request.user.profile.isAdmin %}
-                                        <a href="{% url 'event-communication-delete' event.pk communication.pk %}" class="btn btn-danger btn-sm">Delete</a>
-                                    {% endif %}
+                                                <a href="{% url 'event-communication-delete' event.pk communication.pk %}"
+                                                   class="btn btn-danger btn-sm">Delete</a>
+                                            {% endif %}
                                         </div>
                                     </div>
-                                </p>
+                                    </p>
+                                </div>
                             </div>
-                        </div>
                         {% endfor %}
                     {% endif %}
                     {% if is_active %}
                         <p></p>
                         <form class="d-flex" method="GET" action="{% url 'event-detail-communication' event.pk %}">
                             <div class="input-group">
-                                <input type="text" class="form-control" placeholder="Message" aria-label="Message" aria-describedby="basic-addon1" name='query'>
-                                <button style="border: none; background-color: white; box-shadow: none" type="submit">Add Message</button>
+                                <input type="text" class="form-control" placeholder="Message" aria-label="Message"
+                                       aria-describedby="basic-addon1" name='query'>
+                                <button style="border: none; background-color: white; box-shadow: none" type="submit">
+                                    Add Message
+                                </button>
                             </div>
                         </form>
                     {% endif %}

@@ -5,33 +5,41 @@
         <form method="get">
             <label for="admin-search">Search in Wikidata:</label>
             <input type="search" id="admin-search" name="q"
-                   aria-label="Search through site content" placeholder="service keyword">
+                   aria-label="Search through site content" placeholder="keyword">
             <button type="submit" name="submit" value="submitted">Submit</button>
         </form>
 
+
         <form method="post">
             {% csrf_token %}
-            <label for="wikidescriptions">Choose a description:</label>
-            <select name="choose_description" id="wikidescriptions">
-                <option disabled selected>Descriptions</option>
-                {% for description in descriptions %}
-                    <option value="{{ description }}">{{ description }}</option>
-                {% endfor %}
-            </select>
-            <button type="submit" name="save" value="submitted"
-            >Save
-            </button>
-        </form>
-        {{ message }} <br>
-        Keyword: {{ q }}
-
-        <ul class="list-group list-group-flush">
             {% for description in descriptions %}
-                <li class="list-group-item">{{ description }}</li>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="choose_description" id="flexRadioDefault1"
+                           value="{{ description }}">
+                    <label class="form-check-label" for="flexRadioDefault1">
+                        {{ description }}
+                    </label>
+                </div>
             {% endfor %}
-        </ul>
+            {% if is_choice == True %}
+                <button type="submit" name="save" value="submitted"
+                >Save
+                </button>
+            {% endif %}
+        </form>
+        {% if is_choice == True %}
+            Keyword: {{ q }} <br>
+        {% endif %}
+        {{ message }} <br>
 
-        <a type="button" class="btn btn-success" href="{% url 'service-create' %}">Back to Form</a>
+
+        {% if type_event == True %}
+            <a type="button" class="btn btn-success" href="{% url 'event-create' %}">Back to Form</a>
+        {% else %}
+            <a type="button" class="btn btn-success" href="{% url 'service-create' %}">Back to Form</a>
+        {% endif %}
     </div>
+
+
 
 {% endblock content %}
