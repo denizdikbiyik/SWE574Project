@@ -40,9 +40,13 @@
 
     <div class="container-sm">
 
+
         {{ text }}
         <br>
-        Number of Users found: {{ user_count }}
+        {% if clear_list == False %}
+            Number of User found: {{ user_count }}
+        {% endif %}
+
 
 
     </div>
