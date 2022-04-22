@@ -100,6 +100,9 @@
                 {% if service.description %}
                     <p><a style="font-weight: bolder;">Description: </a>{{ service.description }}</p>
                 {% endif %}
+                {% if service.wiki_description %}
+                    <p><a style="font-weight: bolder;">Wiki Description: </a>{{ service.wiki_description }}</p>
+                {% endif %}
                 {% if service.category %}
                     <p><a style="font-weight: bolder;">Category: </a>{{ service.category }}</p>
                 {% endif %}
