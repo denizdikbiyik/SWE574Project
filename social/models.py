@@ -29,6 +29,7 @@ class Service(models.Model):
     createddate = models.DateTimeField(default=timezone.now)
     name = models.TextField(default="Service Name", blank=False, null=False)
     description = models.TextField(blank=True, null=True)
+    wiki_description = models.TextField(blank=True, null=True)
     picture = models.ImageField(upload_to='uploads/service_pictures/', default='uploads/service_pictures/default.png')
     location = PlainLocationField(default='41.0255493,28.9742571', zoom=7, blank=False, null=False)
     servicedate = models.DateTimeField(default=timezone.now)
@@ -56,6 +57,7 @@ class ServiceApplication(models.Model):
     isDeleted = models.BooleanField(default=False)
     deletionInfo = models.TextField(blank=True, null=True)
     isActive = models.BooleanField(default=True)
+
 
 class Event(models.Model):
     eventcreater = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -86,6 +88,7 @@ class EventApplication(models.Model):
     deletionInfo = models.TextField(blank=True, null=True)
     isActive = models.BooleanField(default=True)
 
+
 class UserProfile(models.Model):
     user = models.OneToOneField(User, primary_key=True, verbose_name='user', related_name='profile',
                                 on_delete=models.CASCADE)
@@ -101,6 +104,7 @@ class UserProfile(models.Model):
     isAdmin = models.BooleanField(default=False)
     isActive = models.BooleanField(default=True)
 
+
 class UserRatings(models.Model):
     rated = models.ForeignKey(User, verbose_name='user', related_name='rated', on_delete=models.CASCADE)
     rater = models.ForeignKey(User, verbose_name='user', related_name='rater', on_delete=models.SET_NULL, null=True)
@@ -108,11 +112,14 @@ class UserRatings(models.Model):
     service = models.ForeignKey('Service', on_delete=models.SET_NULL, null=True)
     feedback = models.TextField(blank=True, null=True)
 
+
 class UserComplaints(models.Model):
     complainted = models.ForeignKey(User, verbose_name='user', related_name='complainted', on_delete=models.CASCADE)
-    complainter = models.ForeignKey(User, verbose_name='user', related_name='complainter', on_delete=models.SET_NULL, null=True)
+    complainter = models.ForeignKey(User, verbose_name='user', related_name='complainter', on_delete=models.SET_NULL,
+                                    null=True)
     feedback = models.TextField(blank=True, null=True)
     isDeleted = models.BooleanField(default=False)
+
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
@@ -150,11 +157,13 @@ class Communication(models.Model):
     communicated = models.ForeignKey(User, verbose_name='user', related_name='communicated', on_delete=models.CASCADE)
     message = models.TextField(blank=True, null=True)
 
+
 class Like(models.Model):
     date = models.DateTimeField(default=timezone.now)
     itemType = models.TextField(blank=True, null=True)
     itemId = models.IntegerField(default=0)
     liked = models.ForeignKey(User, verbose_name='user', related_name='liked', on_delete=models.CASCADE)
+
 
 class Featured(models.Model):
     date = models.DateTimeField(default=timezone.now)
