@@ -4,17 +4,128 @@
 <div class="container">
     <div class="row justify-content-center mt-5">
         <div class="col-md-10 col-sm-12 text-center">
-            <h1 class="display-2">Connect With Community!</h1>
+            <h1 class="display-5">Connect With Community!</h1>
             <p class="mt-3 lead">Follow people who interests you, stay up to date on the latest services and join events!</p>
 
             <div class="row">
+                <h5 style="font-weight: bolder;">Featured Ones</h5>
+                {% if user.is_authenticated %}
+                    {% if request.user.profile.isActive %}
+                        <div class="col">
+                            <h5 style="text-align:center;">Services</h5>
+                            {% if featured_services_count != 0 %}
+                                {% for featured_service in featured_services %}
+                                <div class="row justify-content-center mt-1">
+                                    <div class="card col-md-10 col-sm-12 border-bottom position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <img style="border-radius:10px;" src="{{ featured_service.picture.url }}" width="100" height="100" />
+                                            </div>
+                                            <div class="col-md-8">
+                                                </br>
+                                                <p style="font-weight:bold;">{{ featured_service.name }}</p>       
+                                                <p>Time: {{ featured_service.servicedate }}</p>
+                                                {% if user.is_authenticated %}
+                                                <a class="stretched-link" href="{% url 'service-detail' featured_service.pk %}"></a>    
+                                                {% else %}    
+                                                {% endif %}            
+                                            </div>          
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                            <p>No featured services found!</p>
+                            {% endif %}
+                        </div>
+                        <div class="col">
+                            <h5 style="text-align:center;">Events</h5>
+                            {% if featured_events_count != 0 %}
+                                {% for featured_event in featured_events %}
+                                <div class="row justify-content-center mt-1">
+                                    <div class="card col-md-10 col-sm-12 border-bottom position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;"">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <img style="border-radius:10px;" src="{{ featured_event.eventpicture.url }}" width="100" height="100" />
+                                            </div>
+                                            <div class="col-md-8">
+                                                </br>
+                                                <p style="font-weight:bold;">{{ featured_event.eventname }}</p>
+                                                <p>Time: {{ featured_event.eventdate }}</p>
+                                                {% if user.is_authenticated %}
+                                                <a href="{% url 'event-detail' featured_event.pk %}" class="stretched-link"></a>
+                                                {% else %}    
+                                                {% endif %}
+                                            </div>      
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                            <p>No featured events found!</p>
+                            {% endif %}
+                        </div>
+                    {% else %}    
+                    {% endif %}  
+                {% else %}   
+                    <div class="col">
+                        <h5 style="text-align:center;">Services</h5>
+                        {% if featured_services_count != 0 %}
+                            {% for featured_service in featured_services %}
+                            <div class="row justify-content-center mt-1">
+                                <div class="card col-md-10 col-sm-12 border-bottom position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <img style="border-radius:10px;" src="{{ featured_service.picture.url }}" width="100" height="100" />
+                                        </div>
+                                        <div class="col-md-8">
+                                            </br>
+                                            <p style="font-weight:bold;">{{ featured_service.name }}</p>       
+                                            <p>Time: {{ featured_service.servicedate }}</p>         
+                                        </div>          
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                        <p>No featured services found!</p>
+                        {% endif %}
+                    </div>
+                    <div class="col">
+                        <h5 style="text-align:center;">Events</h5>
+                        {% if featured_events_count != 0 %}
+                            {% for featured_event in featured_events %}
+                            <div class="row justify-content-center mt-1">
+                                <div class="card col-md-10 col-sm-12 border-bottom position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;"">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <img style="border-radius:10px;" src="{{ featured_event.eventpicture.url }}" width="100" height="100" />
+                                        </div>
+                                        <div class="col-md-8">
+                                            </br>
+                                            <p style="font-weight:bold;">{{ featured_event.eventname }}</p>
+                                            <p>Time: {{ featured_event.eventdate }}</p>
+                                        </div>      
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                        <p>No featured events found!</p>
+                        {% endif %}
+                    </div>
+                {% endif %}  
+            </div>
+            <p></p>
+            <div class="row">
+                <h5 style="font-weight: bolder;">Other Ones</h5>
                 {% if user.is_authenticated %}
                     {% if request.user.profile.isActive %}
                         <div class="col">
                             <h5 style="text-align:center;">Services</h5>
                             {% if services_count != 0 %}
                                 {% for service in services %}
-                                <div class="row justify-content-center mt-4">
+                                <div class="row justify-content-center mt-1">
                                     <div class="card col-md-10 col-sm-12 border-bottom position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
                                         <div class="row">
                                             <div class="col-md-3">
@@ -41,7 +152,7 @@
                             <h5 style="text-align:center;">Events</h5>
                             {% if events_count != 0 %}
                                 {% for event in events %}
-                                <div class="row justify-content-center mt-3">
+                                <div class="row justify-content-center mt-1">
                                     <div class="card col-md-10 col-sm-12 border-bottom position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;"">
                                         <div class="row">
                                             <div class="col-md-4">
@@ -72,7 +183,7 @@
                         <h5 style="text-align:center;">Services</h5>
                         {% if services_count != 0 %}
                             {% for service in services %}
-                            <div class="row justify-content-center mt-3">
+                            <div class="row justify-content-center mt-1">
                                 <div class="card col-md-10 col-sm-12 border-bottom position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
                                     <div class="row">
                                         <div class="col-md-4">
@@ -99,7 +210,7 @@
                         <h5 style="text-align:center;">Events</h5>
                         {% if events_count != 0 %}
                             {% for event in events %}
-                            <div class="row justify-content-center mt-3">
+                            <div class="row justify-content-center mt-1">
                                 <div class="card col-md-10 col-sm-12 border-bottom position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;"">
                                     <div class="row">
                                         <div class="col-md-4">
