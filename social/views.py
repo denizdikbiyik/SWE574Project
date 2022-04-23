@@ -574,6 +574,7 @@ class EventCreateView(LoginRequiredMixin, View):
                 # new_event.event_wiki_description = request.session['description']  # gives key error Added by AT
                 new_event.event_wiki_description = request.session.get("description")  # Added by AT
                 request.session['description'] = None  # Added by AT
+                new_event.event_address = reverse_location(new_event.eventlocation)  # Added by AT
                 new_event.save()
                 log = Log.objects.create(operation="createevent", itemType="event", itemId=new_event.pk,
                                          userId=request.user)

@@ -52,6 +52,10 @@
             <input type="search" id="admin-search" name="q"
                    aria-label="Search through site content">
 
+            <label for="admin-search">Search:</label>
+            <input type="search" id="admin-search" name="qlocation"
+                   aria-label="Search through site content" placeholder="location">
+
 
             <label for="sort-select">Sort by:</label>
             <select name="sort" id="sort-select">
@@ -126,26 +130,26 @@
                 <ul class="pagination pagination-sm justify-content-center">
                     {% if page_obj.has_previous %}
                         <li class="page-item">
-                            <a href="?page=1&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}"
+                            <a href="?page=1&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}&qlocation={{ qlocation }}"
                                class="page-link">First</a>
                         </li>
 
                         <li class="page-item">
-                            <a href="?page={{ page_obj.previous_page_number }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}"
+                            <a href="?page={{ page_obj.previous_page_number }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}&qlocation={{ qlocation }}"
                                class="page-link">Previous</a>
                         </li>
 
                         {% if not page_obj.has_next and page_obj.previous_page_number > 1 %}
                             <li class="page-item ">
                                 <a class="page-link"
-                                   href="?page={{ page_obj.previous_page_number|add:'-1' }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}">
+                                   href="?page={{ page_obj.previous_page_number|add:'-1' }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}&qlocation={{ qlocation }}">
                                     {{ page_obj.previous_page_number|add:'-1' }}
                                 </a>
                             </li>
                         {% endif %}
                         <li>
                             <a class="page-link"
-                               href="?page={{ page_obj.previous_page_number }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}">
+                               href="?page={{ page_obj.previous_page_number }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}&qlocation={{ qlocation }}">
                                 {{ page_obj.previous_page_number }}
                             </a>
                         </li>
@@ -166,26 +170,26 @@
                     {% if page_obj.has_next %}
                         <li class="page-item">
                             <a class="page-link"
-                               href="?page={{ page_obj.next_page_number }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}">
+                               href="?page={{ page_obj.next_page_number }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}&qlocation={{ qlocation }}">
                                 {{ page_obj.next_page_number }}
                             </a>
                         </li>
                         {% if not page_obj.has_previous and page_obj.next_page_number < page_obj.paginator.num_pages %}
                             <li class="page-item ">
                                 <a class="page-link"
-                                   href="?page={{ page_obj.next_page_number|add:'1' }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}">
+                                   href="?page={{ page_obj.next_page_number|add:'1' }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}&qlocation={{ qlocation }}">
                                     {{ page_obj.next_page_number|add:'1' }}
                                 </a>
                             </li>
                         {% endif %}
                         <li class="page-item ">
                             <a class="page-link"
-                               href="?page={{ page_obj.next_page_number }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}">Next</a>
+                               href="?page={{ page_obj.next_page_number }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}&qlocation={{ qlocation }}">Next</a>
                         </li>
 
                         <li class="page-item ">
                             <a class="page-link"
-                               href="?page={{ page_obj.paginator.num_pages }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}">Last</a>
+                               href="?page={{ page_obj.paginator.num_pages }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}&qlocation={{ qlocation }}">Last</a>
                         </li>
                     {% else %}
                         <li class="page-item disabled">
