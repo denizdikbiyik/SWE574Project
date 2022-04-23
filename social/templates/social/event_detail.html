@@ -99,6 +99,9 @@
 
                 <p><a style="font-weight: bolder;">Datetime: </a>{{ event.eventdate }}</p>
                 <p><a style="font-weight: bolder;">Duration: </a>{{ event.eventduration }} hour</p>
+                {% if event.event_address %}
+                    <p><a style="font-weight: bolder;">Address: </a>{{ event.event_address }}</p>
+                {% endif %}
                 <p><a style="font-weight: bolder;">Location: </a>{{ event.eventlocation }}</p>
                 <div class="form-row field-location">
                     <div>

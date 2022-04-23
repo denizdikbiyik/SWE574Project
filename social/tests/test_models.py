@@ -39,6 +39,7 @@ class ServiceEventModelTest(TestCase):
             eventdescription="EventTestDescription",
             eventpicture='uploads/event_pictures/default.png',
             eventlocation='41.0255493,28.9742571',
+            event_address='testAddress',
             eventdate=datetime.now,
             eventcapacity=1,
             eventduration=1
