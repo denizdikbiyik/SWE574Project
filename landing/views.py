@@ -8,6 +8,7 @@ from django.views.generic.edit import UpdateView, DeleteView
 from django.http import HttpResponseRedirect
 from django.utils import timezone
 from datetime import timedelta
+import datetime
 from online_users.models import OnlineUserActivity
 
 class Index(View):
@@ -18,12 +19,14 @@ class Index(View):
         featured_services = []
         featured_events = []
 
-        featuredServicesList = Featured.objects.filter(itemType="service")
+        dateDiff = (datetime.datetime.now() - datetime.timedelta(days=7)).date()
+
+        featuredServicesList = Featured.objects.filter(itemType="service").filter(date__gte=dateDiff)
         for featuredServiceList in featuredServicesList:
             serviceFeatured = Service.objects.get(pk=featuredServiceList.itemId)
             featured_services.append(serviceFeatured)
         featured_services_count = len(featured_services)
-        featuredEventsList = Featured.objects.filter(itemType="event")
+        featuredEventsList = Featured.objects.filter(itemType="event").filter(date__gte=dateDiff)
         for featuredEventList in featuredEventsList:
             eventFeatured = Event.objects.get(pk=featuredEventList.itemId)
             featured_events.append(eventFeatured)
