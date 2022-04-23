@@ -20,6 +20,7 @@ class ServiceEventModelTest(TestCase):
             wiki_description="ServiceTestWikiDescription",
             picture='uploads/service_pictures/default.png',
             location='41.0255493,28.9742571',
+            address='testAddress',
             servicedate=datetime.now,
             capacity=1,
             duration=1,
@@ -48,4 +49,3 @@ class ServiceEventModelTest(TestCase):
 
     def tearDown(self):
         self.u1.delete()
-

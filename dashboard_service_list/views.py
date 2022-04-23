@@ -41,6 +41,7 @@ def list_services(request):
         ending = request.GET.get("ending")
         status = request.GET.get("status")
         q = request.GET.get("q")
+        qlocation = request.GET.get("qlocation")
         sort = request.GET.get("sort")
         submit = request.GET.get("submitted")
         services = Service.objects.all()
@@ -98,8 +99,15 @@ def list_services(request):
             services = services
         else:
             services = services.annotate(
-                search=SearchVector("creater", "name", "description", "category")).filter(
+                search=SearchVector("creater", "name", "description", "category", "wiki_description")).filter(
                 search=q)
+
+        if qlocation == None or qlocation == "":
+            services = services
+        else:
+            services = services.annotate(
+                search=SearchVector("name", "description", "address")).filter(
+                search=qlocation)
 
         if sort == "name":
             services = services.order_by("name")
@@ -124,7 +132,7 @@ def list_services(request):
                       {'page_obj': page_obj, "type": type, "periods": periods, "beginning": beginning, "ending": ending,
                        "status": status, "q": q, "sort": sort, "submit": submit, "service_count": service_count,
                        "is_admin": is_admin, "status_message": status_message, "period_message": period_message,
-                       "outdated_services": outdated_services, "show_count": show_count})
+                       "outdated_services": outdated_services, "show_count": show_count, "qlocation": qlocation})
 
     else:
         return redirect('index')

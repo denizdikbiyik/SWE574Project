@@ -32,6 +32,7 @@ class Service(models.Model):
     wiki_description = models.TextField(blank=True, null=True)
     picture = models.ImageField(upload_to='uploads/service_pictures/', default='uploads/service_pictures/default.png')
     location = PlainLocationField(default='41.0255493,28.9742571', zoom=7, blank=False, null=False)
+    address = models.TextField(blank=True, null=True)
     servicedate = models.DateTimeField(default=timezone.now)
     capacity = models.IntegerField(default=1)
     duration = models.IntegerField(default=1)
