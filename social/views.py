@@ -2169,7 +2169,11 @@ class FeaturedEventsView(LoginRequiredMixin, View):
 
 class AddServiceFeatured(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
-        featured = Featured.objects.create(itemType="service", itemId=pk)
+        featureds = Featured.objects.filter(itemType="service")
+        if len(featureds)<2:
+            featured = Featured.objects.create(itemType="service", itemId=pk)
+        else:
+            messages.warning(request, 'You have already 2 featured services, please remove any to add new.')
         return redirect('service-detail', pk=pk)
 
 
@@ -2182,7 +2186,11 @@ class RemoveServiceFeatured(LoginRequiredMixin, View):
 
 class AddEventFeatured(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
-        featured = Featured.objects.create(itemType="event", itemId=pk)
+        featureds = Featured.objects.filter(itemType="event")
+        if len(featureds)<2:
+            featured = Featured.objects.create(itemType="event", itemId=pk)
+        else:
+            messages.warning(request, 'You have already 2 featured events, please remove any to add new.')
         return redirect('event-detail', pk=pk)
 
 
