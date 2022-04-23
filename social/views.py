@@ -1181,8 +1181,11 @@ class EventSearch(View):
     def get(self, request, *args, **kwargs):
         query = self.request.GET.get('query')
         currentTime = timezone.now()
-        events = Event.objects.filter(isDeleted=False).filter(isActive=True).filter(eventdate__gte=currentTime).filter(
-            Q(eventname__icontains=query))
+        events = Event.objects.filter(isDeleted=False).filter(isActive=True).filter(
+            eventdate__gte=currentTime).annotate(
+            search=SearchVector("eventcreater", "eventname", "eventdescription", "event_wiki_description",
+                                "event_address", "event_wiki_description")).filter(
+            search=query)
         events_count = len(events)
         context = {
             'events': events,
