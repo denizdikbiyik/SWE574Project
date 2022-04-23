@@ -12,6 +12,7 @@ from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Avg, Q
 from datetime import timedelta
+import datetime
 from online_users.models import OnlineUserActivity
 
 # MatPlotLib
@@ -2135,7 +2136,7 @@ class Deactivateds(LoginRequiredMixin, View):
 
 class FeaturedServicesView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        featureds = Featured.objects.filter(itemType="service")
+        featureds = Featured.objects.filter(itemType="service").order_by('-date')
         services = []
         currentTime = timezone.now()
         for featured in featureds:
@@ -2152,7 +2153,7 @@ class FeaturedServicesView(LoginRequiredMixin, View):
 
 class FeaturedEventsView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        featureds = Featured.objects.filter(itemType="event")
+        featureds = Featured.objects.filter(itemType="event").order_by('-date')
         events = []
         currentTime = timezone.now()
         for featured in featureds:
@@ -2169,11 +2170,12 @@ class FeaturedEventsView(LoginRequiredMixin, View):
 
 class AddServiceFeatured(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
-        featureds = Featured.objects.filter(itemType="service")
+        dateDiff = (datetime.datetime.now() - datetime.timedelta(days=7)).date()
+        featureds = Featured.objects.filter(itemType="service").filter(date__gte=dateDiff)
         if len(featureds)<2:
             featured = Featured.objects.create(itemType="service", itemId=pk)
         else:
-            messages.warning(request, 'You have already 2 featured services, please remove any to add new.')
+            messages.warning(request, 'You have already 2 featured services for this week, please remove one to add new.')
         return redirect('service-detail', pk=pk)
 
 
@@ -2186,11 +2188,12 @@ class RemoveServiceFeatured(LoginRequiredMixin, View):
 
 class AddEventFeatured(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
-        featureds = Featured.objects.filter(itemType="event")
+        dateDiff = (datetime.datetime.now() - datetime.timedelta(days=7)).date()
+        featureds = Featured.objects.filter(itemType="event").filter(date__gte=dateDiff)
         if len(featureds)<2:
             featured = Featured.objects.create(itemType="event", itemId=pk)
         else:
-            messages.warning(request, 'You have already 2 featured events, please remove any to add new.')
+            messages.warning(request, 'You have already 2 featured events for this week, please remove one to add new.')
         return redirect('event-detail', pk=pk)
 
 
