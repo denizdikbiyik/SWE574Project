@@ -19,50 +19,60 @@
                                     <select name="category">
                                         <option value="all">All</option>
                                         {% for tag in alltags %}
-                                            <option value="{{tag.pk}}">{{tag.tag}}</option>
-                                        {% endfor %}  
+                                            <option value="{{ tag.pk }}">{{ tag.tag }}</option>
+                                        {% endfor %}
                                     </select>
                                     &nbsp;
-                                    <button style="border: none; background-color: white; box-shadow: none" type="submit">Filter</button>
+                                    <button style="border: none; background-color: white; box-shadow: none"
+                                            type="submit">Filter
+                                    </button>
                                 </div>
                             </form>
-    
-                        </div>  
+
+                        </div>
                     </div>
-                      
+
                 </div>
                 <div class="col">
                     <form class="d-flex" method="GET" action="{% url 'service-search' %}">
                         <div class="input-group">
-                            <input type="text" class="form-control" placeholder="Search Service" aria-label="Service" aria-describedby="basic-addon1" name='query' value="{{ request.GET.query }}">
-                            <button style="border: none; background-color: white; box-shadow: none" type="submit">Search</button>
+                            <input type="text" class="form-control" placeholder="Search Service by keyword or location"
+                                   aria-label="Service" aria-describedby="basic-addon1" name='query'
+                                   value="{{ request.GET.query }}">
+                            <button style="border: none; background-color: white; box-shadow: none" type="submit">
+                                Search
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
-                <br/>
-                {% if services_count != 0 %}
-                    {% for service in services %}
-                        <div class="row justify-content-center mt-3">
-                            <div class="card col-md-10 col-sm-12 border-bottom position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <img style="border-radius:10px;" src="{{ service.picture.url }}" width="100" height="100" />
-                                    </div>
-                                    <div class="col-md-8">
-                                        <p><a style="text-decoration: none;" class="text-primary" href="{% url 'profile' service.creater.profile.pk %}">@{{ service.creater }}</a> created</p> 
-                                        <p style="font-weight:bold;">{{ service.name }}</p>       
-                                        <p>Time: {{ service.servicedate }}</p>
-                                        <a class="stretched-link" href="{% url 'service-detail' service.pk %}"></a>                   
-                                    </div>           
+            <br/>
+            {% if services_count != 0 %}
+                {% for service in services %}
+                    <div class="row justify-content-center mt-3">
+                        <div class="card col-md-10 col-sm-12 border-bottom position-relative"
+                             style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <img style="border-radius:10px;" src="{{ service.picture.url }}" width="100"
+                                         height="100"/>
+                                </div>
+                                <div class="col-md-8">
+                                    <p><a style="text-decoration: none;" class="text-primary"
+                                          href="{% url 'profile' service.creater.profile.pk %}">@{{ service.creater }}</a>
+                                        created</p>
+                                    <p style="font-weight:bold;">{{ service.name }}</p>
+                                    <p>Time: {{ service.servicedate }}</p>
+                                    <a class="stretched-link" href="{% url 'service-detail' service.pk %}"></a>
                                 </div>
                             </div>
                         </div>
-                    {% endfor %}
-                {% else %}
-                    <p class="row justify-content-center mt-3">No services found!</p>
-                {% endif %}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="row justify-content-center mt-3">No services found!</p>
+            {% endif %}
         </div>
-        
+
     </div>
 {% endblock content %}

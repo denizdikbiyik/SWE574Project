@@ -1,3 +1,4 @@
+from django.contrib.postgres.search import SearchVector
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
@@ -1162,7 +1163,9 @@ class ServiceSearch(View):
         query = self.request.GET.get('query')
         currentTime = timezone.now()
         services = Service.objects.filter(isDeleted=False).filter(isActive=True).filter(
-            servicedate__gte=currentTime).filter(Q(name__icontains=query))
+            servicedate__gte=currentTime).annotate(
+            search=SearchVector("creater", "name", "description", "category", "wiki_description", "address")).filter(
+            search=query)
         services_count = len(services)
         alltags = Tag.objects.all()
         context = {
@@ -1178,8 +1181,11 @@ class EventSearch(View):
     def get(self, request, *args, **kwargs):
         query = self.request.GET.get('query')
         currentTime = timezone.now()
-        events = Event.objects.filter(isDeleted=False).filter(isActive=True).filter(eventdate__gte=currentTime).filter(
-            Q(eventname__icontains=query))
+        events = Event.objects.filter(isDeleted=False).filter(isActive=True).filter(
+            eventdate__gte=currentTime).annotate(
+            search=SearchVector("eventcreater", "eventname", "eventdescription", "event_wiki_description",
+                                "event_address", "event_wiki_description")).filter(
+            search=query)
         events_count = len(events)
         context = {
             'events': events,
