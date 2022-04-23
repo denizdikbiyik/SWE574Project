@@ -2,13 +2,13 @@
 
 {% block content %}
 <div class="container">
-    <div class="row justify-content-center mt-5">
+    <div class="row justify-content-center mt-3">
         <div class="col-md-10 col-sm-12 text-center">
-            <h1 class="display-5">Connect With Community!</h1>
-            <p class="mt-3 lead">Follow people who interests you, stay up to date on the latest services and join events!</p>
+            <h1 class="display-6">Connect With Community!</h1>
+            <p class="mt-2 lead">Follow people who interests you, stay up to date on the latest services and join events!</p>
 
-            <div class="row">
-                <h5 style="font-weight: bolder;">Featured Ones</h5>
+            <div class="row border border-dark border-2">
+                <h5 style="font-weight: bolder; margin-top: 1%;">Featured Ones</h5>
                 {% if user.is_authenticated %}
                     {% if request.user.profile.isActive %}
                         <div class="col">
@@ -117,8 +117,8 @@
                 {% endif %}  
             </div>
             <p></p>
-            <div class="row">
-                <h5 style="font-weight: bolder;">Other Ones</h5>
+            <div class="row border border-dark border-2">
+                <h5 style="font-weight: bolder; margin-top: 1%;">Other Ones</h5>
                 {% if user.is_authenticated %}
                     {% if request.user.profile.isActive %}
                         <div class="col">
