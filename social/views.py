@@ -21,6 +21,14 @@ import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 import numpy as np
+from geopy.geocoders import Nominatim
+
+
+# Added by AT
+def reverse_location(coordinates):
+    geolocator = Nominatim(user_agent="swe574")
+    r_location = geolocator.reverse(coordinates)
+    return r_location.address
 
 
 class ServiceCreateView(LoginRequiredMixin, View):
@@ -60,8 +68,10 @@ class ServiceCreateView(LoginRequiredMixin, View):
                         notified_user = UserProfile.objects.get(pk=new_service.category.requester)
                         notified_user.unreadcount = notified_user.unreadcount + 1
                         notified_user.save()
-                    new_service.wiki_description = request.session['description']  # Added by AT
+                    # new_service.wiki_description = request.session['description']  #  this gives key error Added by AT
+                    new_service.wiki_description = request.session.get("description")  # Added by AT
                     request.session['description'] = None  # Added by AT
+                    new_service.address = reverse_location(new_service.location)  # Added by AT
                     new_service.save()
                     messages.success(request, 'Service creation is successful.')
                     request.session["type"] = None
@@ -561,7 +571,8 @@ class EventCreateView(LoginRequiredMixin, View):
                 messages.warning(request, 'You cannot create this event because you have one with the same datetime.')
             else:
                 new_event.eventcreater = request.user
-                new_event.event_wiki_description = request.session['description']  # Added by AT
+                # new_event.event_wiki_description = request.session['description']  # gives key error Added by AT
+                new_event.event_wiki_description = request.session.get("description")  # Added by AT
                 request.session['description'] = None  # Added by AT
                 new_event.save()
                 log = Log.objects.create(operation="createevent", itemType="event", itemId=new_event.pk,
@@ -2172,10 +2183,11 @@ class AddServiceFeatured(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         dateDiff = (datetime.datetime.now() - datetime.timedelta(days=7)).date()
         featureds = Featured.objects.filter(itemType="service").filter(date__gte=dateDiff)
-        if len(featureds)<2:
+        if len(featureds) < 2:
             featured = Featured.objects.create(itemType="service", itemId=pk)
         else:
-            messages.warning(request, 'You have already 2 featured services for this week, please remove one to add new.')
+            messages.warning(request,
+                             'You have already 2 featured services for this week, please remove one to add new.')
         return redirect('service-detail', pk=pk)
 
 
@@ -2190,7 +2202,7 @@ class AddEventFeatured(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         dateDiff = (datetime.datetime.now() - datetime.timedelta(days=7)).date()
         featureds = Featured.objects.filter(itemType="event").filter(date__gte=dateDiff)
-        if len(featureds)<2:
+        if len(featureds) < 2:
             featured = Featured.objects.create(itemType="event", itemId=pk)
         else:
             messages.warning(request, 'You have already 2 featured events for this week, please remove one to add new.')
