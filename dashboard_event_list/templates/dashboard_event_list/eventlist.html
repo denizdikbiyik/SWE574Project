@@ -6,8 +6,9 @@
         <title>Events</title>
     </head>
     <body>
-    <br>
+
     <div class="container p-3 my-3 bg-secondary text-warning">
+        <h4> Events</h4>
         <form method="get">
             <div class="form-group">
                 <label for="period type">Period:</label>
@@ -21,22 +22,23 @@
 
 
         <form method="get">
-            {% if type  == "default" %}
-                <label for="period-select">Choose a period:</label>
-                <select name="periods" id="period-select">
-                    <option value="">--Select--</option>
-                    <option value="all">All</option>
-                    <option value="week">Last 7 Days</option>
-                    <option value="month">Last 30 Days</option>
-                    <option value="year">Last 365 Days</option>
-                </select>
-            {% elif type  == "pick" %}
-                <label for="beginning">Beginning Date:</label>
-                <input type="date" id="beginning" name="beginning">
-                <label for="ending">Ending Date:</label>
-                <input type="date" id="ending" name="ending">
-            {% endif %}
-
+            <div class="form-group">
+                {% if type  == "default" %}
+                    <label for="period-select">Choose a period:</label>
+                    <select name="periods" id="period-select">
+                        <option value="">--Select--</option>
+                        <option value="all">All</option>
+                        <option value="week">Last 7 Days</option>
+                        <option value="month">Last 30 Days</option>
+                        <option value="year">Last 365 Days</option>
+                    </select>
+                {% elif type  == "pick" %}
+                    <label for="beginning">Beginning Date:</label>
+                    <input type="date" id="beginning" name="beginning">
+                    <label for="ending">Ending Date:</label>
+                    <input type="date" id="ending" name="ending">
+                {% endif %}
+            </div>
 
 
             <label for="status-select">Status:</label>
@@ -49,12 +51,12 @@
 
 
             <label for="admin-search">Search:</label>
-            <input type="search" id="admin-search" name="q"
-                   aria-label="Search through site content">
+            <input type="search" id="admin-search" name="q" placeholder="keyword"
+                   aria-label="Search through site content" value="{{ request.GET.q }}">
 
             <label for="admin-search">Search:</label>
             <input type="search" id="admin-search" name="qlocation"
-                   aria-label="Search through site content" placeholder="location">
+                   aria-label="Search through site content" placeholder="location" value="{{ request.GET.qlocation }}">
 
 
             <label for="sort-select">Sort by:</label>

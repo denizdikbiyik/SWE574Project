@@ -1164,10 +1164,9 @@ class ServiceSearch(View):
         query = self.request.GET.get('query')
         user = self.request.user
         currentTime = timezone.now()
-        services = Service.objects.filter(isDeleted=False).filter(isActive=True).filter(
-            servicedate__gte=currentTime).annotate(
-            search=SearchVector("creater", "name", "description", "category", "wiki_description", "address")).filter(
-            search=query)
+        services = Service.objects.filter(isDeleted=False).filter(
+            Q(name__icontains=query) | Q(description__icontains=query) | Q(wiki_description__icontains=query) | Q(
+                address__icontains=query))
         print("services: " + str(services))
         ratings = self.sort_results(services, user)
         services_smart_sorted = [x for _, x in sorted(zip(ratings, services), reverse=True)]
@@ -1191,7 +1190,8 @@ class ServiceSearch(View):
             ratings_average = UserRatings.objects.filter(rated=service.creater).aggregate(Avg('rating'))['rating__avg']
             ratings.append(ratings_average if (len(past_ratings) != 0) else 0)
 
-            date_from_now.append(datetime.now() - auth.get_user_model().objects.get(email=service.creater.email).date_joined)
+            date_from_now.append(
+                datetime.now() - auth.get_user_model().objects.get(email=service.creater.email).date_joined)
 
             profile = UserProfile.objects.get(pk=service.creater.id)
             followers = profile.followers.all()
@@ -1219,11 +1219,10 @@ class EventSearch(View):
     def get(self, request, *args, **kwargs):
         query = self.request.GET.get('query')
         currentTime = timezone.now()
-        events = Event.objects.filter(isDeleted=False).filter(isActive=True).filter(
-            eventdate__gte=currentTime).annotate(
-            search=SearchVector("eventcreater", "eventname", "eventdescription", "event_wiki_description",
-                                "event_address", "event_wiki_description")).filter(
-            search=query)
+        events = Event.objects.filter(isDeleted=False).filter(
+            Q(eventname__icontains=query) | Q(eventdescription__icontains=query) | Q(
+                event_wiki_description__icontains=query) | Q(
+                event_address__icontains=query))
         events_count = len(events)
         context = {
             'events': events,
