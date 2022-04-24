@@ -1,4 +1,5 @@
 from django.contrib.postgres.search import SearchVector
+from django.db.models import Q
 from django.shortcuts import render, get_object_or_404, redirect
 from social.models import Service
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
@@ -98,16 +99,14 @@ def list_services(request):
         if q == None or q == "":
             services = services
         else:
-            services = services.annotate(
-                search=SearchVector("creater", "name", "description", "category", "wiki_description")).filter(
-                search=q)
+            services = services.filter(
+                Q(name__icontains=q) | Q(description__icontains=q) | Q(wiki_description__icontains=q))
 
         if qlocation == None or qlocation == "":
             services = services
         else:
-            services = services.annotate(
-                search=SearchVector("name", "description", "address")).filter(
-                search=qlocation)
+            services = services.filter(
+                Q(address__icontains=qlocation))
 
         if sort == "name":
             services = services.order_by("name")

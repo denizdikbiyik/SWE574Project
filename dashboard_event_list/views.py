@@ -1,4 +1,5 @@
 from django.contrib.postgres.search import SearchVector
+from django.db.models import Q
 from django.shortcuts import render, get_object_or_404, redirect
 from social.models import Event
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
@@ -95,17 +96,15 @@ def list_events(request):
         if q == None or q == "":
             events = events
         else:
-            events = events.annotate(
-                search=SearchVector("eventcreater", "eventname", "eventdescription")).filter(
-                search=q)
+            events = events.filter(
+                Q(eventname__icontains=q) | Q(eventdescription__icontains=q) | Q(
+                    event_wiki_description__icontains=q))
 
         if qlocation == None or qlocation == "":
             events = events
         else:
-            events = events.annotate(
-                search=SearchVector("eventname", "eventdescription", "event_address")).filter(
-                search=qlocation)
-
+            events = events.filter(
+                Q(event_address__icontains=qlocation))
         if sort == "name":
             events = events.order_by("eventname")
         elif sort == "createddate":
