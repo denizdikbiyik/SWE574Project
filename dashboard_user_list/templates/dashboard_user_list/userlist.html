@@ -3,57 +3,61 @@
 {% block content %}
     {% load crispy_forms_filters %}
     <head>
-        <title>Users</title>
+        <title>users</title>
     </head>
     <body>
     <br>
+    <div class="container p-3 my-3 bg-secondary text-warning">
+        <form method="get">
+            <div class="form-group">
+                <label for="period type">Period:</label>
+                <select name="type" id="period type" onchange="this.form.submit()">
+                    <option value="">--Select--</option>
+                    <option value="default">Default periods</option>
+                    <option value="pick">Pick Dates</option>
+                </select>
+            </div>
+        </form>
 
-    <div class="container">
-        <form method="POST">
-            <table>
-                <div class="form-group">
-                    {{ form.period.label }}
-                    {{ form.period }}
-                </div>
-                <br>
-                <div class="form-group">
-                    {{ form.sort.label }}
-                    {{ form.sort }}
-                </div>
-                <br>
-                <div class="form-group">
-                    {% if is_pick_date == True %}
-                        {{ form.date_old.label }}
-                        {{ form.date_old }}
-                        {{ form.date_new.label }}
-                        {{ form.date_new }}
 
-                    {% endif %}
-                </div>
-                <br>
-                {% csrf_token %}
-                <button type="submit" class="btn btn-sm btn-primary">Submit</button>
-            </table>
+        <form method="get">
+            {% if type  == "default" %}
+                <label for="period-select">Choose a period:</label>
+                <select name="periods" id="period-select">
+                    <option value="">--Select--</option>
+                    <option value="all">All</option>
+                    <option value="week">Last 7 Days</option>
+                    <option value="month">Last 30 Days</option>
+                    <option value="year">Last 365 Days</option>
+                </select>
+            {% elif type  == "pick" %}
+                <label for="beginning">Beginning Date:</label>
+                <input type="date" id="beginning" name="beginning">
+                <label for="ending">Ending Date:</label>
+                <input type="date" id="ending" name="ending">
+            {% endif %}
+
+           
+            <div class="form-group">
+                <button type="submit" name="submit" value="submitted">Submit</button>
+            </div>
+
         </form>
     </div>
     <br>
 
     <div class="container-sm">
+        {% if user_count %}
+        {{ user_count }} User(s) found. <br>
+    {% endif %}
+    {{ period_message }} <br>
 
 
-        {{ text }}
-        <br>
-        {% if clear_list == False %}
-            Number of User found: {{ user_count }}
-        {% endif %}
+</div>
 
 
-
-    </div>
-    <br>
-
-
-    <div class="container-sm">
+<br>
+<div class="container-sm">
         <table class="table table-bordered">
             <thead>
             <tr>
@@ -65,10 +69,10 @@
             </tr>
             </thead>
             <tbody>
-            {% for user in users %}
+             {% for user in page_obj %}
                 <tr>
                     <!--1. column -->
-                    <th scope="row">{{ forloop.counter }}</th>
+                    <th scope="row">{{ forloop.counter0|add:page_obj.start_index }} </th>
                     <!--2. column -->
                     <td><a href="{% url 'profile' user.pk %}">{{ user.username }}</a></td>
                     <!--3. column -->
@@ -78,13 +82,101 @@
 
 
                 </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <br>
-
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <br>
+    
+    
+        </body>
+   
 
     </body>
+
+    <div class="row">
+        <div class="col-4 offset-4">
+            <nav aria-label="...">
+                <ul class="pagination pagination-sm justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a href="?page=1&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}"
+                               class="page-link">First</a>
+                        </li>
+
+                        <li class="page-item">
+                            <a href="?page={{ page_obj.previous_page_number }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}"
+                               class="page-link">Previous</a>
+                        </li>
+
+                        {% if not page_obj.has_next and page_obj.previous_page_number > 1 %}
+                            <li class="page-item ">
+                                <a class="page-link"
+                                   href="?page={{ page_obj.previous_page_number|add:'-1' }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}&qlocation={{ qlocation }}">
+                                    {{ page_obj.previous_page_number|add:'-1' }}
+                                </a>
+                            </li>
+                        {% endif %}
+                        <li>
+                            <a class="page-link"
+                               href="?page={{ page_obj.previous_page_number }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}">
+                                {{ page_obj.previous_page_number }}
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">First</span>
+                        </li>
+
+                        <li class="page-item disabled">
+                            <span class="page-link">Previous</span>
+                        </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">{{ page_obj.number }}</span>
+                    </li>
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?page={{ page_obj.next_page_number }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}&qlocation={{ qlocation }}">
+                                {{ page_obj.next_page_number }}
+                            </a>
+                        </li>
+                        {% if not page_obj.has_previous and page_obj.next_page_number < page_obj.paginator.num_pages %}
+                            <li class="page-item ">
+                                <a class="page-link"
+                                   href="?page={{ page_obj.next_page_number|add:'1' }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}&qlocation={{ qlocation }}">
+                                    {{ page_obj.next_page_number|add:'1' }}
+                                </a>
+                            </li>
+                        {% endif %}
+                        <li class="page-item ">
+                            <a class="page-link"
+                               href="?page={{ page_obj.next_page_number }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}&qlocation={{ qlocation }}">Next</a>
+                        </li>
+
+                        <li class="page-item ">
+                            <a class="page-link"
+                               href="?page={{ page_obj.paginator.num_pages }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}&qlocation={{ qlocation }}">Last</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Next</span>
+                        </li>
+
+                        <li class="page-item disabled">
+                            <span class="page-link">Last</span>
+                        </li>
+
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+
 {% endblock content %}
+
+
 
