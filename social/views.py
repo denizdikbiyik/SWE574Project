@@ -9,12 +9,13 @@ from .forms import ServiceForm, EventForm, ServiceApplicationForm, RatingForm, E
     RequestForm, ComplaintForm
 from django.views.generic.edit import UpdateView, DeleteView
 from django.http import HttpResponseRedirect
-from django.contrib import messages
+from django.contrib import messages, auth
 from django.utils import timezone
 from django.db.models import Avg, Q
 from datetime import timedelta
 import datetime
 from online_users.models import OnlineUserActivity
+from datetime import datetime
 
 # MatPlotLib
 import matplotlib
@@ -1161,20 +1162,57 @@ class TimeLine(LoginRequiredMixin, View):
 class ServiceSearch(View):
     def get(self, request, *args, **kwargs):
         query = self.request.GET.get('query')
+        user = self.request.user
         currentTime = timezone.now()
         services = Service.objects.filter(isDeleted=False).filter(isActive=True).filter(
             servicedate__gte=currentTime).annotate(
             search=SearchVector("creater", "name", "description", "category", "wiki_description", "address")).filter(
             search=query)
+        print("services: " + str(services))
+        ratings = self.sort_results(services, user)
+        services_smart_sorted = [x for _, x in sorted(zip(ratings, services), reverse=True)]
         services_count = len(services)
         alltags = Tag.objects.all()
         context = {
-            'services': services,
+            'services': services_smart_sorted,
             'services_count': services_count,
             'currentTime': currentTime,
             'alltags': alltags,
         }
         return render(request, 'social/service-search.html', context)
+
+    def sort_results(self, search_results, searcher):
+        ratings = []
+        date_from_now = []
+        milisecond_from_now = []
+        follow_table = []
+        for service in search_results:
+            past_ratings = UserRatings.objects.filter(service=service)
+            ratings_average = UserRatings.objects.filter(rated=service.creater).aggregate(Avg('rating'))['rating__avg']
+            ratings.append(ratings_average if (len(past_ratings) != 0) else 0)
+
+            date_from_now.append(datetime.now() - auth.get_user_model().objects.get(email=service.creater.email).date_joined)
+
+            profile = UserProfile.objects.get(pk=service.creater.id)
+            followers = profile.followers.all()
+            if searcher in followers:
+                follow_table.append(1)
+            else:
+                follow_table.append(0)
+
+        for dt in date_from_now:
+            milisecond_from_now.append((dt.days * 24 * 60 * 60 + dt.seconds) * 1000 + dt.microseconds / 1000.0)
+        milisecond_from_now_ = np.divide(1, milisecond_from_now)
+
+        ratings = self.normalizer(ratings) + self.normalizer(milisecond_from_now_) + self.normalizer(follow_table)
+        return ratings
+
+    def normalizer(self, array_to_normalize):
+        if np.sum(array_to_normalize) == 0:
+            return array_to_normalize
+        else:
+            normalizer = 1 / np.sum(array_to_normalize)
+            return np.dot(normalizer, array_to_normalize)
 
 
 class EventSearch(View):
