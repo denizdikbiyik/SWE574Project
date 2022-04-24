@@ -1,112 +1,98 @@
-from genericpath import exists
-from django.http import HttpResponseRedirect
-from django.shortcuts import render, get_object_or_404, redirect
-from django.views import generic
-
 from django.contrib.auth.models import AbstractUser, User
-
-from social.models import UserProfile
-from django.core.paginator import Paginator
+from django.contrib.postgres.search import SearchVector, SearchQuery
+from django.shortcuts import render, get_object_or_404, redirect
+from psutil import users
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 import datetime
 
-from .forms import PeriodPickerUser
-
-
-# helper function to get context from the form
-def make_context_for_username_list(*args):
+def make_query_for_users_list(*args):
     date_today = datetime.datetime.now()
-    is_pick_date = False
-    users = User.objects.all()
-
     context = {}
     if args[0] == "week":
         time_delta = 7
         date_old = (date_today - datetime.timedelta(days=time_delta)).date()
-        users = users.filter(date_joined__gte=date_old , date_joined__lte=date_today)
-        context["text"] = "Showing the usernames created in the last 7 days."
-        date_new = datetime.date.today()
+        date_new = date_today
+        context["text"] = "Period: Last 7 days"
     elif args[0] == "month":
         time_delta = 30
         date_old = (date_today - datetime.timedelta(days=time_delta)).date()
-        users = users.filter(date_joined__gte=date_old, date_joined__lte=date_today)
-        date_new = datetime.date.today()
-
-        context["text"] = "Showing the users created in the last 30 days."
-    elif args[0] == "all":
-        users = users
-        context["text"] = "Showing all the users created."
-        # in case no user exists, give random date_new and date_old 
-        date_new = datetime.date.today()
-        date_old = datetime.date(2000, 1, 1)
-
+        date_new = date_today
+        context["text"] = "Period: Last 30 days."
+    elif args[0] == "year":
+        time_delta = 365
+        date_old = (date_today - datetime.timedelta(days=time_delta)).date()
+        date_new = date_today
+        context["text"] = "Period: Last 365 days."
     else:
-        is_pick_date = True
         date_old = args[1]
         date_new = args[2]
-        
-        if date_old == None and date_new == None:
-            users = users
-            date_old = datetime.date(2000, 1, 1)
-            date_new = datetime.date.today()
-            context["text"] = "Please Select at Least One Date."
-
-        elif date_old != None and date_new == None:
-            date_new = datetime.date.today()
-            users = users.filter(date_joined__gte=date_old, date_joined__lte=date_new)
-            context["text"] = "Showing the users created after selected beginning date."
-
-        elif date_old == None and date_new != None:
-            date_old = datetime.date(2000, 1, 1)
-            users = users.filter(date_joined__gte=date_old, date_joined__lte=date_new)
-            context["text"] = "Showing the users created before selected ending date."
-
-        elif date_new != None and date_old != None:    
-            users = users.filter(date_joined__gte=date_old, date_joined__lte=date_new)
-            context["text"] = "Showing the users created between the selected dates."
-    
-    context["is_pick_date"] = is_pick_date
-    user_count = users.count()
-    
-    if user_count == 0:
-        if date_old > date_new:# and is_pick_date == False:
-            context["text"] = "End date should be greater than start date."
-        else:
-            context["text"] = ""
-    else: 
-        if date_old > date_new:# and is_pick_date == False:
-            context["text"] = "End date should be greater than start date."
-    
-    context["users"] = users
-    context["user_count"] = user_count
+        context["text"] = "Period: Between the selected dates."
+    context["date_old"] = date_old
+    context["date_new"] = date_new
     return context
 
 
 def list_users(request):
-    if request.method == 'POST':
-        applications = User.objects.all()
+    if request.user.profile.isAdmin:
+        is_admin = True
+        type = request.GET.get("type")
+        periods = request.GET.get("periods")
+        beginning = request.GET.get("beginning")
+        ending = request.GET.get("ending")
+        q = request.GET.get("q")
+        submit = request.GET.get("submitted")
+        users= User.objects.all()
+        period_message = ""
+        date_today = datetime.datetime.now()
+        period = make_query_for_users_list(periods, beginning, ending)
+        user_count = False
 
-        form = PeriodPickerUser(request.POST)
-        if form.is_valid():
-            form_field1 = form.cleaned_data.get("period")
-            form_field2 = form.cleaned_data.get("date_old")
-            form_field3 = form.cleaned_data.get("date_new")
-            #form_field4 = form.cleaned_data.get("sort")
-            context = make_context_for_username_list(form_field1, form_field2, form_field3)
-            context["form"] = form
-            context["applications"] = applications
-            context["applicationslength"] = len(applications)
-            # Clears the list when "Select Dates" is selected and submitted
-            if form.cleaned_data.get("period") == "select" and form.cleaned_data.get("date_old") == None and form.cleaned_data.get("date_new") == None: 
-                context["users"] = None
-                context["clear_list"] = True
-            else:
-                context["clear_list"] = False
-            return render(request, 'dashboard_user_list/userlist.html', context)
-    else:
-        if request.user.profile.isAdmin:
-            form = PeriodPickerUser()
+        if 'submit' in request.GET and ((beginning == "" and ending == "") or (periods == "") or (
+                periods == None and beginning == None and ending == None)):
+            period_message = "Please choose a period!"
+            user_count = user_count
+
+        if (periods == None and beginning == None and ending == None) or (
+                periods == None and beginning == "" and ending == "") or (
+                period["date_old"] == "" and period["date_new"] == "") or (periods == ""):
+            users= User.objects.none()
+            user_count = user_count
         else:
-            return redirect('index')
-    return render(request, 'dashboard_user_list/userlist.html', {'form': form})
-     
+            if periods == "all":
+                users = users
+                period_message = "Period: All times"
+                user_count = True
+            elif (beginning != "" and ending == "") or (beginning == "" and ending != ""):
+                users = User.objects.none()
+                period_message = "You must choose two dates!"
+            elif periods == None and (period["date_old"] > period["date_new"]):
+                users = User.objects.none()
+                period_message = "Beginning date can't be older than ending date!"
+            else:
+                users= users.filter(date_joined__gte=period["date_old"],
+                                       date_joined__lte=period["date_new"])
+                period_message = period["text"]
+                user_count = True
+       
+
+        user_count = users.count()
+        object_list = users
+        page_num = request.GET.get('page', 1)
+        paginator = Paginator(object_list, 6)  # 6 employees per page
+        try:
+            page_obj = paginator.page(page_num)
+        except PageNotAnInteger:
+            # if page is not an integer, deliver the first page
+            page_obj = paginator.page(1)
+        except EmptyPage:
+            # if the page is out of range, deliver the last page
+            page_obj = paginator.page(paginator.num_pages)
+        return render(request, 'dashboard_user_list/userlist.html',
+                      {'page_obj': page_obj, "type": type, "periods": periods, "beginning": beginning, "ending": ending,
+                         "submit": submit, "user_count": user_count, "user"
+                       "is_admin": is_admin,  "period_message": period_message,
+                       "show_count": user_count})
+
+    else:
+        return redirect('index')
 
