@@ -19,7 +19,7 @@ class Index(View):
         featured_services = []
         featured_events = []
 
-        dateDiff = (datetime.datetime.now() - datetime.timedelta(days=7)).date()
+        dateDiff = (datetime.datetime.now() - datetime.timedelta(days=1)).date()
 
         featuredServicesList = Featured.objects.filter(itemType="service").filter(date__gte=dateDiff)
         for featuredServiceList in featuredServicesList:
