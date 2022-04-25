@@ -2225,7 +2225,12 @@ class FeaturedEventsView(LoginRequiredMixin, View):
 class AddServiceFeatured(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         dateDiff = (datetime.now() - timedelta(days=7)).date()
-        featureds = Featured.objects.filter(itemType="service").filter(date__gte=dateDiff)
+        featureds = []
+        featuredsToAdd = Featured.objects.filter(itemType="service").filter(date__gte=dateDiff)
+        for featuredToAdd in featuredsToAdd:
+            serviceFound = Service.objects.get(pk=featuredToAdd.itemId)
+            if serviceFound.isActive == True and serviceFound.isDeleted == False:
+                featureds.append(featuredToAdd)
         if len(featureds) < 2:
             featured = Featured.objects.create(itemType="service", itemId=pk)
         else:
@@ -2244,7 +2249,12 @@ class RemoveServiceFeatured(LoginRequiredMixin, View):
 class AddEventFeatured(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         dateDiff = (datetime.now() - timedelta(days=7)).date()
-        featureds = Featured.objects.filter(itemType="event").filter(date__gte=dateDiff)
+        featureds = []
+        featuredsToAdd = Featured.objects.filter(itemType="event").filter(date__gte=dateDiff)
+        for featuredToAdd in featuredsToAdd:
+            eventFound = Event.objects.get(pk=featuredToAdd.itemId)
+            if eventFound.isActive == True and eventFound.isDeleted == False:
+                featureds.append(featuredToAdd)
         if len(featureds) < 2:
             featured = Featured.objects.create(itemType="event", itemId=pk)
         else:
