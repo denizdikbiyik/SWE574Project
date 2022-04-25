@@ -64,15 +64,21 @@
                                 {% endif %}
                             {% endif %}
                             {% if profile.isActive %}
-                                <form method="POST" action="{% url 'deactivate-user' profile.pk %}">
-                                    {% csrf_token %}
-                                    <button class="btn btn-outline-danger" type=submit>Deactivate</button>
-                                </form>
+                                {% if request.user == user %}
+                                {% else %}
+                                    <form method="POST" action="{% url 'deactivate-user' profile.pk %}">
+                                        {% csrf_token %}
+                                        <button class="btn btn-outline-danger" type=submit>Deactivate</button>
+                                    </form>
+                                {% endif %}
                             {% else %}
-                                <form method="POST" action="{% url 'activate-user' profile.pk %}">
-                                    {% csrf_token %}
-                                    <button class="btn btn-outline-success" type=submit>Activate</button>
-                                </form>
+                                {% if request.user == user %}
+                                {% else %}
+                                    <form method="POST" action="{% url 'activate-user' profile.pk %}">
+                                        {% csrf_token %}
+                                        <button class="btn btn-outline-success" type=submit>Activate</button>
+                                    </form>
+                                {% endif %}
                             {% endif %}
                         {% endif %}
                         {% if request.user.profile.isAdmin %}
