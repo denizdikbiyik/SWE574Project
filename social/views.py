@@ -13,7 +13,6 @@ from django.contrib import messages, auth
 from django.utils import timezone
 from django.db.models import Avg, Q
 from datetime import timedelta
-import datetime
 from online_users.models import OnlineUserActivity
 from datetime import datetime
 
@@ -1164,7 +1163,7 @@ class ServiceSearch(View):
         query = self.request.GET.get('query')
         user = self.request.user
         currentTime = timezone.now()
-        services = Service.objects.filter(isDeleted=False).filter(
+        services = Service.objects.filter(isDeleted=False).filter(isActive=True).filter(
             Q(name__icontains=query) | Q(description__icontains=query) | Q(wiki_description__icontains=query) | Q(
                 address__icontains=query))
         print("services: " + str(services))
@@ -1219,7 +1218,7 @@ class EventSearch(View):
     def get(self, request, *args, **kwargs):
         query = self.request.GET.get('query')
         currentTime = timezone.now()
-        events = Event.objects.filter(isDeleted=False).filter(
+        events = Event.objects.filter(isDeleted=False).filter(isActive=True).filter(
             Q(eventname__icontains=query) | Q(eventdescription__icontains=query) | Q(
                 event_wiki_description__icontains=query) | Q(
                 event_address__icontains=query))
@@ -2225,7 +2224,7 @@ class FeaturedEventsView(LoginRequiredMixin, View):
 
 class AddServiceFeatured(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
-        dateDiff = (datetime.datetime.now() - datetime.timedelta(days=7)).date()
+        dateDiff = (datetime.now() - timedelta(days=7)).date()
         featureds = Featured.objects.filter(itemType="service").filter(date__gte=dateDiff)
         if len(featureds) < 2:
             featured = Featured.objects.create(itemType="service", itemId=pk)
@@ -2244,7 +2243,7 @@ class RemoveServiceFeatured(LoginRequiredMixin, View):
 
 class AddEventFeatured(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
-        dateDiff = (datetime.datetime.now() - datetime.timedelta(days=7)).date()
+        dateDiff = (datetime.now() - timedelta(days=7)).date()
         featureds = Featured.objects.filter(itemType="event").filter(date__gte=dateDiff)
         if len(featureds) < 2:
             featured = Featured.objects.create(itemType="event", itemId=pk)

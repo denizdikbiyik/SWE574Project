@@ -24,12 +24,14 @@ class Index(View):
         featuredServicesList = Featured.objects.filter(itemType="service").filter(date__gte=dateDiff)
         for featuredServiceList in featuredServicesList:
             serviceFeatured = Service.objects.get(pk=featuredServiceList.itemId)
-            featured_services.append(serviceFeatured)
+            if serviceFeatured.isActive == True and serviceFeatured.isDeleted == False and serviceFeatured.servicedate >= currentTime:
+                featured_services.append(serviceFeatured)
         featured_services_count = len(featured_services)
         featuredEventsList = Featured.objects.filter(itemType="event").filter(date__gte=dateDiff)
         for featuredEventList in featuredEventsList:
             eventFeatured = Event.objects.get(pk=featuredEventList.itemId)
-            featured_events.append(eventFeatured)
+            if eventFeatured.isActive == True and eventFeatured.isDeleted == False and eventFeatured.eventdate >= currentTime:
+                featured_events.append(eventFeatured)
         featured_events_count = len(featured_events)
 
         servicesToGet = Service.objects.filter(isDeleted=False).filter(isActive=True).filter(servicedate__gte=currentTime).order_by('-createddate')
