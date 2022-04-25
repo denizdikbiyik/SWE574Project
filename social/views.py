@@ -1011,6 +1011,10 @@ class AddFollower(LoginRequiredMixin, View):
         profile = UserProfile.objects.get(pk=follow_pk)
         profile.followers.add(request.user)
         log = Log.objects.create(operation="follow", itemType="user", itemId=follow_pk, userId=request.user)
+        notification = NotifyUser.objects.create(notify=profile.user, notification=str(request.user) + ' followed you.', offerType="user", offerPk=request.user.pk)
+        notified_user = UserProfile.objects.get(pk=profile.user)
+        notified_user.unreadcount = notified_user.unreadcount + 1
+        notified_user.save()
         return redirect('profile', pk=follow_pk)
 
 
