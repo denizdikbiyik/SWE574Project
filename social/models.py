@@ -105,6 +105,7 @@ class UserProfile(models.Model):
     reservehour = models.IntegerField(default=0)
     unreadcount = models.IntegerField(default=0)
     isAdmin = models.BooleanField(default=False)
+    isSuperAdmin = models.BooleanField(default=False)
     isActive = models.BooleanField(default=True)
 
 
