@@ -39,8 +39,11 @@
                             <div class="col">
                                 {% if request.user == event.eventcreater %}
                                     {% if is_active and event.isActive %}
-                                        <a href="{% url 'event-edit' event.pk %}" class="btn btn-primary">Edit</a>
-                                        <a href="{% url 'event-delete' event.pk %}" class="btn btn-danger">Delete</a>
+                                        {% if event.isDeleted %}
+                                        {% else %}
+                                            <a href="{% url 'event-edit' event.pk %}" class="btn btn-primary">Edit</a>
+                                            <a href="{% url 'event-delete' event.pk %}" class="btn btn-danger">Delete</a>
+                                        {% endif %}
                                     {% endif %}
                                 {% endif %}
                             </div>
@@ -48,20 +51,23 @@
                         <div class="row">
                             <p></p>
                             {% if event.isActive and is_active and request.user.profile.isAdmin %}
-                                <form method="POST" action="{% url 'deactivate-event' event.pk %}">
-                                    {% csrf_token %}
-                                    <button class="btn btn-outline-danger" type=submit>Deactivate</button>
-                                </form>
-                                {% if is_featured %}
-                                    <form method="POST" action="{% url 'remove-event-featured' event.pk %}">
-                                        {% csrf_token %}
-                                        <button class="btn btn-outline-danger" type=submit>Remove Featured</button>
-                                    </form>
+                                {% if event.isDeleted %}
                                 {% else %}
-                                    <form method="POST" action="{% url 'add-event-featured' event.pk %}">
+                                    <form method="POST" action="{% url 'deactivate-event' event.pk %}">
                                         {% csrf_token %}
-                                        <button class="btn btn-outline-success" type=submit>Add Featured</button>
+                                        <button class="btn btn-outline-danger" type=submit>Deactivate</button>
                                     </form>
+                                    {% if is_featured %}
+                                        <form method="POST" action="{% url 'remove-event-featured' event.pk %}">
+                                            {% csrf_token %}
+                                            <button class="btn btn-outline-danger" type=submit>Remove Featured</button>
+                                        </form>
+                                    {% else %}
+                                        <form method="POST" action="{% url 'add-event-featured' event.pk %}">
+                                            {% csrf_token %}
+                                            <button class="btn btn-outline-success" type=submit>Add Featured</button>
+                                        </form>
+                                    {% endif %}
                                 {% endif %}
                             {% endif %}
                             {% if event.isActive %}
