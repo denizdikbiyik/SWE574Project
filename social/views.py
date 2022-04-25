@@ -2247,7 +2247,7 @@ class FeaturedEventsView(LoginRequiredMixin, View):
 
 class AddServiceFeatured(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
-        dateDiff = (datetime.now() - timedelta(days=7)).date()
+        dateDiff = (datetime.now() - timedelta(days=1)).date()
         featureds = []
         featuredsToAdd = Featured.objects.filter(itemType="service").filter(date__gte=dateDiff)
         for featuredToAdd in featuredsToAdd:
@@ -2258,7 +2258,7 @@ class AddServiceFeatured(LoginRequiredMixin, View):
             featured = Featured.objects.create(itemType="service", itemId=pk)
         else:
             messages.warning(request,
-                             'You have already 2 featured services for this week, please remove one to add new.')
+                             'You have already 2 featured services for today, please remove one to add new.')
         return redirect('service-detail', pk=pk)
 
 
@@ -2271,7 +2271,7 @@ class RemoveServiceFeatured(LoginRequiredMixin, View):
 
 class AddEventFeatured(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
-        dateDiff = (datetime.now() - timedelta(days=7)).date()
+        dateDiff = (datetime.now() - timedelta(days=1)).date()
         featureds = []
         featuredsToAdd = Featured.objects.filter(itemType="event").filter(date__gte=dateDiff)
         for featuredToAdd in featuredsToAdd:
@@ -2281,7 +2281,7 @@ class AddEventFeatured(LoginRequiredMixin, View):
         if len(featureds) < 2:
             featured = Featured.objects.create(itemType="event", itemId=pk)
         else:
-            messages.warning(request, 'You have already 2 featured events for this week, please remove one to add new.')
+            messages.warning(request, 'You have already 2 featured events for today, please remove one to add new.')
         return redirect('event-detail', pk=pk)
 
 
