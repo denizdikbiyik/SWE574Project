@@ -54,30 +54,35 @@ class ServiceCreateView(LoginRequiredMixin, View):
                 sameDateEvents = Event.objects.filter(eventcreater=request.user).filter(
                     eventdate=new_service.servicedate).filter(isDeleted=False).filter(isActive=True)
                 if len(sameDateServices) > 0 or len(sameDateEvents) > 0:
-                    messages.warning(request,
-                                     'You cannot create this service because you have one with the same datetime.')
+                    messages.warning(request, 'You cannot create this service because you have one with the same datetime.')
                 else:
-                    new_service.creater = request.user
-                    creater_user_profile.reservehour = creater_user_profile.reservehour + new_service.duration
-                    creater_user_profile.save()
-                    if new_service.category:
-                        notification = NotifyUser.objects.create(notify=new_service.category.requester,
-                                                                 notification=str(
-                                                                     request.user) + ' created service with your request ' + str(
-                                                                     new_service.category) + '.', offerType="request",
-                                                                 offerPk=0)
-                        notified_user = UserProfile.objects.get(pk=new_service.category.requester)
-                        notified_user.unreadcount = notified_user.unreadcount + 1
-                        notified_user.save()
-                    # new_service.wiki_description = request.session['description']  #  this gives key error Added by AT
-                    new_service.wiki_description = request.session.get("description")  # Added by AT
-                    request.session['description'] = None  # Added by AT
-                    new_service.address = reverse_location(new_service.location)  # Added by AT
-                    new_service.save()
-                    messages.success(request, 'Service creation is successful.')
-                    request.session["type"] = None
-                    log = Log.objects.create(operation="createservice", itemType="service", itemId=new_service.pk,
-                                             userId=request.user)
+                    if new_service.capacity < 1 or new_service.duration < 1:
+                        if new_service.capacity < 1:
+                            messages.warning(request, 'Capacity cannot be less than 1.')
+                        if new_service.duration < 1:
+                            messages.warning(request, 'Duration cannot be less than 1.')
+                    else:
+                        new_service.creater = request.user
+                        creater_user_profile.reservehour = creater_user_profile.reservehour + new_service.duration
+                        creater_user_profile.save()
+                        if new_service.category:
+                            notification = NotifyUser.objects.create(notify=new_service.category.requester,
+                                                                    notification=str(
+                                                                        request.user) + ' created service with your request ' + str(
+                                                                        new_service.category) + '.', offerType="request",
+                                                                    offerPk=0)
+                            notified_user = UserProfile.objects.get(pk=new_service.category.requester)
+                            notified_user.unreadcount = notified_user.unreadcount + 1
+                            notified_user.save()
+                        # new_service.wiki_description = request.session['description']  #  this gives key error Added by AT
+                        new_service.wiki_description = request.session.get("description")  # Added by AT
+                        request.session['description'] = None  # Added by AT
+                        new_service.address = reverse_location(new_service.location)  # Added by AT
+                        new_service.save()
+                        messages.success(request, 'Service creation is successful.')
+                        request.session["type"] = None
+                        log = Log.objects.create(operation="createservice", itemType="service", itemId=new_service.pk,
+                                                userId=request.user)
             else:
                 messages.warning(request, 'You cannot create this service which causes credit hours exceed 15.')
         context = {
@@ -462,34 +467,40 @@ class ServiceEditView(LoginRequiredMixin, View):
                     messages.warning(request,
                                      'You cannot make capacity below the accepted number, please remove accepted participants.')
                 else:
-                    service_creater_profile.reservehour = service_creater_profile.reservehour - service.duration + edit_service.duration
-                    service_creater_profile.save()
-                    for application in applications:
-                        service_applicant_profile = UserProfile.objects.get(pk=application.applicant)
-                        service_applicant_profile.reservehour = service_applicant_profile.reservehour + service.duration - edit_service.duration
-                        service_applicant_profile.save()
-                    service.picture = service.picture
-                    if request.FILES:
-                        service.picture = edit_service.picture
-                    service.name = edit_service.name
-                    service.description = edit_service.description
-                    service.servicedate = edit_service.servicedate
-                    service.location = edit_service.location
-                    service.capacity = edit_service.capacity
-                    service.duration = edit_service.duration
-                    service.category = edit_service.category
-                    service.save()
-                    log = Log.objects.create(operation="editservice", itemType="service", itemId=service.pk,
-                                             userId=request.user)
-                    messages.success(request, 'Service editing is successful.')
-                    applications = ServiceApplication.objects.filter(service=service).filter(isDeleted=False).filter(
-                        isActive=True)
-                    for application in applications:
-                        notification = NotifyUser.objects.create(notify=application.applicant, notification=str(
-                            service.name) + ' which you applied is edited.', offerType="service", offerPk=service.pk)
-                        notified_user = UserProfile.objects.get(pk=application.applicant)
-                        notified_user.unreadcount = notified_user.unreadcount + 1
-                        notified_user.save()
+                    if edit_service.capacity < 1 or edit_service.duration < 1:
+                        if edit_service.capacity < 1:
+                            messages.warning(request, 'Capacity cannot be less than 1.')
+                        if edit_service.duration < 1:
+                            messages.warning(request, 'Duration cannot be less than 1.')
+                    else:
+                        service_creater_profile.reservehour = service_creater_profile.reservehour - service.duration + edit_service.duration
+                        service_creater_profile.save()
+                        for application in applications:
+                            service_applicant_profile = UserProfile.objects.get(pk=application.applicant)
+                            service_applicant_profile.reservehour = service_applicant_profile.reservehour + service.duration - edit_service.duration
+                            service_applicant_profile.save()
+                        service.picture = service.picture
+                        if request.FILES:
+                            service.picture = edit_service.picture
+                        service.name = edit_service.name
+                        service.description = edit_service.description
+                        service.servicedate = edit_service.servicedate
+                        service.location = edit_service.location
+                        service.capacity = edit_service.capacity
+                        service.duration = edit_service.duration
+                        service.category = edit_service.category
+                        service.save()
+                        log = Log.objects.create(operation="editservice", itemType="service", itemId=service.pk,
+                                                userId=request.user)
+                        messages.success(request, 'Service editing is successful.')
+                        applications = ServiceApplication.objects.filter(service=service).filter(isDeleted=False).filter(
+                            isActive=True)
+                        for application in applications:
+                            notification = NotifyUser.objects.create(notify=application.applicant, notification=str(
+                                service.name) + ' which you applied is edited.', offerType="service", offerPk=service.pk)
+                            notified_user = UserProfile.objects.get(pk=application.applicant)
+                            notified_user.unreadcount = notified_user.unreadcount + 1
+                            notified_user.save()
             else:
                 messages.warning(request, 'You cannot make this service which causes credit hours exceed 15.')
         context = {
@@ -571,16 +582,22 @@ class EventCreateView(LoginRequiredMixin, View):
             if len(sameDateEvents) > 0 or len(sameDateServices) > 0:
                 messages.warning(request, 'You cannot create this event because you have one with the same datetime.')
             else:
-                new_event.eventcreater = request.user
-                # new_event.event_wiki_description = request.session['description']  # gives key error Added by AT
-                new_event.event_wiki_description = request.session.get("description")  # Added by AT
-                request.session['description'] = None  # Added by AT
-                new_event.event_address = reverse_location(new_event.eventlocation)  # Added by AT
-                new_event.save()
-                log = Log.objects.create(operation="createevent", itemType="event", itemId=new_event.pk,
-                                         userId=request.user)
-                messages.success(request, 'Event creation is successful.')
-                request.session["type"] = None
+                if new_event.eventcapacity < 1 or new_event.eventduration < 1:
+                    if new_event.eventcapacity < 1:
+                        messages.warning(request, 'Capacity cannot be less than 1.')
+                    if new_event.eventduration < 1:
+                        messages.warning(request, 'Duration cannot be less than 1.')
+                else:
+                    new_event.eventcreater = request.user
+                    # new_event.event_wiki_description = request.session['description']  # gives key error Added by AT
+                    new_event.event_wiki_description = request.session.get("description")  # Added by AT
+                    request.session['description'] = None  # Added by AT
+                    new_event.event_address = reverse_location(new_event.eventlocation)  # Added by AT
+                    new_event.save()
+                    log = Log.objects.create(operation="createevent", itemType="event", itemId=new_event.pk,
+                                            userId=request.user)
+                    messages.success(request, 'Event creation is successful.')
+                    request.session["type"] = None
         context = {
             'event_list': events,
             'form': form,
@@ -828,24 +845,30 @@ class EventEditView(LoginRequiredMixin, View):
             if edit_event.eventcapacity < number_of_accepted:
                 messages.warning(request, 'You cannot make the capacity below the accepted number.')
             else:
-                event.eventpicture = event.eventpicture
-                if request.FILES:
-                    event.eventpicture = edit_event.eventpicture
-                event.eventname = edit_event.eventname
-                event.eventdescription = edit_event.eventdescription
-                event.eventdate = edit_event.eventdate
-                event.eventlocation = edit_event.eventlocation
-                event.eventcapacity = edit_event.eventcapacity
-                event.eventduration = edit_event.eventduration
-                event.save()
-                log = Log.objects.create(operation="editevent", itemType="event", itemId=event.pk, userId=request.user)
-                messages.success(request, 'Event editing is successful.')
-                for application in applications:
-                    notification = NotifyUser.objects.create(notify=application.applicant, notification=str(
-                        event.eventname) + ' event which you applied is edited.', offerType="event", offerPk=event.pk)
-                    notified_user = UserProfile.objects.get(pk=application.applicant)
-                    notified_user.unreadcount = notified_user.unreadcount + 1
-                    notified_user.save()
+                if edit_event.eventcapacity < 1 or edit_event.eventduration < 1:
+                    if edit_event.eventcapacity < 1:
+                        messages.warning(request, 'Capacity cannot be less than 1.')
+                    if edit_event.eventduration < 1:
+                        messages.warning(request, 'Duration cannot be less than 1.')
+                else:
+                    event.eventpicture = event.eventpicture
+                    if request.FILES:
+                        event.eventpicture = edit_event.eventpicture
+                    event.eventname = edit_event.eventname
+                    event.eventdescription = edit_event.eventdescription
+                    event.eventdate = edit_event.eventdate
+                    event.eventlocation = edit_event.eventlocation
+                    event.eventcapacity = edit_event.eventcapacity
+                    event.eventduration = edit_event.eventduration
+                    event.save()
+                    log = Log.objects.create(operation="editevent", itemType="event", itemId=event.pk, userId=request.user)
+                    messages.success(request, 'Event editing is successful.')
+                    for application in applications:
+                        notification = NotifyUser.objects.create(notify=application.applicant, notification=str(
+                            event.eventname) + ' event which you applied is edited.', offerType="event", offerPk=event.pk)
+                        notified_user = UserProfile.objects.get(pk=application.applicant)
+                        notified_user.unreadcount = notified_user.unreadcount + 1
+                        notified_user.save()
         context = {
             'form': form,
         }
