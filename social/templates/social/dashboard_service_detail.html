@@ -41,9 +41,9 @@
                 <p style="text-align: start; color:navy;"> Service Name: <a style="text-decoration: none;" class="text-primary" href="{% url 'service-detail' service.pk %}">{{ service.name }}</a></p>
                 <p style="text-align: start; color:navy;"> Creator: {{ service.creater }} </p>
                 {% if is_active == True %}
-                    <p style="text-align: start; color:navy;"> Status: Active </p>
+                    <p style="text-align: start; color:navy;"> Inactivated by Admin: No </p>
                 {% else %}
-                    <p style="text-align: start; color:navy;"> Status: Passive </p>
+                    <p style="text-align: start; color:navy;"> Inactivated by Admin: Yes </p>
                 {% endif %}
                 {% if isDeleted == True %}
                     <p style="text-align: start; color:navy;"> Deleted by Creator: Yes </p>
@@ -74,10 +74,14 @@
                                         <td>Canceled</td>
                                     {% endif %}
                                 {% else %}
-                                    {% if application.approved == True %}
-                                        <td>Approved</td>
+                                    {% if application.isActive == True %}
+                                        {% if application.approved == True %}
+                                            <td>Approved</td>
+                                        {% else %}
+                                            <td>Pending</td>
+                                        {% endif %}
                                     {% else %}
-                                        <td>Pending</td>
+                                        <td>Inactivated</td>
                                     {% endif %}
                                 {% endif %}
                             </tr>
@@ -89,6 +93,9 @@
         <div class="row justify-content-center mt-3">
             <div class="col-md-5 col-sm-12 border-bottom">
                 <table>
+                  <tr>
+                    <th>Operation Logs</th>
+                  </tr>
                   <tr>
                     <th>Activity Type</th>
                     <th>Date</th>
