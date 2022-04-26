@@ -1438,6 +1438,9 @@ class AddAdminView(LoginRequiredMixin, View):
         profile.isAdmin = True
         profile.save()
         log = Log.objects.create(operation="addadmin", itemType="user", itemId=pk, userId=request.user)
+        notification = NotifyUser.objects.create(notify=profile.user, notification=str(request.user) + ' added you as admin.', offerType="user", offerPk=pk)
+        profile.unreadcount = profile.unreadcount + 1
+        profile.save()
         return redirect('profile', pk=pk)
 
 
@@ -1447,6 +1450,9 @@ class RemoveAdminView(LoginRequiredMixin, View):
         profile.isAdmin = False
         profile.save()
         log = Log.objects.create(operation="removeadmin", itemType="user", itemId=pk, userId=request.user)
+        notification = NotifyUser.objects.create(notify=profile.user, notification=str(request.user) + ' removed you from admins list.', offerType="user", offerPk=pk)
+        profile.unreadcount = profile.unreadcount + 1
+        profile.save()
         return redirect('profile', pk=pk)
 
 
