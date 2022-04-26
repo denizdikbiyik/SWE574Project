@@ -438,16 +438,20 @@ def CreditExchange(service):
 class ServiceEditView(LoginRequiredMixin, View):
     def get(self, request, *args, pk, **kwargs):
         service = Service.objects.get(pk=pk)
+        editLogs = Log.objects.filter(itemType="service").filter(itemId=pk).filter(operation="editservice")
         remaining = (service.servicedate - datetime.today()).total_seconds()
         if service.creater == request.user:
-            if remaining > 86400:
+            if remaining > 86400 and len(editLogs) < 2:
                 form = ServiceForm(instance=service)
                 context = {
                     'form': form,
                 }
                 return render(request, 'social/service_edit.html', context)
             else:
-                messages.warning(request, 'You cannot edit because less than 1 day left to service.')
+                if remaining <= 86400:
+                    messages.warning(request, 'You cannot edit because less than 1 day left to service.')
+                if len(editLogs) >= 2:
+                    messages.warning(request, 'You cannot edit because you reached edit limit 2.')
                 return redirect('service-detail', pk=service.pk)
         else:
             return redirect('service-detail', pk=service.pk)
@@ -827,16 +831,20 @@ class EventDetailView(View):
 class EventEditView(LoginRequiredMixin, View):
     def get(self, request, *args, pk, **kwargs):
         event = Event.objects.get(pk=pk)
+        editLogs = Log.objects.filter(itemType="event").filter(itemId=pk).filter(operation="editevent")
         remaining = (event.eventdate - datetime.today()).total_seconds()
         if event.eventcreater == request.user:
-            if remaining > 86400:
+            if remaining > 86400 and len(editLogs) < 2:
                 form = EventForm(instance=event)
                 context = {
                     'form': form,
                 }
                 return render(request, 'social/event_edit.html', context)
             else:
-                messages.warning(request, 'You cannot edit because less than 1 day left to event.')
+                if remaining <= 86400:
+                    messages.warning(request, 'You cannot edit because less than 1 day left to event.')
+                if len(editLogs) >= 2:
+                    messages.warning(request, 'You cannot edit because you reached edit limit 2.')
                 return redirect('event-detail', pk=event.pk)
         else:
             return redirect('event-detail', pk=event.pk)
