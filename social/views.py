@@ -1779,6 +1779,12 @@ class MyLikes(LoginRequiredMixin, View):
         }
         return render(request, 'social/mylikes.html', context)
 
+def make_autopct(values):
+    def my_autopct(pct):
+        total = sum(values)
+        val = int(round(pct*total/100.0))
+        return '{p:.2f}%  ({v:d})'.format(p=pct,v=val)
+    return my_autopct
 
 class AdminDashboardIndex(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
@@ -1807,8 +1813,8 @@ class AdminDashboardIndex(LoginRequiredMixin, View):
         explode = (0.1, 0)  # only "explode" the 2nd slice (i.e. 'Hogs')
         fig1, ax1 = plt.subplots()
         # ax1.pie(data, explode=explode, labels=labels, autopct='%1.1f%%', shadow=True, startangle=90)
-        ax1.pie(data, explode=explode, labels=labels, autopct=lambda p: '{:.0f}'.format(p * sum(data) / 100),
-                shadow=True, startangle=90)
+        #ax1.pie(data, explode=explode, labels=labels, autopct=lambda p: '{:.0f}'.format(p * sum(data) / 100), shadow=True, startangle=90)
+        ax1.pie(data, explode=explode, labels=labels, autopct=make_autopct(data), shadow=True, startangle=90)
         ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
         plt.savefig('media/users_chart.png', dpi=100)
 
