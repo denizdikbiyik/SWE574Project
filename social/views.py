@@ -438,14 +438,16 @@ def CreditExchange(service):
 class ServiceEditView(LoginRequiredMixin, View):
     def get(self, request, *args, pk, **kwargs):
         service = Service.objects.get(pk=pk)
+        remaining = (service.servicedate - datetime.today()).total_seconds()
         if service.creater == request.user:
-            if service.servicedate > timezone.now():
+            if remaining > 86400:
                 form = ServiceForm(instance=service)
                 context = {
                     'form': form,
                 }
                 return render(request, 'social/service_edit.html', context)
             else:
+                messages.warning(request, 'You cannot edit because less than 1 day left to service.')
                 return redirect('service-detail', pk=service.pk)
         else:
             return redirect('service-detail', pk=service.pk)
@@ -512,14 +514,16 @@ class ServiceEditView(LoginRequiredMixin, View):
 class ServiceDeleteView(LoginRequiredMixin, View):
     def get(self, request, *args, pk, **kwargs):
         service = Service.objects.get(pk=pk)
+        remaining = (service.servicedate - datetime.today()).total_seconds()
         if service.creater == request.user:
-            if service.servicedate > timezone.now():
+            if remaining > 86400:
                 form = ServiceForm(instance=service)
                 context = {
                     'form': form,
                 }
                 return render(request, 'social/service_delete.html', context)
             else:
+                messages.warning(request, 'You cannot delete because less than 1 day left to service.')
                 return redirect('service-detail', pk=service.pk)
         else:
             return redirect('service-detail', pk=service.pk)
@@ -823,14 +827,16 @@ class EventDetailView(View):
 class EventEditView(LoginRequiredMixin, View):
     def get(self, request, *args, pk, **kwargs):
         event = Event.objects.get(pk=pk)
+        remaining = (event.eventdate - datetime.today()).total_seconds()
         if event.eventcreater == request.user:
-            if event.eventdate > timezone.now():
+            if remaining > 86400:
                 form = EventForm(instance=event)
                 context = {
                     'form': form,
                 }
                 return render(request, 'social/event_edit.html', context)
             else:
+                messages.warning(request, 'You cannot edit because less than 1 day left to event.')
                 return redirect('event-detail', pk=event.pk)
         else:
             return redirect('event-detail', pk=event.pk)
@@ -878,14 +884,16 @@ class EventEditView(LoginRequiredMixin, View):
 class EventDeleteView(LoginRequiredMixin, View):
     def get(self, request, *args, pk, **kwargs):
         event = Event.objects.get(pk=pk)
+        remaining = (event.eventdate - datetime.today()).total_seconds()
         if event.eventcreater == request.user:
-            if event.eventdate > timezone.now():
+            if remaining > 86400:
                 form = EventForm(instance=event)
                 context = {
                     'form': form,
                 }
                 return render(request, 'social/event_delete.html', context)
             else:
+                messages.warning(request, 'You cannot delete because less than 1 day left to event.')
                 return redirect('event-detail', pk=event.pk)
         else:
             return redirect('event-detail', pk=event.pk)
