@@ -1241,6 +1241,27 @@ class ServiceSearch(View):
             return np.dot(normalizer, array_to_normalize)
 
 
+class ServiceFilter(View):
+    def get(self, request, *args, **kwargs):
+        category = self.request.GET.get('category')
+        currentTime = timezone.now()
+        if category != "all":
+            services = Service.objects.filter(category=category).filter(isDeleted=False).filter(isActive=True).filter(
+                servicedate__gte=currentTime)
+        else:
+            services = Service.objects.filter(isDeleted=False).filter(isActive=True).filter(
+                servicedate__gte=currentTime).order_by('-createddate')
+        services_count = len(services)
+        alltags = Tag.objects.all()
+        context = {
+            'services': services,
+            'services_count': services_count,
+            'currentTime': currentTime,
+            'alltags': alltags,
+        }
+        return render(request, 'social/service-filter.html', context)
+
+
 class EventSearch(View):
     def get(self, request, *args, **kwargs):
         query = self.request.GET.get('query')
@@ -1374,27 +1395,6 @@ class RequestDeleteView(LoginRequiredMixin, View):
             serviceToEdit.category = None
         requestToDelete.delete()
         return redirect('createdrequests')
-
-
-class ServiceFilter(View):
-    def get(self, request, *args, **kwargs):
-        category = self.request.GET.get('category')
-        currentTime = timezone.now()
-        if category != "all":
-            services = Service.objects.filter(category=category).filter(isDeleted=False).filter(isActive=True).filter(
-                servicedate__gte=currentTime)
-        else:
-            services = Service.objects.filter(isDeleted=False).filter(isActive=True).filter(
-                servicedate__gte=currentTime).order_by('-createddate')
-        services_count = len(services)
-        alltags = Tag.objects.all()
-        context = {
-            'services': services,
-            'services_count': services_count,
-            'currentTime': currentTime,
-            'alltags': alltags,
-        }
-        return render(request, 'social/service-filter.html', context)
 
 
 class AllUsersView(LoginRequiredMixin, View):
@@ -1779,6 +1779,7 @@ class MyLikes(LoginRequiredMixin, View):
         }
         return render(request, 'social/mylikes.html', context)
 
+
 def make_autopct(values):
     def my_autopct(pct):
         total = sum(values)
@@ -2148,6 +2149,9 @@ class ActivateUser(LoginRequiredMixin, View):
         profile.isActive = True
         profile.save()
         log = Log.objects.create(operation="activate", itemType="user", itemId=pk, userId=request.user)
+        notification = NotifyUser.objects.create(notify=profile.user, notification=str(request.user) + ' activated your profile.', offerType="user", offerPk=0)
+        profile.unreadcount = profile.unreadcount + 1
+        profile.save()
         return redirect('profile', pk=pk)
 
 
@@ -2266,6 +2270,12 @@ class AddServiceFeatured(LoginRequiredMixin, View):
                 featureds.append(featuredToAdd)
         if len(featureds) < 2:
             featured = Featured.objects.create(itemType="service", itemId=pk)
+
+            theService = Service.objects.get(pk=pk)
+            notification = NotifyUser.objects.create(notify=theService.creater, notification=str(request.user) + ' added your service to featured list.', offerType="service", offerPk=pk)
+            theService.creater.profile.unreadcount = theService.creater.profile.unreadcount + 1
+            theService.creater.profile.save()
+
         else:
             messages.warning(request,
                              'You have already 2 featured services for today, please remove one to add new.')
@@ -2276,6 +2286,10 @@ class RemoveServiceFeatured(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         featured = Featured.objects.get(itemType="service", itemId=pk)
         featured.delete()
+        theService = Service.objects.get(pk=pk)
+        notification = NotifyUser.objects.create(notify=theService.creater, notification=str(request.user) + ' removed your service from featured list.', offerType="service", offerPk=pk)
+        theService.creater.profile.unreadcount = theService.creater.profile.unreadcount + 1
+        theService.creater.profile.save()
         return redirect('service-detail', pk=pk)
 
 
@@ -2290,6 +2304,12 @@ class AddEventFeatured(LoginRequiredMixin, View):
                 featureds.append(featuredToAdd)
         if len(featureds) < 2:
             featured = Featured.objects.create(itemType="event", itemId=pk)
+
+            theEvent = Event.objects.get(pk=pk)
+            notification = NotifyUser.objects.create(notify=theEvent.eventcreater, notification=str(request.user) + ' added your event to featured list.', offerType="event", offerPk=pk)
+            theEvent.eventcreater.profile.unreadcount = theEvent.eventcreater.profile.unreadcount + 1
+            theEvent.eventcreater.profile.save()
+
         else:
             messages.warning(request, 'You have already 2 featured events for today, please remove one to add new.')
         return redirect('event-detail', pk=pk)
@@ -2299,4 +2319,8 @@ class RemoveEventFeatured(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         featured = Featured.objects.get(itemType="event", itemId=pk)
         featured.delete()
+        theEvent = Event.objects.get(pk=pk)
+        notification = NotifyUser.objects.create(notify=theEvent.eventcreater, notification=str(request.user) + ' removed your event from featured list.', offerType="event", offerPk=pk)
+        theEvent.eventcreater.profile.unreadcount = theEvent.eventcreater.profile.unreadcount + 1
+        theEvent.eventcreater.profile.save()
         return redirect('event-detail', pk=pk)
