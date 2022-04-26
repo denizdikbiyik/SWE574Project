@@ -50,7 +50,7 @@
                             {% endif %}
                         {% endif %}
                         {% if request.user.profile.isAdmin %}
-                            {% if profile.isActive %}
+                            {% if profile.isActive and request.user.profile.isSuperAdmin %}
                                 {% if profile.isAdmin %}
                                     <form method="POST" action="{% url 'remove-admin' profile.pk %}">
                                         {% csrf_token %}
@@ -100,6 +100,12 @@
             {% if request.user.profile.isAdmin %}
                 {% if profile.isAdmin %}
                     <h5><a style="font-weight: bolder;">ADMIN</a></h5>
+                {% endif %}
+            {% endif %}
+
+            {% if request.user.profile.isSuperAdmin %}
+                {% if profile.isSuperAdmin %}
+                    <h5><a style="font-weight: bolder;">SUPER ADMIN</a></h5>
                 {% endif %}
             {% endif %}
 
