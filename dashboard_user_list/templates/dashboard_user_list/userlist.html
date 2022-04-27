@@ -74,7 +74,7 @@
                     <!--1. column -->
                     <th scope="row">{{ forloop.counter0|add:page_obj.start_index }} </th>
                     <!--2. column -->
-                    <td><a href="{% url 'profile' user.pk %}">{{ user.username }}</a></td>
+                    <td><a href="{% url 'dashboard-user-detail' user.pk %}">{{ user.username }}</a></td>
                     <!--3. column -->
                     <td><a>{{ user.date_joined }}</a></td> <!--3. column -->
 

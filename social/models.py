@@ -85,7 +85,7 @@ class Event(models.Model):
 class EventApplication(models.Model):
     date = models.DateTimeField(default=timezone.now)
     applicant = models.ForeignKey(User, on_delete=models.CASCADE)
-    event = models.ForeignKey('Event', on_delete=models.CASCADE)
+    event = models.ForeignKey('Event', on_delete=models.CASCADE, related_name="rel_events")
     approved = models.BooleanField(default=False)
     isDeleted = models.BooleanField(default=False)
     deletionInfo = models.TextField(blank=True, null=True)

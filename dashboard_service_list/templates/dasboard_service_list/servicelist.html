@@ -118,25 +118,28 @@
                         {% if service.isDeleted == True %}
                             Service was deleted.
                         {% else %}
-                            {% if service.is_given == True and service.is_taken == True %}
-                                Handshake
-                            {% elif service.is_given == True and service.is_taken == False %}
-                                Waiting for Service Taker confirmation.
-                            {% elif service.is_given == False and service.is_taken == True %}
-                                Waiting for Service Provider confirmation.
-                            {% elif service.is_given == False and service.is_taken == False %}
-                                {% if service in outdated_services %}
-                                    Delivery Date passed.
-                                {% else %}
-                                    {% for application in service.rel_services.all %}
-                                        {% if forloop.last %}
-                                            {{ forloop.counter }} Application(s) for The Service
-                                        {% endif %}
-                                    {% empty %}
-                                        No Applications yet.
-                                    {% endfor %}
+                            {% if service.isActive == True %}
+                                {% if service.is_given == True and service.is_taken == True %}
+                                    Handshake
+                                {% elif service.is_given == True and service.is_taken == False %}
+                                    Waiting for Service Taker confirmation.
+                                {% elif service.is_given == False and service.is_taken == True %}
+                                    Waiting for Service Provider confirmation.
+                                {% elif service.is_given == False and service.is_taken == False %}
+                                    {% if service in outdated_services %}
+                                        Delivery Date passed.
+                                    {% else %}
+                                        {% for application in service.rel_services.all %}
+                                            {% if forloop.last %}
+                                                {{ forloop.counter }} Application(s) for The Service
+                                            {% endif %}
+                                        {% empty %}
+                                            No Applications yet.
+                                        {% endfor %}
+                                    {% endif %}
                                 {% endif %}
-
+                            {% else %}
+                                Service was deactivated.
                             {% endif %}
                         {% endif %}
                     </td>

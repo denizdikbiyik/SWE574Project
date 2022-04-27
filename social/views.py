@@ -1506,6 +1506,51 @@ class DashboardEventDetailView(View):
         return render(request, 'social/dashboard_event_detail.html', context)
 
 
+class DashboardUserDetailView(View):
+    def get(self, request, pk, *args, **kwargs):
+        profile = UserProfile.objects.get(user=pk)
+        service_applications = ServiceApplication.objects.filter(applicant=pk)
+        service_application_number = len(service_applications)
+        event_applications = EventApplication.objects.filter(applicant=pk)
+        event_application_number = len(event_applications)
+        services = Service.objects.filter(creater=pk)
+        service_number = len(services)
+        events = Event.objects.filter(eventcreater=pk)
+        event_number = len(events)
+        date_today = datetime.now()
+        outdated_services = Service.objects.filter(servicedate__lte=date_today)
+        outdated_events = Event.objects.filter(eventdate__lte=date_today)
+        logs = Log.objects.filter(itemType="user").filter(itemId=pk)
+        conversion = {'editprofile': 'Profile is edited.',
+                      'follow': 'Profile is followed.',
+                      'unfollow': 'Profile is unfollowed.',
+                      'removemyfollower': 'Profile removed follower.',
+                      'addadmin': 'Made admin.',
+                      'removeadmin': 'Removed admin.',
+                      'createcomplaint': 'Created complaint.',
+                      'editcomplaint': 'Edited complaint.',
+                      'deletecomplaint': 'Deleted complaint.',
+                      'deactivate': 'Deactivated.',
+                      'activate': 'Activated.'}
+        for log in logs:
+            log.operation = conversion[log.operation]
+        context = {
+            'profile': profile,
+            'service_applications': service_applications,
+            'service_application_number': service_application_number,
+            'event_applications': event_applications,
+            'event_application_number': event_application_number,
+            'services': services,
+            'service_number': service_number,
+            'events': events,
+            'event_number': event_number,
+            'outdated_services': outdated_services,
+            'outdated_events': outdated_events,
+            'logs': logs
+        }
+        return render(request, 'social/dashboard_user_detail.html', context)
+
+
 class DashboardServiceDetailView(View):
     def get(self, request, pk, *args, **kwargs):
         service = Service.objects.get(pk=pk)
