@@ -97,7 +97,7 @@
                 <th scope="col">Creator</th>
                 <th scope="col">Creation Date</th>
                 <th scope="col">Event Date</th>
-
+                <th scope="col">Status</th>
             </tr>
             </thead>
             <tbody>
@@ -115,7 +115,27 @@
                     <!--5. column -->
                     <td> {{ service.eventdate }}</td>
                     <!--6. column -->
-
+                    <td>
+                        {% if service.isDeleted == True %}
+                            Event was deleted.
+                        {% else %}
+                            {% if service.isActive == True %}
+                                {% if service in outdated_events %}
+                                    Delivery Date passed.
+                                {% else %}
+                                    {% for application in service.rel_events.all %}
+                                        {% if forloop.last %}
+                                            {{ forloop.counter }} Application(s) for The Event
+                                        {% endif %}
+                                    {% empty %}
+                                        No Applications yet.
+                                    {% endfor %}
+                                {% endif %}
+                            {% else %}
+                                Event was deactivated.
+                            {% endif %}
+                        {% endif %}
+                    </td>
                 </tr>
             {% endfor %}
             </tbody>

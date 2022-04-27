@@ -1,0 +1,206 @@
+<head>
+    <style>
+        table, th, tr, td {
+          border: 1px solid black;
+          border-collapse: collapse;
+            padding: 10px;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+
+{% extends 'landing/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="container">
+        <div class="row mt-5">
+            <div class="col-md-5 col-sm-6">
+                <a onClick="javascript:history.go(-1);" class="btn btn-light">Back</a>
+            </div>
+        </div>
+        <div class="row justify-content-center mt-3">
+            <div class="col-md-5 col-sm-12 border-bottom">
+                <p style="text-align: start; color:navy;"> Username: <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' profile.user.pk %}">{{ profile.user.username }}</a></p>
+                {% if profile.name %}
+                    <p style="text-align: start; color:navy;"> Name: {{ profile.name }} </p>
+                {% endif %}
+                {% if profile.isActive == True %}
+                    <p style="text-align: start; color:navy;"> Inactivated by Admin: No </p>
+                {% else %}
+                    <p style="text-align: start; color:navy;"> Inactivated by Admin: Yes </p>
+                {% endif %}
+                <p style="text-align: start; color:navy;"> Number of Services (deleted ones included): {{ service_number }} </p>
+                <p style="text-align: start; color:navy;"> Number of Service Applications: {{ service_application_number }} </p>
+                <p style="text-align: start; color:navy;"> Number of Events (deleted ones included): {{ event_number }} </p>
+                <p style="text-align: start; color:navy;"> Number of Event Applications: {{ event_application_number }} </p>
+            </div>
+        </div>
+        <div class="row justify-content-center mt-3">
+            <div class="col-md-5 col-sm-12" style="border:1px solid black;">
+                <h5 class="mt-3">Services</h5>
+                <table class="table table-bordered mt-3" style="border: none;">
+                    <tr>
+                        <th>Service</th>
+                        <th>Status</th>
+                    </tr>
+                    {% for service in services %}
+                        <tr>
+                            <td><a style="text-decoration: none;" class="text-primary" href="{% url 'service-detail' service.pk %}">{{ service.name }}</a></td>
+                            <td>
+                                {% if service.isDeleted == True %}
+                                    Service was deleted.
+                                {% else %}
+                                    {% if service.isActive == True %}
+                                        {% if service.is_given == True and service.is_taken == True %}
+                                            Handshake
+                                        {% elif service.is_given == True and service.is_taken == False %}
+                                            Waiting for Service Taker confirmation.
+                                        {% elif service.is_given == False and service.is_taken == True %}
+                                            Waiting for Service Provider confirmation.
+                                        {% elif service.is_given == False and service.is_taken == False %}
+                                            {% if service in outdated_services %}
+                                                Delivery Date passed.
+                                            {% else %}
+                                                {% for application in service.rel_services.all %}
+                                                    {% if forloop.last %}
+                                                        {{ forloop.counter }} Application(s) for The Service
+                                                    {% endif %}
+                                                {% empty %}
+                                                    No Applications yet.
+                                                {% endfor %}
+                                            {% endif %}
+                                        {% endif %}
+                                    {% else %}
+                                        Service was deactivated.
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            <div class="col-md-5 col-sm-12" style="border:1px solid black;">
+                <h5 class="mt-3">Events</h5>
+                <table class="table table-bordered mt-3" style="border: none;">
+                    <tr>
+                        <th>Event</th>
+                        <th>Status</th>
+                    </tr>
+                    {% for event in events %}
+                        <tr>
+                            <td><a style="text-decoration: none;" class="text-primary" href="{% url 'event-detail' event.pk %}">{{ event.eventname }}</a></td>
+                            <td>
+                                {% if event.isDeleted == True %}
+                                    Event was deleted.
+                                {% else %}
+                                    {% if event.isActive == True %}
+                                        {% if event in outdated_events %}
+                                            Delivery Date passed.
+                                        {% else %}
+                                            {% for application in event.rel_events.all %}
+                                                {% if forloop.last %}
+                                                    {{ forloop.counter }} Application(s) for The Event
+                                                {% endif %}
+                                            {% empty %}
+                                                No Applications yet.
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% else %}
+                                        Event was deactivated.
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-md-5 col-sm-12" style="border:1px solid black;">
+                <h5 class="mt-3">Service Applications</h5>
+                <table class="table table-bordered mt-3" style="border: none;">
+                    <tr>
+                        <th>Application</th>
+                        <th>Status</th>
+                    </tr>
+                    {% for service_application in service_applications %}
+                        <tr>
+                            <td><a style="text-decoration: none;" class="text-primary" href="{% url 'service-detail' service_application.service.pk %}">{{ service_application.service.name }}</a></td>
+                            {% if service_application.isDeleted == True %}
+                                {% if service_application.deletionInfo == "reject" %}
+                                    <td>Declined</td>
+                                {% else %}
+                                    <td>Canceled</td>
+                                {% endif %}
+                            {% else %}
+                                {% if service_application.isActive == True %}
+                                    {% if service_application.approved == True %}
+                                        <td>Approved</td>
+                                    {% else %}
+                                        <td>Pending</td>
+                                    {% endif %}
+                                {% else %}
+                                    <td>Inactivated</td>
+                                {% endif %}
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            <div class="col-md-5 col-sm-12" style="border:1px solid black;">
+                <h5 class="mt-3">Event Applications</h5>
+                <table class="table table-bordered mt-3" style="border: none;">
+                    <tr>
+                        <th>Application</th>
+                        <th>Status</th>
+                    </tr>
+                    {% for event_application in event_applications %}
+                        <tr>
+                            <td><a style="text-decoration: none;" class="text-primary" href="{% url 'event-detail' event_application.event.pk %}">{{ event_application.event.eventname }}</a></td>
+                            {% if event_application.isDeleted == True %}
+                                {% if event_application.deletionInfo == "reject" %}
+                                    <td>Declined</td>
+                                {% else %}
+                                    <td>Canceled</td>
+                                {% endif %}
+                            {% else %}
+                                {% if event_application.isActive == True %}
+                                    {% if event_application.approved == True %}
+                                        <td>Approved</td>
+                                    {% else %}
+                                        <td>Pending</td>
+                                    {% endif %}
+                                {% else %}
+                                    <td>Inactivated</td>
+                                {% endif %}
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+        <div class="row justify-content-center mt-3">
+            <div class="col-md-6 col-sm-12 border-bottom">
+                <table>
+                    <tr>
+                        <th>Operation Logs</th>
+                    </tr>
+                  <tr>
+                    <th>Activity Type</th>
+                    <th>Date</th>
+                    <th>User</th>
+                  </tr>
+                    {% for log in logs %}
+                        <tr>
+                            <td>{{ log.operation }}</td>
+                            <td>{{ log.date }}</td>
+                            <td><a style="text-decoration: none;" class="text-primary" href="{% url 'profile' log.userId.id %}">{{ log.userId }}</a></td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+
+    </div>
+{% endblock content %}
