@@ -13,8 +13,8 @@
                 <label for="period type">Period:</label>
                 <select name="type" id="period type" onchange="this.form.submit()">
                     <option value="">--Select--</option>
-                    <option value="default">Default periods</option>
-                    <option value="pick">Pick Dates</option>
+                    <option value="default" {% if type == 'default' %}selected{% endif %}>Default Periods</option>
+                    <option value="pick" {% if type == 'pick' %}selected{% endif %}>Pick Dates</option>
                 </select>
             </div>
         </form>
@@ -23,19 +23,20 @@
         <form method="get">
             <div class="form-group">
                 {% if type  == "default" %}
-                    <label for="period-select">Choose a period:</label>
+                    <label for="period-select">Choose a Period:</label>
                     <select name="periods" id="period-select">
                         <option value="">--Select--</option>
-                        <option value="all">All</option>
-                        <option value="week">Last 7 Days</option>
-                        <option value="month">Last 30 Days</option>
-                        <option value="year">Last 365 Days</option>
+                        <option value="all" {% if periods == 'all' %}selected{% endif %}>All</option>
+                        <option value="week" {% if periods == 'week' %}selected{% endif %}>Last 7 Days</option>
+                        <option value="month" {% if periods == 'month' %}selected{% endif %}>Last 30 Days</option>
+                        <option value="year" {% if periods == 'year' %}selected{% endif %}>Last 365 Days</option>
                     </select>
                 {% elif type  == "pick" %}
                     <label for="beginning">Beginning Date:</label>
-                    <input type="date" id="beginning" name="beginning">
+                    <input type="date" id="beginning" name="beginning" value="{{ request.GET.beginning }}">
                     <label for="ending">Ending Date:</label>
-                    <input type="date" id="ending" name="ending">
+                    <input type="date" id="ending" name="ending" value="{{ request.GET.ending }}">
+
                 {% endif %}
             </div>
 
@@ -43,27 +44,30 @@
             <label for="status-select">Status:</label>
             <select name="status" id="status-select">
                 <option value="">--Select--</option>
-                <option value="all">All</option>
-                <option value="handshake">Handshake</option>
-                <option value="isDeleted">Deleted</option>
-                <option value="isActive">Inactive</option>
+                <option value="all" {% if status == 'all' %}selected{% endif %}>All</option>
+                <option value="handshake" {% if status == 'handshake' %}selected{% endif %}>Handshake</option>
+                <option value="isDeleted" {% if status == 'isDeleted' %}selected{% endif %}>Deleted</option>
+                <option value="isActive" {% if status == 'isActive' %}selected{% endif %}>Inactive</option>
             </select>
 
 
             <label for="admin-search">Search:</label>
             <input type="search" id="admin-search" name="q"
-                   aria-label="Search through site content" placeholder="keyword" value="{{ request.GET.q }}">
+                   aria-label="Search through site content" placeholder="keyword or location"
+                   value="{{ request.GET.q }}">
 
+            <!--
             <label for="admin-search">Search:</label>
             <input type="search" id="admin-search" name="qlocation"
                    aria-label="Search through site content" placeholder="location" value="{{ request.GET.qlocation }}">
+            -->
 
             <label for="sort-select">Sort by:</label>
             <select name="sort" id="sort-select">
                 <option value="">--Select--</option>
-                <option value="name">Name</option>
-                <option value="createddate">Creation Date</option>
-                <option value="servicedate">Delivery Date</option>
+                <option value="name" {% if sort == 'name' %}selected{% endif %}>Name</option>
+                <option value="createddate" {% if sort == 'createddate' %}selected{% endif %}>Creation Date</option>
+                <option value="servicedate" {% if sort == 'servicedate' %}selected{% endif %}>Delivery Date</option>
             </select>
             <div class="form-group">
                 <button type="submit" name="submit" value="submitted">Submit</button>
@@ -73,17 +77,13 @@
     </div>
     <br>
 
+
     <div class="container-sm">
         {% if show_count %}
             {{ service_count }} Service(s) found. <br>
         {% endif %}
         {{ period_message }} <br>
-        {{ status_message }}
-
-
     </div>
-
-
     <br>
 
 
@@ -159,26 +159,26 @@
                 <ul class="pagination pagination-sm justify-content-center">
                     {% if page_obj.has_previous %}
                         <li class="page-item">
-                            <a href="?page=1&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}&qlocation={{ qlocation }}"
+                            <a href="?page=1&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}"
                                class="page-link">First</a>
                         </li>
 
                         <li class="page-item">
-                            <a href="?page={{ page_obj.previous_page_number }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}&qlocation={{ qlocation }}"
+                            <a href="?page={{ page_obj.previous_page_number }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}"
                                class="page-link">Previous</a>
                         </li>
 
                         {% if not page_obj.has_next and page_obj.previous_page_number > 1 %}
                             <li class="page-item ">
                                 <a class="page-link"
-                                   href="?page={{ page_obj.previous_page_number|add:'-1' }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}&qlocation={{ qlocation }}">
+                                   href="?page={{ page_obj.previous_page_number|add:'-1' }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}">
                                     {{ page_obj.previous_page_number|add:'-1' }}
                                 </a>
                             </li>
                         {% endif %}
                         <li>
                             <a class="page-link"
-                               href="?page={{ page_obj.previous_page_number }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}&qlocation={{ qlocation }}">
+                               href="?page={{ page_obj.previous_page_number }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}">
                                 {{ page_obj.previous_page_number }}
                             </a>
                         </li>
@@ -199,26 +199,26 @@
                     {% if page_obj.has_next %}
                         <li class="page-item">
                             <a class="page-link"
-                               href="?page={{ page_obj.next_page_number }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}&qlocation={{ qlocation }}">
+                               href="?page={{ page_obj.next_page_number }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}">
                                 {{ page_obj.next_page_number }}
                             </a>
                         </li>
                         {% if not page_obj.has_previous and page_obj.next_page_number < page_obj.paginator.num_pages %}
                             <li class="page-item ">
                                 <a class="page-link"
-                                   href="?page={{ page_obj.next_page_number|add:'1' }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}&qlocation={{ qlocation }}">
+                                   href="?page={{ page_obj.next_page_number|add:'1' }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}">
                                     {{ page_obj.next_page_number|add:'1' }}
                                 </a>
                             </li>
                         {% endif %}
                         <li class="page-item ">
                             <a class="page-link"
-                               href="?page={{ page_obj.next_page_number }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}&qlocation={{ qlocation }}">Next</a>
+                               href="?page={{ page_obj.next_page_number }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}">Next</a>
                         </li>
 
                         <li class="page-item ">
                             <a class="page-link"
-                               href="?page={{ page_obj.paginator.num_pages }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}&qlocation={{ qlocation }}">Last</a>
+                               href="?page={{ page_obj.paginator.num_pages }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}">Last</a>
                         </li>
                     {% else %}
                         <li class="page-item disabled">
