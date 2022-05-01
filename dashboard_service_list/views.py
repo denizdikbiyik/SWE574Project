@@ -134,7 +134,7 @@ def list_services(request):
         service_count = services.count()
         object_list = services
         page_num = request.GET.get('page', 1)
-        paginator = Paginator(object_list, 2)
+        paginator = Paginator(object_list, 5)
         try:
             page_obj = paginator.page(page_num)
         except PageNotAnInteger:
