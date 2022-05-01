@@ -5,7 +5,7 @@
         <form method="get">
             <label for="admin-search">Search in Wikidata:</label>
             <input type="search" id="admin-search" name="q"
-                   aria-label="Search through site content" placeholder="keyword">
+                   aria-label="Search through site content" placeholder="keyword" value="{{ request.GET.q }}">
             <button type="submit" name="submit" value="submitted">Submit</button>
         </form>
 
@@ -27,9 +27,7 @@
                 </button>
             {% endif %}
         </form>
-        {% if is_choice == True %}
-            Keyword: {{ q }} <br>
-        {% endif %}
+        
         {{ message }} <br>
 
 
