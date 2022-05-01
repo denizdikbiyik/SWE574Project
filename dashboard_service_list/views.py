@@ -4,6 +4,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from social.models import Service
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 import datetime
+import re
 
 
 def make_query_for_service_list(*args):
@@ -42,9 +43,9 @@ def list_services(request):
         ending = request.GET.get("ending")
         status = request.GET.get("status")
         q = request.GET.get("q")
-        qlocation = request.GET.get("qlocation")
+        # qlocation = request.GET.get("qlocation")
         sort = request.GET.get("sort")
-        submit = request.GET.get("submitted")
+        # submit = request.GET.get("submitted")
         services = Service.objects.all()
         status_message = ""
         period_message = ""
@@ -57,7 +58,6 @@ def list_services(request):
                 periods == None and beginning == None and ending == None)):
             period_message = "Please choose a period!"
             show_count = show_count
-
         if (periods == None and beginning == None and ending == None) or (
                 periods == None and beginning == "" and ending == "") or (
                 period["date_old"] == "" and period["date_new"] == "") or (periods == ""):
@@ -66,7 +66,7 @@ def list_services(request):
         else:
             if periods == "all":
                 services = services
-                period_message = "Period: All times"
+                # period_message = "Period: All times"
                 show_count = True
             elif (beginning != "" and ending == "") or (beginning == "" and ending != ""):
                 services = Service.objects.none()
@@ -77,7 +77,7 @@ def list_services(request):
             else:
                 services = services.filter(createddate__gte=period["date_old"],
                                            createddate__lte=period["date_new"])
-                period_message = period["text"]
+                # period_message = period["text"]
                 show_count = True
 
         if status == "all":
@@ -99,14 +99,22 @@ def list_services(request):
         if q == None or q == "":
             services = services
         else:
+            services_pk = set()
+            for service in services:
+                address = service.address
+                if re.search(q, address, re.IGNORECASE):
+                    services_pk.add(service.pk)
             services = services.filter(
-                Q(name__icontains=q) | Q(description__icontains=q) | Q(wiki_description__icontains=q))
+                Q(name__icontains=q) | Q(description__icontains=q) | Q(wiki_description__icontains=q) | Q(
+                    address__icontains=q) | Q(pk__in=services_pk))
 
+        '''
         if qlocation == None or qlocation == "":
             services = services
         else:
             services = services.filter(
                 Q(address__icontains=qlocation))
+        '''
 
         if sort == "name":
             services = services.order_by("name")
@@ -115,10 +123,18 @@ def list_services(request):
         else:
             services = services.order_by("servicedate")
 
+        if 'submit' in request.GET:
+            if periods != None or periods != None:
+                type = "default"
+            elif (beginning != None or beginning != None) or (ending != None or ending != None):
+                type = "pick"
+            else:
+                type = None
+
         service_count = services.count()
         object_list = services
         page_num = request.GET.get('page', 1)
-        paginator = Paginator(object_list, 2)  # 6 employees per page
+        paginator = Paginator(object_list, 2)
         try:
             page_obj = paginator.page(page_num)
         except PageNotAnInteger:
@@ -129,9 +145,9 @@ def list_services(request):
             page_obj = paginator.page(paginator.num_pages)
         return render(request, 'dasboard_service_list/servicelist.html',
                       {'page_obj': page_obj, "type": type, "periods": periods, "beginning": beginning, "ending": ending,
-                       "status": status, "q": q, "sort": sort, "submit": submit, "service_count": service_count,
+                       "status": status, "q": q, "sort": sort, "service_count": service_count,
                        "is_admin": is_admin, "status_message": status_message, "period_message": period_message,
-                       "outdated_services": outdated_services, "show_count": show_count, "qlocation": qlocation})
+                       "outdated_services": outdated_services, "show_count": show_count})
 
     else:
         return redirect('index')
