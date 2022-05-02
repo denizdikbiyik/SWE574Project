@@ -5,6 +5,7 @@ from social.models import Event
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 import datetime
 import re
+from django.db.models.functions import Lower
 
 
 def make_query_for_event_list(*args):
@@ -115,7 +116,7 @@ def list_events(request):
         '''
 
         if sort == "name":
-            events = events.order_by("eventname")
+            events = events.order_by(Lower("eventname"))
         elif sort == "createddate":
             events = events.order_by("eventcreateddate")
         else:

@@ -5,6 +5,7 @@ from social.models import Service
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 import datetime
 import re
+from django.db.models.functions import Lower
 
 
 def make_query_for_service_list(*args):
@@ -117,7 +118,7 @@ def list_services(request):
         '''
 
         if sort == "name":
-            services = services.order_by("name")
+            services = services.order_by(Lower("name"))
         elif sort == "createddate":
             services = services.order_by("createddate")
         else:
