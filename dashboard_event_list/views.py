@@ -4,6 +4,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from social.models import Event
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 import datetime
+import re
 
 
 def make_query_for_event_list(*args):
@@ -42,9 +43,9 @@ def list_events(request):
         ending = request.GET.get("ending")
         status = request.GET.get("status")
         q = request.GET.get("q")
-        qlocation = request.GET.get("qlocation")
+        # qlocation = request.GET.get("qlocation")
         sort = request.GET.get("sort")
-        submit = request.GET.get("submitted")
+        # submit = request.GET.get("submitted")
         events = Event.objects.all()
         status_message = ""
         period_message = ""
@@ -57,7 +58,6 @@ def list_events(request):
                 periods == None and beginning == None and ending == None)):
             period_message = "Please choose a period!"
             show_count = show_count
-
         if (periods == None and beginning == None and ending == None) or (
                 periods == None and beginning == "" and ending == "") or (
                 period["date_old"] == "" and period["date_new"] == "") or (periods == ""):
@@ -66,7 +66,7 @@ def list_events(request):
         else:
             if periods == "all":
                 events = events
-                period_message = "Period: All times"
+                # period_message = "Period: All times"
                 show_count = True
             elif (beginning != "" and ending == "") or (beginning == "" and ending != ""):
                 events = Event.objects.none()
@@ -77,7 +77,7 @@ def list_events(request):
             else:
                 events = events.filter(eventcreateddate__gte=period["date_old"],
                                        eventcreateddate__lte=period["date_new"])
-                period_message = period["text"]
+                # period_message = period["text"]
                 show_count = True
 
         if status == "all":
@@ -96,15 +96,24 @@ def list_events(request):
         if q == None or q == "":
             events = events
         else:
+            events_pk = set()
+            for event in events:
+                address = event.event_address
+                if re.search(q, address, re.IGNORECASE):
+                    events_pk.add(event.pk)
             events = events.filter(
                 Q(eventname__icontains=q) | Q(eventdescription__icontains=q) | Q(
-                    event_wiki_description__icontains=q))
+                    event_wiki_description__icontains=q) | Q(
+                    event_address__icontains=q) | Q(pk__in=events_pk))
 
+        '''
         if qlocation == None or qlocation == "":
             events = events
         else:
             events = events.filter(
                 Q(event_address__icontains=qlocation))
+        '''
+
         if sort == "name":
             events = events.order_by("eventname")
         elif sort == "createddate":
@@ -112,10 +121,18 @@ def list_events(request):
         else:
             events = events.order_by("eventdate")
 
+        if 'submit' in request.GET:
+            if periods != None or periods != None:
+                type = "default"
+            elif (beginning != None or beginning != None) or (ending != None or ending != None):
+                type = "pick"
+            else:
+                type = None
+
         event_count = events.count()
         object_list = events
         page_num = request.GET.get('page', 1)
-        paginator = Paginator(object_list, 2)  # 6 employees per page
+        paginator = Paginator(object_list, 5)
         try:
             page_obj = paginator.page(page_num)
         except PageNotAnInteger:
@@ -126,9 +143,9 @@ def list_events(request):
             page_obj = paginator.page(paginator.num_pages)
         return render(request, 'dashboard_event_list/eventlist.html',
                       {'page_obj': page_obj, "type": type, "periods": periods, "beginning": beginning, "ending": ending,
-                       "status": status, "q": q, "sort": sort, "submit": submit, "event_count": event_count,
+                       "status": status, "q": q, "sort": sort, "event_count": event_count,
                        "is_admin": is_admin, "status_message": status_message, "period_message": period_message,
-                       "outdated_events": outdated_events, "show_count": show_count, "qlocation": qlocation})
+                       "outdated_events": outdated_events, "show_count": show_count})
 
     else:
         return redirect('index')
