@@ -15,7 +15,7 @@ from django.db.models import Avg, Q
 from datetime import timedelta
 from online_users.models import OnlineUserActivity
 from datetime import datetime
-
+import re
 # MatPlotLib
 import matplotlib
 
@@ -54,7 +54,8 @@ class ServiceCreateView(LoginRequiredMixin, View):
                 sameDateEvents = Event.objects.filter(eventcreater=request.user).filter(
                     eventdate=new_service.servicedate).filter(isDeleted=False).filter(isActive=True)
                 if len(sameDateServices) > 0 or len(sameDateEvents) > 0:
-                    messages.warning(request, 'You cannot create this service because you have one with the same datetime.')
+                    messages.warning(request,
+                                     'You cannot create this service because you have one with the same datetime.')
                 else:
                     if new_service.capacity < 1 or new_service.duration < 1:
                         if new_service.capacity < 1:
@@ -67,10 +68,11 @@ class ServiceCreateView(LoginRequiredMixin, View):
                         creater_user_profile.save()
                         if new_service.category:
                             notification = NotifyUser.objects.create(notify=new_service.category.requester,
-                                                                    notification=str(
-                                                                        request.user) + ' created service with your request ' + str(
-                                                                        new_service.category) + '.', offerType="request",
-                                                                    offerPk=0)
+                                                                     notification=str(
+                                                                         request.user) + ' created service with your request ' + str(
+                                                                         new_service.category) + '.',
+                                                                     offerType="request",
+                                                                     offerPk=0)
                             notified_user = UserProfile.objects.get(pk=new_service.category.requester)
                             notified_user.unreadcount = notified_user.unreadcount + 1
                             notified_user.save()
@@ -82,7 +84,7 @@ class ServiceCreateView(LoginRequiredMixin, View):
                         messages.success(request, 'Service creation is successful.')
                         request.session["type"] = None
                         log = Log.objects.create(operation="createservice", itemType="service", itemId=new_service.pk,
-                                                userId=request.user)
+                                                 userId=request.user)
             else:
                 messages.warning(request, 'You cannot create this service which causes credit hours exceed 15.')
         context = {
@@ -497,13 +499,15 @@ class ServiceEditView(LoginRequiredMixin, View):
                         service.category = edit_service.category
                         service.save()
                         log = Log.objects.create(operation="editservice", itemType="service", itemId=service.pk,
-                                                userId=request.user)
+                                                 userId=request.user)
                         messages.success(request, 'Service editing is successful.')
-                        applications = ServiceApplication.objects.filter(service=service).filter(isDeleted=False).filter(
+                        applications = ServiceApplication.objects.filter(service=service).filter(
+                            isDeleted=False).filter(
                             isActive=True)
                         for application in applications:
                             notification = NotifyUser.objects.create(notify=application.applicant, notification=str(
-                                service.name) + ' which you applied is edited.', offerType="service", offerPk=service.pk)
+                                service.name) + ' which you applied is edited.', offerType="service",
+                                                                     offerPk=service.pk)
                             notified_user = UserProfile.objects.get(pk=application.applicant)
                             notified_user.unreadcount = notified_user.unreadcount + 1
                             notified_user.save()
@@ -603,7 +607,7 @@ class EventCreateView(LoginRequiredMixin, View):
                     new_event.event_address = reverse_location(new_event.eventlocation)  # Added by AT
                     new_event.save()
                     log = Log.objects.create(operation="createevent", itemType="event", itemId=new_event.pk,
-                                            userId=request.user)
+                                             userId=request.user)
                     messages.success(request, 'Event creation is successful.')
                     request.session["type"] = None
         context = {
@@ -875,11 +879,13 @@ class EventEditView(LoginRequiredMixin, View):
                     event.eventcapacity = edit_event.eventcapacity
                     event.eventduration = edit_event.eventduration
                     event.save()
-                    log = Log.objects.create(operation="editevent", itemType="event", itemId=event.pk, userId=request.user)
+                    log = Log.objects.create(operation="editevent", itemType="event", itemId=event.pk,
+                                             userId=request.user)
                     messages.success(request, 'Event editing is successful.')
                     for application in applications:
                         notification = NotifyUser.objects.create(notify=application.applicant, notification=str(
-                            event.eventname) + ' event which you applied is edited.', offerType="event", offerPk=event.pk)
+                            event.eventname) + ' event which you applied is edited.', offerType="event",
+                                                                 offerPk=event.pk)
                         notified_user = UserProfile.objects.get(pk=application.applicant)
                         notified_user.unreadcount = notified_user.unreadcount + 1
                         notified_user.save()
@@ -1027,7 +1033,8 @@ class AddFollower(LoginRequiredMixin, View):
         profile = UserProfile.objects.get(pk=follow_pk)
         profile.followers.add(request.user)
         log = Log.objects.create(operation="follow", itemType="user", itemId=follow_pk, userId=request.user)
-        notification = NotifyUser.objects.create(notify=profile.user, notification=str(request.user) + ' followed you.', offerType="user", offerPk=request.user.pk)
+        notification = NotifyUser.objects.create(notify=profile.user, notification=str(request.user) + ' followed you.',
+                                                 offerType="user", offerPk=request.user.pk)
         notified_user = UserProfile.objects.get(pk=profile.user)
         notified_user.unreadcount = notified_user.unreadcount + 1
         notified_user.save()
@@ -1206,9 +1213,17 @@ class ServiceSearch(View):
         query = self.request.GET.get('query')
         user = self.request.user
         currentTime = timezone.now()
+        # for searching in Turkish characters
+        services_pk = set()
+        for service in Service.objects.filter(isDeleted=False).filter(isActive=True):
+            address = service.address
+            if address:
+                if re.search(query, address, re.IGNORECASE):
+                    services_pk.add(service.pk)
+
         services = Service.objects.filter(isDeleted=False).filter(isActive=True).filter(
             Q(name__icontains=query) | Q(description__icontains=query) | Q(wiki_description__icontains=query) | Q(
-                address__icontains=query))
+                address__icontains=query) | Q(pk__in=services_pk))
         print("services: " + str(services))
         ratings = self.sort_results(services, user)
         services_smart_sorted = [x for _, x in sorted(zip(ratings, services), reverse=True)]
@@ -1282,10 +1297,18 @@ class EventSearch(View):
     def get(self, request, *args, **kwargs):
         query = self.request.GET.get('query')
         currentTime = timezone.now()
+        # for searching in Turkish characters
+        events_pk = set()
+        for event in Event.objects.filter(isDeleted=False).filter(isActive=True):
+            address = event.event_address
+            if address:
+                if re.search(query, address, re.IGNORECASE):
+                    events_pk.add(event.pk)
+
         events = Event.objects.filter(isDeleted=False).filter(isActive=True).filter(
             Q(eventname__icontains=query) | Q(eventdescription__icontains=query) | Q(
                 event_wiki_description__icontains=query) | Q(
-                event_address__icontains=query))
+                event_address__icontains=query) | Q(pk__in=events_pk))
         events_count = len(events)
         context = {
             'events': events,
@@ -1454,7 +1477,9 @@ class AddAdminView(LoginRequiredMixin, View):
         profile.isAdmin = True
         profile.save()
         log = Log.objects.create(operation="addadmin", itemType="user", itemId=pk, userId=request.user)
-        notification = NotifyUser.objects.create(notify=profile.user, notification=str(request.user) + ' added you as admin.', offerType="user", offerPk=pk)
+        notification = NotifyUser.objects.create(notify=profile.user,
+                                                 notification=str(request.user) + ' added you as admin.',
+                                                 offerType="user", offerPk=pk)
         profile.unreadcount = profile.unreadcount + 1
         profile.save()
         return redirect('profile', pk=pk)
@@ -1466,7 +1491,9 @@ class RemoveAdminView(LoginRequiredMixin, View):
         profile.isAdmin = False
         profile.save()
         log = Log.objects.create(operation="removeadmin", itemType="user", itemId=pk, userId=request.user)
-        notification = NotifyUser.objects.create(notify=profile.user, notification=str(request.user) + ' removed you from admins list.', offerType="user", offerPk=pk)
+        notification = NotifyUser.objects.create(notify=profile.user,
+                                                 notification=str(request.user) + ' removed you from admins list.',
+                                                 offerType="user", offerPk=pk)
         profile.unreadcount = profile.unreadcount + 1
         profile.save()
         return redirect('profile', pk=pk)
@@ -1845,9 +1872,11 @@ class MyLikes(LoginRequiredMixin, View):
 def make_autopct(values):
     def my_autopct(pct):
         total = sum(values)
-        val = int(round(pct*total/100.0))
-        return '{p:.2f}%  ({v:d})'.format(p=pct,v=val)
+        val = int(round(pct * total / 100.0))
+        return '{p:.2f}%  ({v:d})'.format(p=pct, v=val)
+
     return my_autopct
+
 
 class AdminDashboardIndex(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
@@ -1876,7 +1905,7 @@ class AdminDashboardIndex(LoginRequiredMixin, View):
         explode = (0.1, 0)  # only "explode" the 2nd slice (i.e. 'Hogs')
         fig1, ax1 = plt.subplots()
         # ax1.pie(data, explode=explode, labels=labels, autopct='%1.1f%%', shadow=True, startangle=90)
-        #ax1.pie(data, explode=explode, labels=labels, autopct=lambda p: '{:.0f}'.format(p * sum(data) / 100), shadow=True, startangle=90)
+        # ax1.pie(data, explode=explode, labels=labels, autopct=lambda p: '{:.0f}'.format(p * sum(data) / 100), shadow=True, startangle=90)
         ax1.pie(data, explode=explode, labels=labels, autopct=make_autopct(data), shadow=True, startangle=90)
         ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
         plt.savefig('media/users_chart.png', dpi=100)
@@ -2211,7 +2240,9 @@ class ActivateUser(LoginRequiredMixin, View):
         profile.isActive = True
         profile.save()
         log = Log.objects.create(operation="activate", itemType="user", itemId=pk, userId=request.user)
-        notification = NotifyUser.objects.create(notify=profile.user, notification=str(request.user) + ' activated your profile.', offerType="user", offerPk=0)
+        notification = NotifyUser.objects.create(notify=profile.user,
+                                                 notification=str(request.user) + ' activated your profile.',
+                                                 offerType="user", offerPk=0)
         profile.unreadcount = profile.unreadcount + 1
         profile.save()
         return redirect('profile', pk=pk)
@@ -2334,7 +2365,8 @@ class AddServiceFeatured(LoginRequiredMixin, View):
             featured = Featured.objects.create(itemType="service", itemId=pk)
 
             theService = Service.objects.get(pk=pk)
-            notification = NotifyUser.objects.create(notify=theService.creater, notification=str(request.user) + ' added your service to featured list.', offerType="service", offerPk=pk)
+            notification = NotifyUser.objects.create(notify=theService.creater, notification=str(
+                request.user) + ' added your service to featured list.', offerType="service", offerPk=pk)
             theService.creater.profile.unreadcount = theService.creater.profile.unreadcount + 1
             theService.creater.profile.save()
 
@@ -2349,7 +2381,8 @@ class RemoveServiceFeatured(LoginRequiredMixin, View):
         featured = Featured.objects.get(itemType="service", itemId=pk)
         featured.delete()
         theService = Service.objects.get(pk=pk)
-        notification = NotifyUser.objects.create(notify=theService.creater, notification=str(request.user) + ' removed your service from featured list.', offerType="service", offerPk=pk)
+        notification = NotifyUser.objects.create(notify=theService.creater, notification=str(
+            request.user) + ' removed your service from featured list.', offerType="service", offerPk=pk)
         theService.creater.profile.unreadcount = theService.creater.profile.unreadcount + 1
         theService.creater.profile.save()
         return redirect('service-detail', pk=pk)
@@ -2368,7 +2401,8 @@ class AddEventFeatured(LoginRequiredMixin, View):
             featured = Featured.objects.create(itemType="event", itemId=pk)
 
             theEvent = Event.objects.get(pk=pk)
-            notification = NotifyUser.objects.create(notify=theEvent.eventcreater, notification=str(request.user) + ' added your event to featured list.', offerType="event", offerPk=pk)
+            notification = NotifyUser.objects.create(notify=theEvent.eventcreater, notification=str(
+                request.user) + ' added your event to featured list.', offerType="event", offerPk=pk)
             theEvent.eventcreater.profile.unreadcount = theEvent.eventcreater.profile.unreadcount + 1
             theEvent.eventcreater.profile.save()
 
@@ -2382,7 +2416,8 @@ class RemoveEventFeatured(LoginRequiredMixin, View):
         featured = Featured.objects.get(itemType="event", itemId=pk)
         featured.delete()
         theEvent = Event.objects.get(pk=pk)
-        notification = NotifyUser.objects.create(notify=theEvent.eventcreater, notification=str(request.user) + ' removed your event from featured list.', offerType="event", offerPk=pk)
+        notification = NotifyUser.objects.create(notify=theEvent.eventcreater, notification=str(
+            request.user) + ' removed your event from featured list.', offerType="event", offerPk=pk)
         theEvent.eventcreater.profile.unreadcount = theEvent.eventcreater.profile.unreadcount + 1
         theEvent.eventcreater.profile.save()
         return redirect('event-detail', pk=pk)
