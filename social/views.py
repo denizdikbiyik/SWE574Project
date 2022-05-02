@@ -1215,13 +1215,15 @@ class ServiceSearch(View):
         currentTime = timezone.now()
         # for searching in Turkish characters
         services_pk = set()
-        for service in Service.objects.filter(isDeleted=False).filter(isActive=True):
+        for service in Service.objects.filter(isDeleted=False).filter(isActive=True).filter(
+                servicedate__gte=currentTime):
             address = service.address
             if address:
                 if re.search(query, address, re.IGNORECASE):
                     services_pk.add(service.pk)
 
         services = Service.objects.filter(isDeleted=False).filter(isActive=True).filter(
+            servicedate__gte=currentTime).filter(
             Q(name__icontains=query) | Q(description__icontains=query) | Q(wiki_description__icontains=query) | Q(
                 address__icontains=query) | Q(pk__in=services_pk))
         print("services: " + str(services))
@@ -1299,13 +1301,13 @@ class EventSearch(View):
         currentTime = timezone.now()
         # for searching in Turkish characters
         events_pk = set()
-        for event in Event.objects.filter(isDeleted=False).filter(isActive=True):
+        for event in Event.objects.filter(isDeleted=False).filter(isActive=True).filter(eventdate__gte=currentTime):
             address = event.event_address
             if address:
                 if re.search(query, address, re.IGNORECASE):
                     events_pk.add(event.pk)
 
-        events = Event.objects.filter(isDeleted=False).filter(isActive=True).filter(
+        events = Event.objects.filter(isDeleted=False).filter(isActive=True).filter(eventdate__gte=currentTime).filter(
             Q(eventname__icontains=query) | Q(eventdescription__icontains=query) | Q(
                 event_wiki_description__icontains=query) | Q(
                 event_address__icontains=query) | Q(pk__in=events_pk))
