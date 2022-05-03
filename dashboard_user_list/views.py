@@ -5,6 +5,8 @@ from psutil import users
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 import datetime
 
+
+
 def make_query_for_users_list(*args):
     date_today = datetime.datetime.now()
     context = {}
@@ -39,29 +41,28 @@ def list_users(request):
         periods = request.GET.get("periods")
         beginning = request.GET.get("beginning")
         ending = request.GET.get("ending")
-        q = request.GET.get("q")
-        submit = request.GET.get("submitted")
+        #submit = request.GET.get("submitted")
         users= User.objects.all()
         period_message = ""
         date_today = datetime.datetime.now()
         period = make_query_for_users_list(periods, beginning, ending)
-        user_count = False
+        show_count = False
 
         if 'submit' in request.GET and ((beginning == "" and ending == "") or (periods == "") or (
                 periods == None and beginning == None and ending == None)):
             period_message = "Please choose a period!"
-            user_count = user_count
+            show_count = show_count
 
         if (periods == None and beginning == None and ending == None) or (
                 periods == None and beginning == "" and ending == "") or (
                 period["date_old"] == "" and period["date_new"] == "") or (periods == ""):
             users= User.objects.none()
-            user_count = user_count
+            show_count = show_count
         else:
             if periods == "all":
                 users = users
                 period_message = "Period: All times"
-                user_count = True
+                show_count = True
             elif (beginning != "" and ending == "") or (beginning == "" and ending != ""):
                 users = User.objects.none()
                 period_message = "You must choose two dates!"
@@ -70,9 +71,18 @@ def list_users(request):
                 period_message = "Beginning date can't be older than ending date!"
             else:
                 users= users.filter(date_joined__gte=period["date_old"],
-                                       date_joined__lte=period["date_new"])
+                                    date_joined__lte=period["date_new"])
                 period_message = period["text"]
-                user_count = True
+                show_count = True
+
+            if 'submit' in request.GET:
+                if periods != None or periods != None:
+                  type = "default"
+            elif (beginning != None or beginning != None) or (ending != None or ending != None):
+                  type = "pick"
+            else:
+                   type = None
+            
        
 
         user_count = users.count()
@@ -89,10 +99,9 @@ def list_users(request):
             page_obj = paginator.page(paginator.num_pages)
         return render(request, 'dashboard_user_list/userlist.html',
                       {'page_obj': page_obj, "type": type, "periods": periods, "beginning": beginning, "ending": ending,
-                         "submit": submit, "user_count": user_count, "user"
+                        "user_count": user_count, "user"
                        "is_admin": is_admin,  "period_message": period_message,
-                       "show_count": user_count})
+                       "show_count": show_count})
 
     else:
         return redirect('index')
-
