@@ -1218,7 +1218,7 @@ class TimeLine(LoginRequiredMixin, View):
 class ServiceSearch(View):
     def get(self, request, *args, **kwargs):
         query = self.request.GET.get('query')
-        user = self.request.user
+        sorting = self.request.GET.get('sorting')
         currentTime = timezone.now()
         # for searching in Turkish characters
         services_pk = set()
@@ -1233,38 +1233,35 @@ class ServiceSearch(View):
             servicedate__gte=currentTime).filter(
             Q(name__icontains=query) | Q(description__icontains=query) | Q(wiki_description__icontains=query) | Q(
                 address__icontains=query) | Q(pk__in=services_pk))
-        services = list(services_query)
 
-        i = 0
+
         services_sorted = []
-        while i < len(services):
-            service = self.rating_picked(services)
-            print('#detail ' + str(service.name))
-            services_sorted.append(service)
-            services.remove(service)
-        for service in services_sorted:
-            print('# new added: ' + str(service))
-        '''
-        i=0
-        while i<len(services):
-            random_pick = randrange(4)
-            if random_pick == 0:
-                service = self.sub_date_picked(services)
-                services_sorted.append(service)
-                services.remove(service)
-            elif random_pick == 1:
-                service = self.rating_picked(services)
-                services_sorted.append(service)
-                services.remove(service)
-            elif random_pick == 2:
-                service = self.follow_status_picked(services, request.user.id)
-                services_sorted.append(service)
-                services.remove(service)
-            else:
-                service = self.interest_picked(services, list(Interest.objects.filter(user=request.user.id)))
-                services_sorted.append(service)
-                services.remove(service)
-'''
+        if sorting == "newest":
+            services_sorted= services_query.order_by('createddate')
+        elif sorting == "rating":
+            services_sorted = self.highest_rated_picked(list(services_query.order_by('createddate')))
+        else:
+            services = list(services_query)
+            i = 0
+            while i<len(services):
+                random_pick = randrange(4)
+                if random_pick == 0:
+                    service = self.sub_date_picked(services)
+                    services_sorted.append(service)
+                    services.remove(service)
+                elif random_pick == 1:
+                    service = self.rating_picked(services)
+                    services_sorted.append(service)
+                    services.remove(service)
+                elif random_pick == 2:
+                    service = self.follow_status_picked(services, request.user.id)
+                    services_sorted.append(service)
+                    services.remove(service)
+                else:
+                    service = self.interest_picked(services, list(Interest.objects.filter(user=request.user.id)))
+                    services_sorted.append(service)
+                    services.remove(service)
+
         services_count = len(services_sorted)
         alltags = Tag.objects.all()
         context = {
@@ -1272,42 +1269,9 @@ class ServiceSearch(View):
             'services_count': services_count,
             'currentTime': currentTime,
             'alltags': alltags,
+            'query': query
         }
         return render(request, 'social/service-search.html', context)
-
-    def sort_results(self, search_results, searcher):
-        ratings = []
-        date_from_now = []
-        milisecond_from_now = []
-        follow_table = []
-        for service in search_results:
-            past_ratings = UserRatings.objects.filter(service=service)
-            ratings_average = UserRatings.objects.filter(rated=service.creater).aggregate(Avg('rating'))['rating__avg']
-            ratings.append(ratings_average if (len(past_ratings) != 0) else 0)
-
-            date_from_now.append(
-                datetime.now() - auth.get_user_model().objects.get(email=service.creater.email).date_joined)
-
-            profile = UserProfile.objects.get(pk=service.creater.id)
-            followers = profile.followers.all()
-            if searcher in followers:
-                follow_table.append(1)
-            else:
-                follow_table.append(0)
-
-        for dt in date_from_now:
-            milisecond_from_now.append((dt.days * 24 * 60 * 60 + dt.seconds) * 1000 + dt.microseconds / 1000.0)
-        milisecond_from_now_ = np.divide(1, milisecond_from_now)
-
-        ratings = self.normalizer(ratings) + self.normalizer(milisecond_from_now_) + self.normalizer(follow_table)
-        return ratings
-
-    def normalizer(self, array_to_normalize):
-        if np.sum(array_to_normalize) == 0:
-            return array_to_normalize
-        else:
-            normalizer = 1 / np.sum(array_to_normalize)
-            return np.dot(normalizer, array_to_normalize)
 
     def sub_date_picked(self, search_results):
         dates = []
@@ -1325,7 +1289,6 @@ class ServiceSearch(View):
             return ratings_average if (len(past_ratings) != 0) else 0
 
         for service in search_results:
-            #ratings.append(ratings_average if (len(past_ratings) != 0) else 0)
             ratings.append(rating_sorted(service))
 
         services_rating_sorted = sorted(search_results, reverse=True, key=rating_sorted)
@@ -1351,7 +1314,7 @@ class ServiceSearch(View):
 
         services_follow_sorted = sorted(search_results, reverse=True, key=follow_status_sorted)
 
-        num_of_services = follow.table.count(follow_table[0])
+        num_of_services = follow_table.count(follow_table[0])
         if num_of_services > 1:
             return services_follow_sorted[randrange(num_of_services)]
         else:
@@ -1377,6 +1340,19 @@ class ServiceSearch(View):
             return services_interest_sorted[randrange(num_of_services)]
         else:
             return services_interest_sorted[0]
+
+    def highest_rated_picked(self, search_results):
+        ratings = []
+
+        def rating_sorted(service):
+            past_ratings = UserRatings.objects.filter(service=service)
+            ratings_average = UserRatings.objects.filter(rated=service.creater).aggregate(Avg('rating'))['rating__avg']
+            return ratings_average if (len(past_ratings) != 0) else 0
+
+        for service in search_results:
+            ratings.append(rating_sorted(service))
+
+        return sorted(search_results, reverse=True, key=rating_sorted)
 
 
 class ServiceFilter(View):
