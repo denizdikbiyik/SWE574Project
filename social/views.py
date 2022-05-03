@@ -4,7 +4,7 @@ from django.urls import reverse_lazy
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.views import View
 from .models import Service, UserProfile, Event, ServiceApplication, UserRatings, NotifyUser, EventApplication, Tag, \
-    Log, Communication, Like, UserComplaints, Featured
+    Log, Communication, Like, UserComplaints, Featured, Interest
 from .forms import ServiceForm, EventForm, ServiceApplicationForm, RatingForm, EventApplicationForm, ProfileForm, \
     RequestForm, ComplaintForm
 from django.views.generic.edit import UpdateView, DeleteView
@@ -963,6 +963,7 @@ class ProfileView(View):
         events = Event.objects.filter(eventcreater=profile.user).filter(isDeleted=False).filter(isActive=True)
         number_of_events = len(events)
         comments = UserRatings.objects.filter(rated=profile.user)
+        interests = Interest.objects.filter(user=user)
 
         followings = []
         allUsers = UserProfile.objects.all()
@@ -995,6 +996,7 @@ class ProfileView(View):
             'number_of_services': number_of_services,
             'events': events,
             'number_of_events': number_of_events,
+            'interests': interests
         }
         return render(request, 'social/profile.html', context)
 

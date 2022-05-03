@@ -174,3 +174,8 @@ class Featured(models.Model):
     operation = models.TextField(blank=True, null=True)
     itemType = models.TextField(blank=True, null=True)
     itemId = models.IntegerField(default=0)
+
+class Interest(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    name = models.TextField(blank=False, null=False)
+    wiki_description = models.TextField(blank=False, null=False)
