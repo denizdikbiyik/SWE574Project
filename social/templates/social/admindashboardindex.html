@@ -2,71 +2,62 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-    <div class="container">
+    <div class="container mb-3">
         <div class="row" style="text-align:center;">
             <p></p>
-            <h5>Admin Dashboard Index</h5>
-            <p style="margin-top: 1%;"><a style="font-weight: bolder; text-decoration: none;" class="text-primary" href="{% url 'onlineusers' %}">Current online users: </a>{{ number_of_active_users }}</p>
-            <p></p>
-            <div class="col"><img src="/media/users_chart.png" /></div>
-            <div class="col">
-                <div class="row justify-content-center mt-3">
-                    <div class="card col-md-12 col-sm-12 border-bottom position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
-                        <div class="row">
-                            <p style="font-weight:bold;">Services Dashboard</p>  
-                            <a class="stretched-link" href="{% url 'servicelist' %}"></a>  
-                        </div>
+            <h3 class="display-6">Admin Dashboard</h3>
+            <div class="row mt-3" style="margin:auto">
+                <div class="col">
+                    <div class="card" style="background-color:whitesmoke; border-color: dimgrey;">
+                        <a class="stretched-link mt-1 mb-1" style="text-decoration: none; color: black;" href="{% url 'servicelist' %}">Services Dashboard</a>  
                     </div>
                 </div>
-                <div class="row justify-content-center mt-3">
-                    <div class="card col-md-12 col-sm-12 border-bottom position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
-                        <div class="row">
-                            <p style="font-weight:bold;">Events Dashboard</p> 
-                            <a class="stretched-link" href="{% url 'eventlist' %}"></a>  
-                        </div>
+                <div class="col">
+                    <div class="card" style="background-color:whitesmoke; border-color: dimgrey;">
+                        <a class="stretched-link mt-1 mb-1" style="text-decoration: none; color: black;" href="{% url 'eventlist' %}">Events Dashboard</a>  
                     </div>
                 </div>
-                <div class="row justify-content-center mt-3">
-                    <div class="card col-md-12 col-sm-12 border-bottom position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
-                        <div class="row">
-                            <p style="font-weight:bold;">Users Dashboard</p> 
-                            <a class="stretched-link" href="{% url 'userlist' %}"></a>  
-                        </div>
+                <div class="col">
+                    <div class="card" style="background-color:whitesmoke; border-color: dimgrey;">
+                        <a class="stretched-link mt-1 mb-1" style="text-decoration: none; color: black;" href="{% url 'userlist' %}">Users Dashboard</a>  
                     </div>
                 </div>
-                <div class="row justify-content-center mt-3">
-                    <div class="card col-md-12 col-sm-12 border-bottom position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
-                        <div class="row">
-                            <p style="font-weight:bold;">Complaints</p> 
-                            <a class="stretched-link" href="{% url 'complaints' %}"></a>  
-                        </div>
+                <div class="col">
+                    <div class="card" style="background-color:whitesmoke; border-color: dimgrey;">
+                        <a class="stretched-link mt-1 mb-1" style="text-decoration: none; color: black;" href="{% url 'complaints' %}">Complaints</a>  
                     </div>
                 </div>
-                <div class="row justify-content-center mt-3">
-                    <div class="card col-md-12 col-sm-12 border-bottom position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
-                        <div class="row">
-                            <p style="font-weight:bold;">Deactivated Objects</p> 
-                            <a class="stretched-link" href="{% url 'deactivateds' %}"></a>  
-                        </div>
+                <div class="col">
+                    <div class="card" style="background-color:whitesmoke; border-color: dimgrey;">
+                        <a class="stretched-link mt-1 mb-1" style="text-decoration: none; color: black;" href="{% url 'deactivateds' %}">Deactivated Objects</a>  
                     </div>
                 </div>
-                <div class="row justify-content-center mt-3">
-                    <div class="card col-md-12 col-sm-12 border-bottom position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
-                        <div class="row">
-                            <p style="font-weight:bold;">Featured Services</p> 
-                            <a class="stretched-link" href="{% url 'featuredservices' %}"></a>  
-                        </div>
+                <div class="col">
+                    <div class="card" style="background-color:whitesmoke; border-color: dimgrey;">
+                        <a class="stretched-link mt-1 mb-1" style="text-decoration: none; color: black;" href="{% url 'featuredservices' %}">Featured Services</a>  
                     </div>
                 </div>
-                <div class="row justify-content-center mt-3">
-                    <div class="card col-md-12 col-sm-12 border-bottom position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
-                        <div class="row">
-                            <p style="font-weight:bold;">Featured Events</p> 
-                            <a class="stretched-link" href="{% url 'featuredevents' %}"></a>  
-                        </div>
+                <div class="col">
+                    <div class="card" style="background-color:whitesmoke; border-color: dimgrey;">
+                        <a class="stretched-link mt-1 mb-1" style="text-decoration: none; color: black;" href="{% url 'featuredevents' %}">Featured Events</a>  
                     </div>
                 </div>
             </div>
+        </div>
+        <div style="margin-top: 1%;" class="row" style="text-align:center;">
+            <div class="card col" style="margin-right:1%;"><img width="400" height="300" src="/media/users_chart.png"/><a class="stretched-link" href="{% url 'onlineusers' %}"></a></div>
+            <div class="card col" style="margin-right:1%;"><img width="400" height="300" src="/media/users_month_chart.png"/></div>
+            <div class="card col" style="margin-right:1%;"><img width="400" height="300" src="/media/operations_month_chart.png"/></div>
+        </div>
+        <div style="margin-top: 1%;" class="row" style="text-align:center;">
+            <div class="card col" style="margin-right:1%;"><img width="400" height="300" src="/media/services_chart.png"/></div>
+            <div class="card col" style="margin-right:1%;"><img width="400" height="300" src="/media/handshaken_services_chart.png"/></a></div>
+            <div class="card col"><img width="400" height="300" src="/media/events_chart.png"/></a></div>
+        </div>
+        <div style="margin-top: 1%;" class="row" style="text-align:center;">
+            <div class="card col" style="margin-right:1%;"><img width="400" height="300" src="/media/services_month_chart.png"/></div>
+            <div class="card col" style="margin-right:1%;"><img width="400" height="300" src="/media/handshaken_month_services_chart.png"/></a></div>
+            <div class="card col"><img width="400" height="300" src="/media/events_month_chart.png"/></a></div>
         </div>
     </div>
 {% endblock content %}
