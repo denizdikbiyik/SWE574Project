@@ -6,17 +6,14 @@
         <div class="row justify-content-center mt-3">
             <div class="col-md-12 col-sm-12">
                 <div class="row">
-                    <div class="col-md-8">
-                        <h4 style="text-align:center;">TimeLine lists contents of who you follow!</h4>
-                    </div>
-                    <div class="col-md-4">
-                        <a href="{% url 'allusers' %}" style="font-weight: bolder;">See All Users</a>
+                    <div class="col-md-12">
+                        <h4 style="text-align:center;">TimeLine lists activities of who you follow!</h4>
                     </div>
                 </div>
                 <br/>
             </div>
         </div>
-        <div class="row">
+        <!-- <div class="row">
             <div class="col">
                 <h5 style="text-align:center;">Services</h5>
                 <br/>
@@ -67,6 +64,59 @@
                     <p class="row justify-content-center mt-3">No events found!</p>
                 {% endif %}
             </div>
-        </div>
+        </div> -->
+    
+            {% if log_count != 0 %}
+                {% for log in logs %}
+                <div class="row justify-content-center mt-1">
+                    <div class="card col-md-6 position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
+                        <div class="row">
+                            <div class="col-md-1">
+                                <img style="border-radius:10px;" src="{{ log.userId.profile.picture.url }}" width="40" height="40" />
+                            </div>
+                            <div class="col-md-11">
+                                <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' log.userId.profile.pk %}">@{{ log.userId.profile.user.username }}</a>{{ log.operation }}
+                                {% if log.itemType == "service" %}
+                                    {% for serviceItem in allServices %}
+                                        {% if log.itemId == serviceItem.pk %}
+                                            <a style="font-weight:bold;">{{ serviceItem.name }}</a>   
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% for serviceItemToClick in allServicesToClick %}
+                                        {% if log.itemId == serviceItemToClick.pk %}
+                                            <a class="stretched-link" href="{% url 'service-detail' serviceItemToClick.pk %}"></a>  
+                                        {% endif %}
+                                    {% endfor %}
+                                {% elif log.itemType == "event" %}
+                                    {% for eventItem in allEvents %}
+                                        {% if log.itemId == eventItem.pk %}
+                                            <a style="font-weight:bold;">{{ eventItem.eventname }}</a>   
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% for eventItemToClick in allEventsToClick %}
+                                        {% if log.itemId == eventItemToClick.pk %}
+                                            <a class="stretched-link" href="{% url 'event-detail' eventItemToClick.pk %}"></a>  
+                                        {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    {% for userItem in allUsers %}
+                                        {% if log.itemId == userItem.pk %}
+                                            <a style="font-weight:bold;">{{ userItem.user.username }}</a>   
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% for userItemToClick in allUsersToClick %}
+                                        {% if log.itemId == userItemToClick.pk %}
+                                            <a class="stretched-link" href="{% url 'profile' userItemToClick.user.pk %}"></a>  
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}              
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="row justify-content-center mt-3">No activity found from people you follow!</p>
+            {% endif %}
     </div>
 {% endblock content %}

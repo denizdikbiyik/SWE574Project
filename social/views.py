@@ -17,6 +17,9 @@ from online_users.models import OnlineUserActivity
 from datetime import datetime
 import re
 from random import randrange
+from dateutil.relativedelta import relativedelta
+from django.contrib.auth.models import User
+
 # MatPlotLib
 import matplotlib
 
@@ -25,6 +28,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 from geopy.geocoders import Nominatim
 
+from operator import attrgetter
 
 # Added by AT
 def reverse_location(coordinates):
@@ -1183,7 +1187,7 @@ class RateUserDelete(LoginRequiredMixin, View):
 class TimeLine(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         currentTime = timezone.now()
-        profile = UserProfile.objects.get(pk=request.user.pk)
+        profile = UserProfile.objects.get(user=request.user)
         allUsers = UserProfile.objects.all()
         followedOnes = []
         services2 = []
@@ -1196,6 +1200,7 @@ class TimeLine(LoginRequiredMixin, View):
             servicedate__gte=currentTime).order_by('-createddate')
         events = Event.objects.filter(isDeleted=False).filter(isActive=True).filter(
             eventdate__gte=currentTime).order_by('-eventcreateddate')
+        logs = []
         for one in followedOnes:
             for service in services:
                 if service.creater == one.user:
@@ -1203,14 +1208,61 @@ class TimeLine(LoginRequiredMixin, View):
             for event in events:
                 if event.eventcreater == one.user:
                     events2.append(event)
+            allLogs = Log.objects.filter(userId=one.pk)
+            for allLog in allLogs:
+                if allLog.operation == "createservice" or allLog.operation == "editservice" or allLog.operation == "deleteservice" or allLog.operation == "createserviceapplication" or allLog.operation == "deleteserviceapplication" or allLog.operation == "confirmtaken" or allLog.operation == "confirmgiven" or allLog.operation == "createevent" or allLog.operation == "editevent" or allLog.operation == "deleteevent" or allLog.operation == "createeventapplication" or allLog.operation == "deleteeventapplication" or allLog.operation == "follow" or allLog.operation == "unfollow" or allLog.operation == "like" or allLog.operation == "unlike":
+                    if allLog.operation == "deleteserviceapplication" or allLog.operation == "deleteeventapplication":
+                        if allLog.affectedItemId == allLog.userId:
+                            logs.append(allLog)
+                    else:
+                        logs.append(allLog)
+
+        allServices = Service.objects.all()
+        allEvents = Event.objects.all()
+        allUsers = UserProfile.objects.all()
+        allServicesToClick = Service.objects.filter(isActive=True).filter(isDeleted=False)
+        allEventsToClick = Event.objects.filter(isActive=True).filter(isDeleted=False)
+        allUsersToClick = UserProfile.objects.filter(isActive=True)
+
+        conversion = {'createservice': ' created service ',
+                      'editservice': ' edited service ',
+                      'deleteservice': ' deleted service ',
+                      'createserviceapplication': ' applied for service ',
+                      'deleteserviceapplication': ' canceled application for service ',
+                      'confirmtaken': ' took service ',
+                      'confirmgiven': ' gave service ',
+                      'createevent': ' created event ',
+                      'editevent': ' edited event ',
+                      'deleteevent': ' deleted event ',
+                      'createeventapplication': ' applied for event ',
+                      'deleteeventapplication': ' canceled application for event ',
+                      'follow': ' followed ',
+                      'unfollow': ' unfollowed ',
+                      'like': ' liked ',
+                      'unlike': ' unliked '}
+        for log in logs:
+            log.operation = conversion[log.operation]
+
+        log_count = len(logs)
         events_count = len(events2)
         services_count = len(services2)
+
+        logs.sort(key = attrgetter('date'), reverse = True)
+
         context = {
             'services': services2,
             'events': events2,
             'services_count': services_count,
             'events_count': events_count,
             'currentTime': currentTime,
+            'logs': logs,
+            'log_count': log_count,
+            'allServices': allServices,
+            'allEvents': allEvents,
+            'allUsers': allUsers,
+            'allServicesToClick': allServicesToClick,
+            'allEventsToClick': allEventsToClick,
+            'allUsersToClick': allUsersToClick
         }
         return render(request, 'social/timeline.html', context)
 
@@ -1969,7 +2021,7 @@ class AdminDashboardIndex(LoginRequiredMixin, View):
         # user_activity_objects_60min = OnlineUserActivity.get_user_activities(timedelta(minutes=60))
         # users_60min = (user for user in user_activity_objects_60min)
 
-        user_activity_objects = OnlineUserActivity.get_user_activities(timedelta(seconds=5))
+        user_activity_objects = OnlineUserActivity.get_user_activities(timedelta(seconds=60))
         number_of_active_users = user_activity_objects.count()
         activeUsers = (user for user in user_activity_objects)
 
@@ -1985,13 +2037,456 @@ class AdminDashboardIndex(LoginRequiredMixin, View):
         data.append(allUsersCount)
         data.append(number_of_active_users)
 
-        explode = (0.1, 0)  # only "explode" the 2nd slice (i.e. 'Hogs')
+        explode = (0.1, 0)  # only "explode" the 2nd slice
         fig1, ax1 = plt.subplots()
         # ax1.pie(data, explode=explode, labels=labels, autopct='%1.1f%%', shadow=True, startangle=90)
         # ax1.pie(data, explode=explode, labels=labels, autopct=lambda p: '{:.0f}'.format(p * sum(data) / 100), shadow=True, startangle=90)
         ax1.pie(data, explode=explode, labels=labels, autopct=make_autopct(data), shadow=True, startangle=90)
         ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+        plt.title('Current Online Users: '+str(number_of_active_users)+' (click to see the list)', color='blue')
         plt.savefig('media/users_chart.png', dpi=100)
+
+
+        weekday = datetime.today().weekday()
+        if weekday == 0:
+            days = ["Tue", "Wed", "Thu", "Fri", "Sat", "Sun", "Mon"]
+        elif weekday == 1:
+            days = ["Wed", "Thu", "Fri", "Sat", "Sun", "Mon", "Tue"]
+        elif weekday == 2:
+            days = ["Thu", "Fri", "Sat", "Sun", "Mon", "Tue", "Wed"]
+        elif weekday == 3:
+            days = ["Fri", "Sat", "Sun", "Mon", "Tue", "Wed", "Thu"]
+        elif weekday == 4:
+            days = ["Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri"]
+        elif weekday == 5:
+            days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+        else:
+            days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+
+        serviceNum = []
+        serviceApplicationNum = []
+        eventNum = []
+        eventApplicationNum = []
+
+        minOneServicesApplication = ServiceApplication.objects.all()
+        minTwoServicesApplication = ServiceApplication.objects.filter(date__lte=(datetime.now() - timedelta(days=1)).date())
+        minThreeServicesApplication = ServiceApplication.objects.filter(date__lte=(datetime.now() - timedelta(days=2)).date())
+        minFourServicesApplication = ServiceApplication.objects.filter(date__lte=(datetime.now() - timedelta(days=3)).date())
+        minFiveServicesApplication = ServiceApplication.objects.filter(date__lte=(datetime.now() - timedelta(days=4)).date())
+        minSixServicesApplication = ServiceApplication.objects.filter(date__lte=(datetime.now() - timedelta(days=5)).date())
+        minSevenServicesApplication = ServiceApplication.objects.filter(date__lte=(datetime.now() - timedelta(days=6)).date())
+        minEightServicesApplication = ServiceApplication.objects.filter(date__lte=(datetime.now() - timedelta(days=7)).date())
+        serviceApplicationNum.append(len(minSevenServicesApplication)-len(minEightServicesApplication))
+        serviceApplicationNum.append(len(minSixServicesApplication)-len(minSevenServicesApplication))
+        serviceApplicationNum.append(len(minFiveServicesApplication)-len(minSixServicesApplication))
+        serviceApplicationNum.append(len(minFourServicesApplication)-len(minFiveServicesApplication))
+        serviceApplicationNum.append(len(minThreeServicesApplication)-len(minFourServicesApplication))
+        serviceApplicationNum.append(len(minTwoServicesApplication)-len(minThreeServicesApplication))
+        serviceApplicationNum.append(len(minOneServicesApplication)-len(minTwoServicesApplication))
+
+        minOneServices = Service.objects.all()
+        minTwoServices = Service.objects.filter(createddate__lte=(datetime.now() - timedelta(days=1)).date())
+        minThreeServices = Service.objects.filter(createddate__lte=(datetime.now() - timedelta(days=2)).date())
+        minFourServices = Service.objects.filter(createddate__lte=(datetime.now() - timedelta(days=3)).date())
+        minFiveServices = Service.objects.filter(createddate__lte=(datetime.now() - timedelta(days=4)).date())
+        minSixServices = Service.objects.filter(createddate__lte=(datetime.now() - timedelta(days=5)).date())
+        minSevenServices = Service.objects.filter(createddate__lte=(datetime.now() - timedelta(days=6)).date())
+        minEightServices = Service.objects.filter(createddate__lte=(datetime.now() - timedelta(days=7)).date())
+        serviceNum.append(len(minSevenServices)-len(minEightServices))
+        serviceNum.append(len(minSixServices)-len(minSevenServices))
+        serviceNum.append(len(minFiveServices)-len(minSixServices))
+        serviceNum.append(len(minFourServices)-len(minFiveServices))
+        serviceNum.append(len(minThreeServices)-len(minFourServices))
+        serviceNum.append(len(minTwoServices)-len(minThreeServices))
+        serviceNum.append(len(minOneServices)-len(minTwoServices))
+
+        plt.clf()
+        plt.plot(days, serviceNum, 'b', label='services')
+        plt.plot(days, serviceApplicationNum, 'y', label='service applications')
+        plt.legend()
+        plt.grid(True)
+        plt.title('Services and Service Application Creations in One Week')
+        plt.savefig('media/services_chart.png', dpi=100)
+
+        minOneEventsApplication = EventApplication.objects.all()
+        minTwoEventsApplication = EventApplication.objects.filter(date__lte=(datetime.now() - timedelta(days=1)).date())
+        minThreeEventsApplication = EventApplication.objects.filter(date__lte=(datetime.now() - timedelta(days=2)).date())
+        minFourEventsApplication = EventApplication.objects.filter(date__lte=(datetime.now() - timedelta(days=3)).date())
+        minFiveEventsApplication = EventApplication.objects.filter(date__lte=(datetime.now() - timedelta(days=4)).date())
+        minSixEventsApplication = EventApplication.objects.filter(date__lte=(datetime.now() - timedelta(days=5)).date())
+        minSevenEventsApplication = EventApplication.objects.filter(date__lte=(datetime.now() - timedelta(days=6)).date())
+        minEightEventsApplication = EventApplication.objects.filter(date__lte=(datetime.now() - timedelta(days=7)).date())
+        eventApplicationNum.append(len(minSevenEventsApplication)-len(minEightEventsApplication))
+        eventApplicationNum.append(len(minSixEventsApplication)-len(minSevenEventsApplication))
+        eventApplicationNum.append(len(minFiveEventsApplication)-len(minSixEventsApplication))
+        eventApplicationNum.append(len(minFourEventsApplication)-len(minFiveEventsApplication))
+        eventApplicationNum.append(len(minThreeEventsApplication)-len(minFourEventsApplication))
+        eventApplicationNum.append(len(minTwoEventsApplication)-len(minThreeEventsApplication))
+        eventApplicationNum.append(len(minOneEventsApplication)-len(minTwoEventsApplication))
+
+        minOneEvents = Event.objects.all()
+        minTwoEvents = Event.objects.filter(eventcreateddate__lte=(datetime.now() - timedelta(days=1)).date())
+        minThreeEvents = Event.objects.filter(eventcreateddate__lte=(datetime.now() - timedelta(days=2)).date())
+        minFourEvents = Event.objects.filter(eventcreateddate__lte=(datetime.now() - timedelta(days=3)).date())
+        minFiveEvents = Event.objects.filter(eventcreateddate__lte=(datetime.now() - timedelta(days=4)).date())
+        minSixEvents = Event.objects.filter(eventcreateddate__lte=(datetime.now() - timedelta(days=5)).date())
+        minSevenEvents = Event.objects.filter(eventcreateddate__lte=(datetime.now() - timedelta(days=6)).date())
+        minEightEvents = Event.objects.filter(eventcreateddate__lte=(datetime.now() - timedelta(days=7)).date())
+        eventNum.append(len(minSevenEvents)-len(minEightEvents))
+        eventNum.append(len(minSixEvents)-len(minSevenEvents))
+        eventNum.append(len(minFiveEvents)-len(minSixEvents))
+        eventNum.append(len(minFourEvents)-len(minFiveEvents))
+        eventNum.append(len(minThreeEvents)-len(minFourEvents))
+        eventNum.append(len(minTwoEvents)-len(minThreeEvents))
+        eventNum.append(len(minOneEvents)-len(minTwoEvents))
+        
+        plt.clf()
+        plt.plot(days, eventNum, 'm', label='events')
+        plt.plot(days, eventApplicationNum, 'c', label='event applications')
+        plt.legend()
+        plt.grid(True)
+        plt.title('Events and Event Application Creations in One Week')
+        plt.savefig('media/events_chart.png', dpi=100)
+
+        handServiceNum = []
+        acceptedServiceApplications = []
+
+        handOneServices = Service.objects.filter(is_given=True).filter(is_taken=True)
+        handTwoServices = Service.objects.filter(is_given=True).filter(is_taken=True).filter(createddate__lte=(datetime.now() - timedelta(days=1)).date())
+        handThreeServices = Service.objects.filter(is_given=True).filter(is_taken=True).filter(createddate__lte=(datetime.now() - timedelta(days=2)).date())
+        handFourServices = Service.objects.filter(is_given=True).filter(is_taken=True).filter(createddate__lte=(datetime.now() - timedelta(days=3)).date())
+        handFiveServices = Service.objects.filter(is_given=True).filter(is_taken=True).filter(createddate__lte=(datetime.now() - timedelta(days=4)).date())
+        handSixServices = Service.objects.filter(is_given=True).filter(is_taken=True).filter(createddate__lte=(datetime.now() - timedelta(days=5)).date())
+        handSevenServices = Service.objects.filter(is_given=True).filter(is_taken=True).filter(createddate__lte=(datetime.now() - timedelta(days=6)).date())
+        handEightServices = Service.objects.filter(is_given=True).filter(is_taken=True).filter(createddate__lte=(datetime.now() - timedelta(days=7)).date())
+        handServiceNum.append(len(handSevenServices)-len(handEightServices))
+        handServiceNum.append(len(handSixServices)-len(handSevenServices))
+        handServiceNum.append(len(handFiveServices)-len(handSixServices))
+        handServiceNum.append(len(handFourServices)-len(handFiveServices))
+        handServiceNum.append(len(handThreeServices)-len(handFourServices))
+        handServiceNum.append(len(handTwoServices)-len(handThreeServices))
+        handServiceNum.append(len(handOneServices)-len(handTwoServices))
+
+        acceptedOneServiceApplications = ServiceApplication.objects.filter(approved=True)
+        acceptedTwoServiceApplications = ServiceApplication.objects.filter(approved=True).filter(date__lte=(datetime.now() - timedelta(days=1)).date())
+        acceptedThreeServiceApplications = ServiceApplication.objects.filter(approved=True).filter(date__lte=(datetime.now() - timedelta(days=2)).date())
+        acceptedFourServiceApplications = ServiceApplication.objects.filter(approved=True).filter(date__lte=(datetime.now() - timedelta(days=3)).date())
+        acceptedFiveServiceApplications = ServiceApplication.objects.filter(approved=True).filter(date__lte=(datetime.now() - timedelta(days=4)).date())
+        acceptedSixServiceApplications = ServiceApplication.objects.filter(approved=True).filter(date__lte=(datetime.now() - timedelta(days=5)).date())
+        acceptedSevenServiceApplications = ServiceApplication.objects.filter(approved=True).filter(date__lte=(datetime.now() - timedelta(days=6)).date())
+        acceptedEightServiceApplications = ServiceApplication.objects.filter(approved=True).filter(date__lte=(datetime.now() - timedelta(days=7)).date())
+        acceptedServiceApplications.append(len(acceptedSevenServiceApplications)-len(acceptedEightServiceApplications))
+        acceptedServiceApplications.append(len(acceptedSixServiceApplications)-len(acceptedSevenServiceApplications))
+        acceptedServiceApplications.append(len(acceptedFiveServiceApplications)-len(acceptedSixServiceApplications))
+        acceptedServiceApplications.append(len(acceptedFourServiceApplications)-len(acceptedFiveServiceApplications))
+        acceptedServiceApplications.append(len(acceptedThreeServiceApplications)-len(acceptedFourServiceApplications))
+        acceptedServiceApplications.append(len(acceptedTwoServiceApplications)-len(acceptedThreeServiceApplications))
+        acceptedServiceApplications.append(len(acceptedOneServiceApplications)-len(acceptedTwoServiceApplications))
+
+        plt.clf()
+        plt.plot(days, handServiceNum, 'g', label='handshaken services')
+        plt.plot(days, acceptedServiceApplications, 'r', label='accepted service applications')
+        plt.legend()
+        plt.grid(True)
+        plt.title('Service Occurrance in One Week')
+        plt.savefig('media/handshaken_services_chart.png', dpi=100)
+
+
+
+
+        month = datetime.now().strftime('%B')
+        if month == "January":
+            months = ["Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan"]
+        elif month == "February":
+            months = ["Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb"]
+        elif month == "March":
+            months = ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"]
+        elif month == "April":
+            months = ["May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr"]
+        elif month == "May":
+            months = ["Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May"]
+        elif month == "June":
+            months = ["Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun"]
+        elif month == "July":
+            months = ["Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"]
+        elif month == "August":
+            months = ["Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug"]
+        elif month == "September":
+            months = ["Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"]
+        elif month == "October":
+            months = ["Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"]
+        elif month == "November":
+            months = ["Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"]
+        else:
+            months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+        serviceMonthNum = []
+        serviceApplicationMonthNum = []
+        eventMonthNum = []
+        eventApplicationMonthNum = []
+
+        minOneServicesMonthApplication = ServiceApplication.objects.all()
+        minTwoServicesMonthApplication = ServiceApplication.objects.filter(date__lte=(datetime.now() - relativedelta(months=1)).date())
+        minThreeServicesMonthApplication = ServiceApplication.objects.filter(date__lte=(datetime.now() - relativedelta(months=2)).date())
+        minFourServicesMonthApplication = ServiceApplication.objects.filter(date__lte=(datetime.now() - relativedelta(months=3)).date())
+        minFiveServicesMonthApplication = ServiceApplication.objects.filter(date__lte=(datetime.now() - relativedelta(months=4)).date())
+        minSixServicesMonthApplication = ServiceApplication.objects.filter(date__lte=(datetime.now() - relativedelta(months=5)).date())
+        minSevenServicesMonthApplication = ServiceApplication.objects.filter(date__lte=(datetime.now() - relativedelta(months=6)).date())
+        minEightServicesMonthApplication = ServiceApplication.objects.filter(date__lte=(datetime.now() - relativedelta(months=7)).date())
+        minNineServicesMonthApplication = ServiceApplication.objects.filter(date__lte=(datetime.now() - relativedelta(months=8)).date())
+        minTenServicesMonthApplication = ServiceApplication.objects.filter(date__lte=(datetime.now() - relativedelta(months=9)).date())
+        minElevenServicesMonthApplication = ServiceApplication.objects.filter(date__lte=(datetime.now() - relativedelta(months=10)).date())
+        minTwelveServicesMonthApplication = ServiceApplication.objects.filter(date__lte=(datetime.now() - relativedelta(months=11)).date())
+        minThirteenServicesMonthApplication = ServiceApplication.objects.filter(date__lte=(datetime.now() - relativedelta(months=12)).date())
+        serviceApplicationMonthNum.append(len(minTwelveServicesMonthApplication)-len(minThirteenServicesMonthApplication))
+        serviceApplicationMonthNum.append(len(minElevenServicesMonthApplication)-len(minTwelveServicesMonthApplication))
+        serviceApplicationMonthNum.append(len(minTenServicesMonthApplication)-len(minElevenServicesMonthApplication))
+        serviceApplicationMonthNum.append(len(minNineServicesMonthApplication)-len(minTenServicesMonthApplication))
+        serviceApplicationMonthNum.append(len(minEightServicesMonthApplication)-len(minNineServicesMonthApplication))
+        serviceApplicationMonthNum.append(len(minSevenServicesMonthApplication)-len(minEightServicesMonthApplication))
+        serviceApplicationMonthNum.append(len(minSixServicesMonthApplication)-len(minSevenServicesMonthApplication))
+        serviceApplicationMonthNum.append(len(minFiveServicesMonthApplication)-len(minSixServicesMonthApplication))
+        serviceApplicationMonthNum.append(len(minFourServicesMonthApplication)-len(minFiveServicesMonthApplication))
+        serviceApplicationMonthNum.append(len(minThreeServicesMonthApplication)-len(minFourServicesMonthApplication))
+        serviceApplicationMonthNum.append(len(minTwoServicesMonthApplication)-len(minThreeServicesMonthApplication))
+        serviceApplicationMonthNum.append(len(minOneServicesMonthApplication)-len(minTwoServicesMonthApplication))
+
+        
+
+        minOneServicesMonth = Service.objects.all()
+        minTwoServicesMonth = Service.objects.filter(createddate__lte=(datetime.now() - relativedelta(months=1)).date())
+        minThreeServicesMonth = Service.objects.filter(createddate__lte=(datetime.now() - relativedelta(months=2)).date())
+        minFourServicesMonth = Service.objects.filter(createddate__lte=(datetime.now() - relativedelta(months=3)).date())
+        minFiveServicesMonth = Service.objects.filter(createddate__lte=(datetime.now() - relativedelta(months=4)).date())
+        minSixServicesMonth = Service.objects.filter(createddate__lte=(datetime.now() - relativedelta(months=5)).date())
+        minSevenServicesMonth = Service.objects.filter(createddate__lte=(datetime.now() - relativedelta(months=6)).date())
+        minEightServicesMonth = Service.objects.filter(createddate__lte=(datetime.now() - relativedelta(months=7)).date())
+        minNineServicesMonth = Service.objects.filter(createddate__lte=(datetime.now() - relativedelta(months=8)).date())
+        minTenServicesMonth = Service.objects.filter(createddate__lte=(datetime.now() - relativedelta(months=9)).date())
+        minElevenServicesMonth = Service.objects.filter(createddate__lte=(datetime.now() - relativedelta(months=10)).date())
+        minTwelveServicesMonth = Service.objects.filter(createddate__lte=(datetime.now() - relativedelta(months=11)).date())
+        minThirteenServicesMonth = Service.objects.filter(createddate__lte=(datetime.now() - relativedelta(months=12)).date())
+        serviceMonthNum.append(len(minTwelveServicesMonth)-len(minThirteenServicesMonth))
+        serviceMonthNum.append(len(minElevenServicesMonth)-len(minTwelveServicesMonth))
+        serviceMonthNum.append(len(minTenServicesMonth)-len(minElevenServicesMonth))
+        serviceMonthNum.append(len(minNineServicesMonth)-len(minTenServicesMonth))
+        serviceMonthNum.append(len(minEightServicesMonth)-len(minNineServicesMonth))
+        serviceMonthNum.append(len(minSevenServicesMonth)-len(minEightServicesMonth))
+        serviceMonthNum.append(len(minSixServicesMonth)-len(minSevenServicesMonth))
+        serviceMonthNum.append(len(minFiveServicesMonth)-len(minSixServicesMonth))
+        serviceMonthNum.append(len(minFourServicesMonth)-len(minFiveServicesMonth))
+        serviceMonthNum.append(len(minThreeServicesMonth)-len(minFourServicesMonth))
+        serviceMonthNum.append(len(minTwoServicesMonth)-len(minThreeServicesMonth))
+        serviceMonthNum.append(len(minOneServicesMonth)-len(minTwoServicesMonth))
+
+        plt.clf()
+        plt.plot(months, serviceMonthNum, 'b', label='services')
+        plt.plot(months, serviceApplicationMonthNum, 'y', label='service applications')
+        plt.legend()
+        plt.grid(True)
+        plt.title('Services and Service Application Creations in One Year')
+        plt.savefig('media/services_month_chart.png', dpi=100)
+
+        minOneEventsMonthApplication = EventApplication.objects.all()
+        minTwoEventsMonthApplication = EventApplication.objects.filter(date__lte=(datetime.now() - relativedelta(months=1)).date())
+        minThreeEventsMonthApplication = EventApplication.objects.filter(date__lte=(datetime.now() - relativedelta(months=2)).date())
+        minFourEventsMonthApplication = EventApplication.objects.filter(date__lte=(datetime.now() - relativedelta(months=3)).date())
+        minFiveEventsMonthApplication = EventApplication.objects.filter(date__lte=(datetime.now() - relativedelta(months=4)).date())
+        minSixEventsMonthApplication = EventApplication.objects.filter(date__lte=(datetime.now() - relativedelta(months=5)).date())
+        minSevenEventsMonthApplication = EventApplication.objects.filter(date__lte=(datetime.now() - relativedelta(months=6)).date())
+        minEightEventsMonthApplication = EventApplication.objects.filter(date__lte=(datetime.now() - relativedelta(months=7)).date())
+        minNineEventsMonthApplication = EventApplication.objects.filter(date__lte=(datetime.now() - relativedelta(months=8)).date())
+        minTenEventsMonthApplication = EventApplication.objects.filter(date__lte=(datetime.now() - relativedelta(months=9)).date())
+        minElevenEventsMonthApplication = EventApplication.objects.filter(date__lte=(datetime.now() - relativedelta(months=10)).date())
+        minTwelveEventsMonthApplication = EventApplication.objects.filter(date__lte=(datetime.now() - relativedelta(months=11)).date())
+        minThirteenEventsMonthApplication = EventApplication.objects.filter(date__lte=(datetime.now() - relativedelta(months=12)).date())
+        eventApplicationMonthNum.append(len(minTwelveEventsMonthApplication)-len(minThirteenEventsMonthApplication))
+        eventApplicationMonthNum.append(len(minElevenEventsMonthApplication)-len(minTwelveEventsMonthApplication))
+        eventApplicationMonthNum.append(len(minTenEventsMonthApplication)-len(minElevenEventsMonthApplication))
+        eventApplicationMonthNum.append(len(minNineEventsMonthApplication)-len(minTenEventsMonthApplication))
+        eventApplicationMonthNum.append(len(minEightEventsMonthApplication)-len(minNineEventsMonthApplication))
+        eventApplicationMonthNum.append(len(minSevenEventsMonthApplication)-len(minEightEventsMonthApplication))
+        eventApplicationMonthNum.append(len(minSixEventsMonthApplication)-len(minSevenEventsMonthApplication))
+        eventApplicationMonthNum.append(len(minFiveEventsMonthApplication)-len(minSixEventsMonthApplication))
+        eventApplicationMonthNum.append(len(minFourEventsMonthApplication)-len(minFiveEventsMonthApplication))
+        eventApplicationMonthNum.append(len(minThreeEventsMonthApplication)-len(minFourEventsMonthApplication))
+        eventApplicationMonthNum.append(len(minTwoEventsMonthApplication)-len(minThreeEventsMonthApplication))
+        eventApplicationMonthNum.append(len(minOneEventsMonthApplication)-len(minTwoEventsMonthApplication))
+
+        minOneEventsMonth = Event.objects.all()
+        minTwoEventsMonth = Event.objects.filter(eventcreateddate__lte=(datetime.now() - relativedelta(months=1)).date())
+        minThreeEventsMonth = Event.objects.filter(eventcreateddate__lte=(datetime.now() - relativedelta(months=2)).date())
+        minFourEventsMonth = Event.objects.filter(eventcreateddate__lte=(datetime.now() - relativedelta(months=3)).date())
+        minFiveEventsMonth = Event.objects.filter(eventcreateddate__lte=(datetime.now() - relativedelta(months=4)).date())
+        minSixEventsMonth = Event.objects.filter(eventcreateddate__lte=(datetime.now() - relativedelta(months=5)).date())
+        minSevenEventsMonth = Event.objects.filter(eventcreateddate__lte=(datetime.now() - relativedelta(months=6)).date())
+        minEightEventsMonth = Event.objects.filter(eventcreateddate__lte=(datetime.now() - relativedelta(months=7)).date())
+        minNineEventsMonth = Event.objects.filter(eventcreateddate__lte=(datetime.now() - relativedelta(months=8)).date())
+        minTenEventsMonth = Event.objects.filter(eventcreateddate__lte=(datetime.now() - relativedelta(months=9)).date())
+        minElevenEventsMonth = Event.objects.filter(eventcreateddate__lte=(datetime.now() - relativedelta(months=10)).date())
+        minTwelveEventsMonth = Event.objects.filter(eventcreateddate__lte=(datetime.now() - relativedelta(months=11)).date())
+        minThirteenEventsMonth = Event.objects.filter(eventcreateddate__lte=(datetime.now() - relativedelta(months=12)).date())
+        eventMonthNum.append(len(minTwelveEventsMonth)-len(minThirteenEventsMonth))
+        eventMonthNum.append(len(minElevenEventsMonth)-len(minTwelveEventsMonth))
+        eventMonthNum.append(len(minTenEventsMonth)-len(minElevenEventsMonth))
+        eventMonthNum.append(len(minNineEventsMonth)-len(minTenEventsMonth))
+        eventMonthNum.append(len(minEightEventsMonth)-len(minNineEventsMonth))
+        eventMonthNum.append(len(minSevenEventsMonth)-len(minEightEventsMonth))
+        eventMonthNum.append(len(minSixEventsMonth)-len(minSevenEventsMonth))
+        eventMonthNum.append(len(minFiveEventsMonth)-len(minSixEventsMonth))
+        eventMonthNum.append(len(minFourEventsMonth)-len(minFiveEventsMonth))
+        eventMonthNum.append(len(minThreeEventsMonth)-len(minFourEventsMonth))
+        eventMonthNum.append(len(minTwoEventsMonth)-len(minThreeEventsMonth))
+        eventMonthNum.append(len(minOneEventsMonth)-len(minTwoEventsMonth))
+        
+        plt.clf()
+        plt.plot(months, eventMonthNum, 'm', label='events')
+        plt.plot(months, eventApplicationMonthNum, 'c', label='event applications')
+        plt.legend()
+        plt.grid(True)
+        plt.title('Events and Event Application Creations in One Year')
+        plt.savefig('media/events_month_chart.png', dpi=100)
+
+        handServiceMonthNum = []
+        acceptedServiceMonthApplications = []
+
+        handOneServicesMonth = Service.objects.filter(is_given=True).filter(is_taken=True)
+        handTwoServicesMonth = Service.objects.filter(is_given=True).filter(is_taken=True).filter(createddate__lte=(datetime.now() - relativedelta(months=1)).date())
+        handThreeServicesMonth = Service.objects.filter(is_given=True).filter(is_taken=True).filter(createddate__lte=(datetime.now() - relativedelta(months=2)).date())
+        handFourServicesMonth = Service.objects.filter(is_given=True).filter(is_taken=True).filter(createddate__lte=(datetime.now() - relativedelta(months=3)).date())
+        handFiveServicesMonth = Service.objects.filter(is_given=True).filter(is_taken=True).filter(createddate__lte=(datetime.now() - relativedelta(months=4)).date())
+        handSixServicesMonth = Service.objects.filter(is_given=True).filter(is_taken=True).filter(createddate__lte=(datetime.now() - relativedelta(months=5)).date())
+        handSevenServicesMonth = Service.objects.filter(is_given=True).filter(is_taken=True).filter(createddate__lte=(datetime.now() - relativedelta(months=6)).date())
+        handEightServicesMonth = Service.objects.filter(is_given=True).filter(is_taken=True).filter(createddate__lte=(datetime.now() - relativedelta(months=7)).date())
+        handNineServicesMonth = Service.objects.filter(is_given=True).filter(is_taken=True).filter(createddate__lte=(datetime.now() - relativedelta(months=8)).date())
+        handTenServicesMonth = Service.objects.filter(is_given=True).filter(is_taken=True).filter(createddate__lte=(datetime.now() - relativedelta(months=9)).date())
+        handElevenServicesMonth = Service.objects.filter(is_given=True).filter(is_taken=True).filter(createddate__lte=(datetime.now() - relativedelta(months=10)).date())
+        handTwelveServicesMonth = Service.objects.filter(is_given=True).filter(is_taken=True).filter(createddate__lte=(datetime.now() - relativedelta(months=11)).date())
+        handThirteenServicesMonth = Service.objects.filter(is_given=True).filter(is_taken=True).filter(createddate__lte=(datetime.now() - relativedelta(months=12)).date())
+        handServiceMonthNum.append(len(handTwelveServicesMonth)-len(handThirteenServicesMonth))
+        handServiceMonthNum.append(len(handElevenServicesMonth)-len(handTwelveServicesMonth))
+        handServiceMonthNum.append(len(handTenServicesMonth)-len(handElevenServicesMonth))
+        handServiceMonthNum.append(len(handNineServicesMonth)-len(handTenServicesMonth))
+        handServiceMonthNum.append(len(handEightServicesMonth)-len(handNineServicesMonth))
+        handServiceMonthNum.append(len(handSevenServicesMonth)-len(handEightServicesMonth))
+        handServiceMonthNum.append(len(handSixServicesMonth)-len(handSevenServicesMonth))
+        handServiceMonthNum.append(len(handFiveServicesMonth)-len(handSixServicesMonth))
+        handServiceMonthNum.append(len(handFourServicesMonth)-len(handFiveServicesMonth))
+        handServiceMonthNum.append(len(handThreeServicesMonth)-len(handFourServicesMonth))
+        handServiceMonthNum.append(len(handTwoServicesMonth)-len(handThreeServicesMonth))
+        handServiceMonthNum.append(len(handOneServicesMonth)-len(handTwoServicesMonth))
+
+        acceptedOneServiceMonthApplications = ServiceApplication.objects.filter(approved=True)
+        acceptedTwoServiceMonthApplications = ServiceApplication.objects.filter(approved=True).filter(date__lte=(datetime.now() - relativedelta(months=1)).date())
+        acceptedThreeServiceMonthApplications = ServiceApplication.objects.filter(approved=True).filter(date__lte=(datetime.now() - relativedelta(months=2)).date())
+        acceptedFourServiceMonthApplications = ServiceApplication.objects.filter(approved=True).filter(date__lte=(datetime.now() - relativedelta(months=3)).date())
+        acceptedFiveServiceMonthApplications = ServiceApplication.objects.filter(approved=True).filter(date__lte=(datetime.now() - relativedelta(months=4)).date())
+        acceptedSixServiceMonthApplications = ServiceApplication.objects.filter(approved=True).filter(date__lte=(datetime.now() - relativedelta(months=5)).date())
+        acceptedSevenServiceMonthApplications = ServiceApplication.objects.filter(approved=True).filter(date__lte=(datetime.now() - relativedelta(months=6)).date())
+        acceptedEightServiceMonthApplications = ServiceApplication.objects.filter(approved=True).filter(date__lte=(datetime.now() - relativedelta(months=7)).date())
+        acceptedNineServiceMonthApplications = ServiceApplication.objects.filter(approved=True).filter(date__lte=(datetime.now() - relativedelta(months=8)).date())
+        acceptedTenServiceMonthApplications = ServiceApplication.objects.filter(approved=True).filter(date__lte=(datetime.now() - relativedelta(months=9)).date())
+        acceptedElevenServiceMonthApplications = ServiceApplication.objects.filter(approved=True).filter(date__lte=(datetime.now() - relativedelta(months=10)).date())
+        acceptedTwelveServiceMonthApplications = ServiceApplication.objects.filter(approved=True).filter(date__lte=(datetime.now() - relativedelta(months=11)).date())
+        acceptedThirteenServiceMonthApplications = ServiceApplication.objects.filter(approved=True).filter(date__lte=(datetime.now() - relativedelta(months=12)).date())
+        acceptedServiceMonthApplications.append(len(acceptedTwelveServiceMonthApplications)-len(acceptedThirteenServiceMonthApplications))
+        acceptedServiceMonthApplications.append(len(acceptedElevenServiceMonthApplications)-len(acceptedTwelveServiceMonthApplications))
+        acceptedServiceMonthApplications.append(len(acceptedTenServiceMonthApplications)-len(acceptedElevenServiceMonthApplications))
+        acceptedServiceMonthApplications.append(len(acceptedNineServiceMonthApplications)-len(acceptedTenServiceMonthApplications))
+        acceptedServiceMonthApplications.append(len(acceptedEightServiceMonthApplications)-len(acceptedNineServiceMonthApplications))
+        acceptedServiceMonthApplications.append(len(acceptedSevenServiceMonthApplications)-len(acceptedEightServiceMonthApplications))
+        acceptedServiceMonthApplications.append(len(acceptedSixServiceMonthApplications)-len(acceptedSevenServiceMonthApplications))
+        acceptedServiceMonthApplications.append(len(acceptedFiveServiceMonthApplications)-len(acceptedSixServiceMonthApplications))
+        acceptedServiceMonthApplications.append(len(acceptedFourServiceMonthApplications)-len(acceptedFiveServiceMonthApplications))
+        acceptedServiceMonthApplications.append(len(acceptedThreeServiceMonthApplications)-len(acceptedFourServiceMonthApplications))
+        acceptedServiceMonthApplications.append(len(acceptedTwoServiceMonthApplications)-len(acceptedThreeServiceMonthApplications))
+        acceptedServiceMonthApplications.append(len(acceptedOneServiceMonthApplications)-len(acceptedTwoServiceMonthApplications))
+
+        plt.clf()
+        plt.plot(months, handServiceMonthNum, 'g', label='handshaken services')
+        plt.plot(months, acceptedServiceMonthApplications, 'r', label='accepted service applications')
+        plt.legend()
+        plt.grid(True)
+        plt.title('Service Occurrance in One Year')
+        plt.savefig('media/handshaken_month_services_chart.png', dpi=100)
+
+
+
+
+        userMonthNum = []
+
+        minOneUsersMonth = User.objects.all()
+        minTwoUsersMonth = User.objects.filter(date_joined__lte=(datetime.now() - relativedelta(months=1)).date())
+        minThreeUsersMonth = User.objects.filter(date_joined__lte=(datetime.now() - relativedelta(months=2)).date())
+        minFourUsersMonth = User.objects.filter(date_joined__lte=(datetime.now() - relativedelta(months=3)).date())
+        minFiveUsersMonth = User.objects.filter(date_joined__lte=(datetime.now() - relativedelta(months=4)).date())
+        minSixUsersMonth = User.objects.filter(date_joined__lte=(datetime.now() - relativedelta(months=5)).date())
+        minSevenUsersMonth = User.objects.filter(date_joined__lte=(datetime.now() - relativedelta(months=6)).date())
+        minEightUsersMonth = User.objects.filter(date_joined__lte=(datetime.now() - relativedelta(months=7)).date())
+        minNineUsersMonth = User.objects.filter(date_joined__lte=(datetime.now() - relativedelta(months=8)).date())
+        minTenUsersMonth = User.objects.filter(date_joined__lte=(datetime.now() - relativedelta(months=9)).date())
+        minElevenUsersMonth = User.objects.filter(date_joined__lte=(datetime.now() - relativedelta(months=10)).date())
+        minTwelveUsersMonth = User.objects.filter(date_joined__lte=(datetime.now() - relativedelta(months=11)).date())
+        minThirteenUsersMonth = User.objects.filter(date_joined__lte=(datetime.now() - relativedelta(months=12)).date())
+        userMonthNum.append(len(minTwelveUsersMonth)-len(minThirteenUsersMonth))
+        userMonthNum.append(len(minElevenUsersMonth)-len(minTwelveUsersMonth))
+        userMonthNum.append(len(minTenUsersMonth)-len(minElevenUsersMonth))
+        userMonthNum.append(len(minNineUsersMonth)-len(minTenUsersMonth))
+        userMonthNum.append(len(minEightUsersMonth)-len(minNineUsersMonth))
+        userMonthNum.append(len(minSevenUsersMonth)-len(minEightUsersMonth))
+        userMonthNum.append(len(minSixUsersMonth)-len(minSevenUsersMonth))
+        userMonthNum.append(len(minFiveUsersMonth)-len(minSixUsersMonth))
+        userMonthNum.append(len(minFourUsersMonth)-len(minFiveUsersMonth))
+        userMonthNum.append(len(minThreeUsersMonth)-len(minFourUsersMonth))
+        userMonthNum.append(len(minTwoUsersMonth)-len(minThreeUsersMonth))
+        userMonthNum.append(len(minOneUsersMonth)-len(minTwoUsersMonth))
+
+        plt.clf()
+        plt.plot(months, userMonthNum, 'g', label='users')
+        plt.legend()
+        plt.grid(True)
+        plt.title('User Creations in One Year')
+        plt.savefig('media/users_month_chart.png', dpi=100)
+
+
+
+
+        operationMonthNum = []
+
+        minOneOperationsMonth = Log.objects.all()
+        minTwoOperationsMonth = Log.objects.filter(date__lte=(datetime.now() - relativedelta(months=1)).date())
+        minThreeOperationsMonth = Log.objects.filter(date__lte=(datetime.now() - relativedelta(months=2)).date())
+        minFourOperationsMonth = Log.objects.filter(date__lte=(datetime.now() - relativedelta(months=3)).date())
+        minFiveOperationsMonth = Log.objects.filter(date__lte=(datetime.now() - relativedelta(months=4)).date())
+        minSixOperationsMonth = Log.objects.filter(date__lte=(datetime.now() - relativedelta(months=5)).date())
+        minSevenOperationsMonth = Log.objects.filter(date__lte=(datetime.now() - relativedelta(months=6)).date())
+        minEightOperationsMonth = Log.objects.filter(date__lte=(datetime.now() - relativedelta(months=7)).date())
+        minNineOperationsMonth = Log.objects.filter(date__lte=(datetime.now() - relativedelta(months=8)).date())
+        minTenOperationsMonth = Log.objects.filter(date__lte=(datetime.now() - relativedelta(months=9)).date())
+        minElevenOperationsMonth = Log.objects.filter(date__lte=(datetime.now() - relativedelta(months=10)).date())
+        minTwelveOperationsMonth = Log.objects.filter(date__lte=(datetime.now() - relativedelta(months=11)).date())
+        minThirteenOperationsMonth = Log.objects.filter(date__lte=(datetime.now() - relativedelta(months=12)).date())
+        operationMonthNum.append(len(minTwelveOperationsMonth)-len(minThirteenOperationsMonth))
+        operationMonthNum.append(len(minElevenOperationsMonth)-len(minTwelveOperationsMonth))
+        operationMonthNum.append(len(minTenOperationsMonth)-len(minElevenOperationsMonth))
+        operationMonthNum.append(len(minNineOperationsMonth)-len(minTenOperationsMonth))
+        operationMonthNum.append(len(minEightOperationsMonth)-len(minNineOperationsMonth))
+        operationMonthNum.append(len(minSevenOperationsMonth)-len(minEightOperationsMonth))
+        operationMonthNum.append(len(minSixOperationsMonth)-len(minSevenOperationsMonth))
+        operationMonthNum.append(len(minFiveOperationsMonth)-len(minSixOperationsMonth))
+        operationMonthNum.append(len(minFourOperationsMonth)-len(minFiveOperationsMonth))
+        operationMonthNum.append(len(minThreeOperationsMonth)-len(minFourOperationsMonth))
+        operationMonthNum.append(len(minTwoOperationsMonth)-len(minThreeOperationsMonth))
+        operationMonthNum.append(len(minOneOperationsMonth)-len(minTwoOperationsMonth))
+
+        plt.clf()
+        plt.plot(months, operationMonthNum, 'g', label='operations')
+        plt.legend()
+        plt.grid(True)
+        plt.title('Operation on the CommUnity in One Year')
+        plt.savefig('media/operations_month_chart.png', dpi=100)
+
+
 
         context = {
             'activeUsers': activeUsers,
