@@ -3,39 +3,42 @@
 {% block content %}
     {% load crispy_forms_filters %}
     <head>
-        <title>users</title>
+        <title>Users</title>
     </head>
     <body>
-    <br>
     <div class="container p-3 my-3 bg-secondary text-warning">
+        <h5> Users</h5> 
         <form method="get">
             <div class="form-group">
                 <label for="period type">Period:</label>
                 <select name="type" id="period type" onchange="this.form.submit()">
                     <option value="">--Select--</option>
-                    <option value="default">Default periods</option>
-                    <option value="pick">Pick Dates</option>
+                    <option value="default" {% if type == 'default' %}selected{% endif %}>Default Periods</option>
+                    <option value="pick" {% if type == 'pick' %}selected{% endif %}>Pick Dates</option>
                 </select>
             </div>
         </form>
 
 
         <form method="get">
-            {% if type  == "default" %}
-                <label for="period-select">Choose a period:</label>
-                <select name="periods" id="period-select">
-                    <option value="">--Select--</option>
-                    <option value="all">All</option>
-                    <option value="week">Last 7 Days</option>
-                    <option value="month">Last 30 Days</option>
-                    <option value="year">Last 365 Days</option>
-                </select>
-            {% elif type  == "pick" %}
-                <label for="beginning">Beginning Date:</label>
-                <input type="date" id="beginning" name="beginning">
-                <label for="ending">Ending Date:</label>
-                <input type="date" id="ending" name="ending">
-            {% endif %}
+            <div class="form-group">
+                {% if type  == "default" %}
+                    <label for="period-select">Choose a Period:</label>
+                    <select name="periods" id="period-select">
+                        <option value="">--Select--</option>
+                        <option value="all" {% if periods == 'all' %}selected{% endif %}>All</option>
+                        <option value="week" {% if periods == 'week' %}selected{% endif %}>Last 7 Days</option>
+                        <option value="month" {% if periods == 'month' %}selected{% endif %}>Last 30 Days</option>
+                        <option value="year" {% if periods == 'year' %}selected{% endif %}>Last 365 Days</option>
+                    </select>
+                {% elif type  == "pick" %}
+                    <label for="beginning">Beginning Date:</label>
+                    <input type="date" id="beginning" name="beginning" value="{{ request.GET.beginning }}">
+                    <label for="ending">Ending Date:</label>
+                    <input type="date" id="ending" name="ending" value="{{ request.GET.ending }}">
+
+                {% endif %}
+            </div>
 
            
             <div class="form-group">
@@ -47,17 +50,16 @@
     <br>
 
     <div class="container-sm">
-        {% if user_count %}
-        {{ user_count }} User(s) found. <br>
-    {% endif %}
-    {{ period_message }} <br>
+        {% if show_count %}
+           {{ user_count }} User(s) found. <br>
+        {% endif %}
+        {{ period_message }} <br>
+    </div>
+    <br>
+    <br>
 
 
-</div>
-
-
-<br>
-<div class="container-sm">
+    <div class="container-sm">
         <table class="table table-bordered">
             <thead>
             <tr>
@@ -82,17 +84,17 @@
 
 
                 </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        <br>
+            {% endfor %}
+             </tbody>
+        </table>
+    </div>
+    <br>
     
     
-        </body>
+    </body>
    
 
-    </body>
+    
 
     <div class="row">
         <div class="col-4 offset-4">
@@ -105,21 +107,21 @@
                         </li>
 
                         <li class="page-item">
-                            <a href="?page={{ page_obj.previous_page_number }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}"
+                            <a href="?page={{ page_obj.previous_page_number }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&submit={{ submit }}"
                                class="page-link">Previous</a>
                         </li>
 
                         {% if not page_obj.has_next and page_obj.previous_page_number > 1 %}
                             <li class="page-item ">
                                 <a class="page-link"
-                                   href="?page={{ page_obj.previous_page_number|add:'-1' }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}&qlocation={{ qlocation }}">
+                                   href="?page={{ page_obj.previous_page_number|add:'-1' }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}">
                                     {{ page_obj.previous_page_number|add:'-1' }}
                                 </a>
                             </li>
                         {% endif %}
                         <li>
                             <a class="page-link"
-                               href="?page={{ page_obj.previous_page_number }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&submit={{ submit }}">
+                               href="?page={{ page_obj.previous_page_number }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&submit={{ submit }}">
                                 {{ page_obj.previous_page_number }}
                             </a>
                         </li>
