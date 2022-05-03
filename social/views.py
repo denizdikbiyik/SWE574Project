@@ -16,6 +16,7 @@ from datetime import timedelta
 from online_users.models import OnlineUserActivity
 from datetime import datetime
 import re
+from random import randrange
 # MatPlotLib
 import matplotlib
 
@@ -944,6 +945,10 @@ class ProfileView(View):
         user = profile.user
         followers = profile.followers.all()
         ratings_average = UserRatings.objects.filter(rated=profile.user).aggregate(Avg('rating'))
+        interest = request.GET.get("deleted")
+        if interest:
+            Interest.objects.filter(user=user, wiki_description=interest).delete()
+
         if len(followers) == 0:
             is_following = False
         for follower in followers:
@@ -1222,17 +1227,46 @@ class ServiceSearch(View):
                 if re.search(query, address, re.IGNORECASE):
                     services_pk.add(service.pk)
 
-        services = Service.objects.filter(isDeleted=False).filter(isActive=True).filter(
+        services_query = Service.objects.filter(isDeleted=False).filter(isActive=True).filter(
             servicedate__gte=currentTime).filter(
             Q(name__icontains=query) | Q(description__icontains=query) | Q(wiki_description__icontains=query) | Q(
                 address__icontains=query) | Q(pk__in=services_pk))
-        print("services: " + str(services))
-        ratings = self.sort_results(services, user)
-        services_smart_sorted = [x for _, x in sorted(zip(ratings, services), reverse=True)]
-        services_count = len(services)
+        services = list(services_query)
+
+        i = 0
+        services_sorted = []
+        while i < len(services):
+            service = self.rating_picked(services)
+            print('#detail ' + str(service.name))
+            services_sorted.append(service)
+            services.remove(service)
+        for service in services_sorted:
+            print('# new added: ' + str(service))
+        '''
+        i=0
+        while i<len(services):
+            random_pick = randrange(4)
+            if random_pick == 0:
+                service = self.sub_date_picked(services)
+                services_sorted.append(service)
+                services.remove(service)
+            elif random_pick == 1:
+                service = self.rating_picked(services)
+                services_sorted.append(service)
+                services.remove(service)
+            elif random_pick == 2:
+                service = self.follow_status_picked(services, request.user.id)
+                services_sorted.append(service)
+                services.remove(service)
+            else:
+                service = self.interest_picked(services, list(Interest.objects.filter(user=request.user.id)))
+                services_sorted.append(service)
+                services.remove(service)
+'''
+        services_count = len(services_sorted)
         alltags = Tag.objects.all()
         context = {
-            'services': services_smart_sorted,
+            'services': services_sorted,
             'services_count': services_count,
             'currentTime': currentTime,
             'alltags': alltags,
@@ -1272,6 +1306,75 @@ class ServiceSearch(View):
         else:
             normalizer = 1 / np.sum(array_to_normalize)
             return np.dot(normalizer, array_to_normalize)
+
+    def sub_date_picked(self, search_results):
+        dates = []
+        for service in search_results:
+            dates.append(service.creater.date_joined)
+        services_sub_date_sorted = [x for _, x in sorted(zip(dates, search_results), reverse=True)]
+        return services_sub_date_sorted[0]
+
+
+    def rating_picked(self, search_results):
+        ratings = []
+        def rating_sorted(service):
+            past_ratings = UserRatings.objects.filter(service=service)
+            ratings_average = UserRatings.objects.filter(rated=service.creater).aggregate(Avg('rating'))['rating__avg']
+            return ratings_average if (len(past_ratings) != 0) else 0
+
+        for service in search_results:
+            #ratings.append(ratings_average if (len(past_ratings) != 0) else 0)
+            ratings.append(rating_sorted(service))
+
+        services_rating_sorted = sorted(search_results, reverse=True, key=rating_sorted)
+
+        num_of_services = ratings.count(ratings[0])
+        if num_of_services > 1:
+            return services_rating_sorted[randrange(num_of_services)]
+        else:
+            return services_rating_sorted[0]
+
+    def follow_status_picked(self, search_results, searcher):
+        follow_table = []
+        def follow_status_sorted(service):
+            profile = UserProfile.objects.get(pk=service.creater.id)
+            followers = profile.followers.all()
+            if searcher in followers:
+                return 1
+            else:
+                return 0
+
+        for service in search_results:
+            follow_table.append(follow_status_sorted(service))
+
+        services_follow_sorted = sorted(search_results, reverse=True, key=follow_status_sorted)
+
+        num_of_services = follow.table.count(follow_table[0])
+        if num_of_services > 1:
+            return services_follow_sorted[randrange(num_of_services)]
+        else:
+            return services_follow_sorted[0]
+
+
+    def interest_picked(self, search_results, user_interests):
+        interest_table = []
+        def interest_sorted(service):
+            owner_interests = [interest.wiki_description for interest in Interest.objects.filter(user=service.creater.id)]
+            num_of_common_interests = 0
+            for interest in user_interests:
+                if interest.wiki_description in owner_interests:
+                    num_of_common_interests += 1
+            return num_of_common_interests
+
+        for service in search_results:
+            interest_table.append(interest_sorted(service))
+
+        services_interest_sorted = sorted(search_results, reverse=True, key=interest_sorted)
+        num_of_services = interest_table.count(interest_table[0])
+        if num_of_services > 1:
+            return services_interest_sorted[randrange(num_of_services)]
+        else:
+            return services_interest_sorted[0]
 
 
 class ServiceFilter(View):
