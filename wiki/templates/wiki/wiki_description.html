@@ -31,7 +31,9 @@
         {{ message }} <br>
 
 
-        {% if type_event == True %}
+        {% if type_interest == True %}
+            <a type="button" class="btn btn-success" href="{% url 'profile' request.user.id %}">Back to Form</a>
+        {% elif type_event == True %}
             <a type="button" class="btn btn-success" href="{% url 'event-create' %}">Back to Form</a>
         {% else %}
             <a type="button" class="btn btn-success" href="{% url 'service-create' %}">Back to Form</a>

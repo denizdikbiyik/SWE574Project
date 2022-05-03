@@ -26,12 +26,12 @@
                                     <button style="border: none; background-color: white; box-shadow: none"
                                             type="submit">Filter
                                     </button>
+
                                 </div>
                             </form>
 
                         </div>
                     </div>
-
                 </div>
                 <div class="col">
                     <form class="d-flex" method="GET" action="{% url 'service-search' %}">
@@ -46,6 +46,11 @@
                     </form>
                 </div>
             </div>
+            {% if services %}
+                <div class="row" padding-top="20px">
+                    <p align="end"><a href="{% url 'service-search' %}?query={{ query }}&&sorting=newest">Sort by Newest</a>&nbsp;&nbsp;&nbsp;<a href="{% url 'service-search' %}?query={{ query }}&&sorting=rating">Sort by Highest Rated</a></p>
+                </div>
+            {% endif %}
             <br/>
             {% if services_count != 0 %}
                 {% for service in services %}
