@@ -18,9 +18,24 @@
                    aria-label="Search through site content"
                    placeholder="keyword or location"
                    value="{{ request.GET.query }}">
+
+            <label for="sort-select">Sort by:</label>
+            <select name="sorting" id="sort-select">
+                <option value="">--Select--</option>
+                <option value="newest" {% if sorting == 'newest' %}selected{% endif %}>Creation Date (Newest)
+                </option>
+                <option value="rating" {% if sorting == 'rating' %}selected{% endif %}>Rating</option>
+                <option value="name" {% if sorting == 'name' %}selected{% endif %}>Name</option>
+                <option value="servicedate" {% if sorting == 'servicedate' %}selected={% endif %}>Delivery
+                    Date
+                </option>
+
+            </select>
             <div class="form-group">
                 <button type="submit" name="submit" value="submitted">Submit</button>
             </div>
+
+        
         </form>
     </div>
     <div class="container">
@@ -40,6 +55,7 @@
                 </div>
 
             </div>
+            <!--
             {% if services %}
                 <div class="row" padding-top="20px">
                     <p align="end"><a href="{% url 'service-search' %}?query={{ query }}&&sorting=newest">Sort by
@@ -48,6 +64,7 @@
                         Rated</a></p>
                 </div>
             {% endif %}
+            -->
             <br/>
             {% if services_count != 0 %}
                 {% for service in services %}
