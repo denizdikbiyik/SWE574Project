@@ -1,4 +1,5 @@
 from django.contrib.postgres.search import SearchVector
+from django.db.models.functions import Lower
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
@@ -1309,6 +1310,10 @@ class ServiceSearch(LoginRequiredMixin, View):
             services_sorted = services_query.order_by('createddate')
         elif sorting == "rating":
             services_sorted = self.highest_rated_picked(list(services_query.order_by('createddate')))
+        elif sorting == "name":
+            services_sorted = services_query.order_by(Lower("name"))
+        elif sorting == "servicedate":
+            services_sorted = services_query.order_by("servicedate")
         else:
             services = list(services_query)
             i = 0
@@ -1349,6 +1354,7 @@ class ServiceSearch(LoginRequiredMixin, View):
             'query': query,
             "cat_sel": cat_sel,
             "category_list": category_list,
+            "sorting": sorting,
 
         }
         return render(request, 'social/service-search.html', context)
