@@ -65,6 +65,8 @@ INSTALLED_APPS = [
     'online_users',
     'matplotlib',
     'wiki',
+    'pandas',
+    'wordcloud',
 ]
 
 LOCATION_FIELD = {
