@@ -2,6 +2,27 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
+    <div class="container p-3 my-3 bg-secondary ">
+        <form method="get">
+            <label for="category-select">Categories:</label>
+            <select name="category" id="category-select">
+                <option value="all">All</option>
+                {% for cat in category_list %}
+                    <option value="{{ cat }}"
+                            {% if cat == cat_sel %}selected="selected"{% endif %}>{{ cat }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="admin-search">Search:</label>
+            <input type="search" id="admin-search" name='query'
+                   aria-label="Search through site content"
+                   placeholder="keyword or location"
+                   value="{{ request.GET.query }}">
+            <div class="form-group">
+                <button type="submit" name="submit" value="submitted">Submit</button>
+            </div>
+        </form>
+    </div>
     <div class="container">
         <br/>
         <div class="row">
@@ -13,42 +34,18 @@
                         </div>
                         <div class="col">
 
-                            <form class="d-flex" method="GET" action="{% url 'service-filter' %}">
-                                <div class="input-group">
-                                    <label style="font-weight: bolder;">Categories:&nbsp;</label>
-                                    <select name="category">
-                                        <option value="all">All</option>
-                                        {% for tag in alltags %}
-                                            <option value="{{ tag.pk }}">{{ tag.tag }}</option>
-                                        {% endfor %}
-                                    </select>
-                                    &nbsp;
-                                    <button style="border: none; background-color: white; box-shadow: none"
-                                            type="submit">Filter
-                                    </button>
-
-                                </div>
-                            </form>
 
                         </div>
                     </div>
                 </div>
-                <div class="col">
-                    <form class="d-flex" method="GET" action="{% url 'service-search' %}">
-                        <div class="input-group">
-                            <input type="text" class="form-control" placeholder="Search Service by keyword or location"
-                                   aria-label="Service" aria-describedby="basic-addon1" name='query'
-                                   value="{{ request.GET.query }}">
-                            <button style="border: none; background-color: white; box-shadow: none" type="submit">
-                                Search
-                            </button>
-                        </div>
-                    </form>
-                </div>
+
             </div>
             {% if services %}
                 <div class="row" padding-top="20px">
-                    <p align="end"><a href="{% url 'service-search' %}?query={{ query }}&&sorting=newest">Sort by Newest</a>&nbsp;&nbsp;&nbsp;<a href="{% url 'service-search' %}?query={{ query }}&&sorting=rating">Sort by Highest Rated</a></p>
+                    <p align="end"><a href="{% url 'service-search' %}?query={{ query }}&&sorting=newest">Sort by
+                        Newest</a>&nbsp;&nbsp;&nbsp;<a
+                            href="{% url 'service-search' %}?query={{ query }}&&sorting=rating">Sort by Highest
+                        Rated</a></p>
                 </div>
             {% endif %}
             <br/>
