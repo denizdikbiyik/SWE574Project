@@ -1291,7 +1291,6 @@ class ServiceSearch(View):
             Q(name__icontains=query) | Q(description__icontains=query) | Q(wiki_description__icontains=query) | Q(
                 address__icontains=query) | Q(pk__in=services_pk))
 
-
         services_sorted = []
         if sorting == "newest":
             services_sorted= services_query.order_by('createddate')
@@ -1337,10 +1336,9 @@ class ServiceSearch(View):
         return render(request, 'social/service-search.html', context)
 
     def sub_date_picked(self, search_results):
-        dates = []
-        for service in search_results:
-            dates.append(service.creater.date_joined)
-        services_sub_date_sorted = [x for _, x in sorted(zip(dates, search_results), reverse=True)]
+        def sub_date_sorted(service):
+            return service.creater.date_joined
+        services_sub_date_sorted = sorted(search_results, reverse=True, key=sub_date_sorted)
         return services_sub_date_sorted[0]
 
 
