@@ -1,0 +1,66 @@
+{% extends 'landing/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+
+            <p></p>
+            <div class="row">
+                <div class="col-md-9">
+                    <h5 style="text-align:center;">Search logs with 0 results!</h5>
+                </div>
+                <div class="col-md-3">
+                    <a style="text-decoration: none; font-weight: bolder;" class="text-primary" href="{% url 'searchlogwordcloud' %}">Search Log Wordcloud for Services</a>
+                </div>
+            </div>
+            <p></p>
+            <p></p>
+
+            <div class="col">
+                <h5 style="text-align:center;">Service Search Logs</h5>
+                <br/>
+                {% if searchLogsServices_count != 0 %}
+                    {% for service in searchLogsServices %}
+                    <div class="row justify-content-center mt-1">
+                        <div class="card col-md-10 col-sm-12 position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <a><a style="text-decoration: none;" class="text-primary" href="{% url 'profile' service.userId.profile.pk %}">@{{ service.userId.username }}</a> searched</a> 
+                                    <a style="font-weight:bold;">{{ service.query }}</a>     
+                                    <a>on {{ service.date }}</a>      
+                                    <a>found {{ service.resultCount }} results.</a>               
+                                </div>          
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="row justify-content-center mt-3">No services search done before!</p>
+                {% endif %}
+            </div>
+            <div class="col">
+                <h5 style="text-align:center;">Event Search Logs</h5>
+                <br/>
+                {% if searchLogsEvents_count != 0 %}
+                    {% for event in searchLogsEvents %}
+                    <div class="row justify-content-center mt-1">
+                        <div class="card col-md-10 col-sm-12 position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;"">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <a><a style="text-decoration: none;" class="text-primary" href="{% url 'profile' event.userId.profile.pk %}">@{{ event.userId.username }}</a> searched</a> 
+                                    <a style="font-weight:bold;">{{ event.query }}</a>     
+                                    <a>on {{ event.date }}</a>      
+                                    <a>found {{ event.resultCount }} results.</a>      
+                                </div>          
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="row justify-content-center mt-3">No events search done before!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock content %}
