@@ -179,3 +179,10 @@ class Interest(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.TextField(blank=False, null=False)
     wiki_description = models.TextField(blank=False, null=False)
+
+class Search(models.Model):
+    date = models.DateTimeField(default=timezone.now)
+    query = models.TextField(blank=True, null=True)
+    userId = models.ForeignKey(User, verbose_name='user', related_name='searcher', on_delete=models.CASCADE)
+    resultCount = models.IntegerField(default=0)
+    searchType = models.TextField(blank=True, null=True)

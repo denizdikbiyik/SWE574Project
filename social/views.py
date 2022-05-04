@@ -4,7 +4,7 @@ from django.urls import reverse_lazy
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.views import View
 from .models import Service, UserProfile, Event, ServiceApplication, UserRatings, NotifyUser, EventApplication, Tag, \
-    Log, Communication, Like, UserComplaints, Featured, Interest
+    Log, Communication, Like, UserComplaints, Featured, Interest, Search
 from .forms import ServiceForm, EventForm, ServiceApplicationForm, RatingForm, EventApplicationForm, ProfileForm, \
     RequestForm, ComplaintForm
 from django.views.generic.edit import UpdateView, DeleteView
@@ -29,6 +29,11 @@ import numpy as np
 from geopy.geocoders import Nominatim
 
 from operator import attrgetter
+
+import pandas as pd
+import matplotlib as mpl
+from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
+from PIL import Image
 
 # Added by AT
 def reverse_location(coordinates):
@@ -1313,6 +1318,12 @@ class ServiceSearch(View):
                     service = self.interest_picked(services, list(Interest.objects.filter(user=request.user.id)))
                     services_sorted.append(service)
                     services.remove(service)
+            # do not change the line below or do not remove from this else block
+            # if you write separated sorting code, the code below should be together with search result 
+            # but not with sorting to not duplicate the log
+            if query != "":
+                searchLog = Search.objects.create(query=query, searchType = "service", resultCount=len(services_sorted), userId=request.user)
+            # end of the obligation
 
         services_count = len(services_sorted)
         alltags = Tag.objects.all()
@@ -1445,12 +1456,74 @@ class EventSearch(View):
                 event_wiki_description__icontains=query) | Q(
                 event_address__icontains=query) | Q(pk__in=events_pk))
         events_count = len(events)
+
+        # do not change the line below or do not remove from this block
+        # if you write separated sorting code, the code below should be together with search result 
+        # but not with sorting to not duplicate the log
+        if query != "":
+            searchLog = Search.objects.create(query=query, searchType = "event", resultCount=events_count, userId=request.user)
+        # end of the obligation
+
         context = {
             'events': events,
             'events_count': events_count,
             'currentTime': currentTime,
         }
         return render(request, 'social/event-search.html', context)
+
+
+class SearchLogList(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        searchLogs = Search.objects.all()
+        searchLogsServices = searchLogs.filter(searchType = "service")
+        searchLogsEvents = searchLogs.filter(searchType = "event")
+        searchLogsServices_count = len(searchLogsServices)
+        searchLogsEvents_count = len(searchLogsEvents)
+        context = {
+            'searchLogs': searchLogs,
+            'searchLogsServices': searchLogsServices,
+            'searchLogsEvents': searchLogsEvents,
+            'searchLogsServices_count': searchLogsServices_count,
+            'searchLogsEvents_count': searchLogsEvents_count
+        }
+        return render(request, 'social/searchloglist.html', context)
+
+
+class SearchLogListZero(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        searchLogs = Search.objects.all()
+        searchLogsServices = searchLogs.filter(searchType = "service").filter(resultCount=0)
+        searchLogsEvents = searchLogs.filter(searchType = "event").filter(resultCount=0)
+        searchLogsServices_count = len(searchLogsServices)
+        searchLogsEvents_count = len(searchLogsEvents)
+        context = {
+            'searchLogs': searchLogs,
+            'searchLogsServices': searchLogsServices,
+            'searchLogsEvents': searchLogsEvents,
+            'searchLogsServices_count': searchLogsServices_count,
+            'searchLogsEvents_count': searchLogsEvents_count
+        }
+        return render(request, 'social/searchloglistzero.html', context)
+
+
+class SearchLogWordCloud(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        searchLogsServices = Search.objects.filter(searchType = "service")
+
+        logList = []
+        for log in searchLogsServices:
+            logList.append(log.query)
+        unique_string=(" ").join(logList)
+        wordcloud = WordCloud(width = 600, height = 300).generate(unique_string)
+        plt.figure(figsize=(13,5))
+        plt.imshow(wordcloud, aspect="auto")
+        plt.axis("off")
+        plt.savefig('media/searchlogwordcloud.png', dpi=100, bbox_inches='tight', pad_inches = 0)
+
+        context = {
+
+        }
+        return render(request, 'social/searchlogwordcloud.html', context)
 
 
 class Notifications(LoginRequiredMixin, View):
