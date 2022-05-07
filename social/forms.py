@@ -52,7 +52,7 @@ class ServiceForm(forms.ModelForm):
 
     class Meta:
         model = Service
-        fields = ['picture', 'name', 'description', 'category', 'servicedate', 'location', 'capacity', 'duration']
+        fields = ['picture', 'name', 'description', 'category', 'servicedate', 'city', 'location', 'capacity', 'duration']
 
 class EventForm(forms.ModelForm):
     eventname = forms.CharField(
@@ -86,7 +86,7 @@ class EventForm(forms.ModelForm):
 
     class Meta:
         model = Event
-        fields = ['eventpicture', 'eventname', 'eventdescription', 'eventdate', 'eventlocation', 'eventcapacity', 'eventduration']
+        fields = ['eventpicture', 'eventname', 'eventdescription', 'eventdate', 'city', 'eventlocation', 'eventcapacity', 'eventduration']
 
 class RatingForm(forms.ModelForm):
     RatingList =(
