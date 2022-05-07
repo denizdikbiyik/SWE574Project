@@ -3105,6 +3105,7 @@ class FeaturedServicesView(LoginRequiredMixin, View):
             'services': services,
             'services_count': services_count,
             'currentTime': currentTime,
+            'featureds': featureds
         }
         return render(request, 'social/featuredservices.html', context)
 
@@ -3122,6 +3123,7 @@ class FeaturedEventsView(LoginRequiredMixin, View):
             'events': events,
             'events_count': events_count,
             'currentTime': currentTime,
+            'featureds': featureds
         }
         return render(request, 'social/featuredevents.html', context)
 
