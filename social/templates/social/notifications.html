@@ -10,35 +10,91 @@
                 {% if notifications_count != 0 %}
                     {% for notification in notifications %}
                         <div class="row justify-content-center mt-1">
-                            <div class="card col-md-8 col-sm-12 position-relative" style="border-radius:15px; background-color:whitesmoke; border-color: dimgrey; text-align: center;">
+                            <div class="card col-md-11 col-sm-12 position-relative" style="border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
                                 <div class="row">
                                     {% if notification.offerType == "service" %}
                                         {% if notification.offerPk != 0 %}
-                                            <p><span style="font-weight: bolder;">Notification:</span> {{ notification.notification }}</p>
+                                            <div class="row" style="margin-top: 1%; margin-bottom: 1%;">
+                                                <div class="col-md-9" style="text-align: left;">
+                                                    <span style="font-weight: bolder;">Notification:</span> {{ notification.notification }}
+                                                </div>
+                                                <div class="col-md-3" style="text-align: right;">
+                                                    <span style="font-weight: bolder;">On:</span> {{ notification.date }}
+                                                </div>
+                                            </div>
                                             <a class="stretched-link" href="{% url 'service-detail' notification.offerPk %}"></a>
                                         {% else %}  
-                                            <p><span style="font-weight: bolder;">Notification:</span> {{ notification.notification }}</p>
+                                            <div class="row" style="margin-top: 1%; margin-bottom: 1%;">
+                                                <div class="col-md-9" style="text-align: left;">
+                                                    <span style="font-weight: bolder;">Notification:</span> {{ notification.notification }}
+                                                </div>
+                                                <div class="col-md-3" style="text-align: right;">
+                                                    <span style="font-weight: bolder;">On:</span> {{ notification.date }}
+                                                </div>
+                                            </div>
                                         {% endif %}
                                     {% elif notification.offerType == "event" %}   
                                         {% if notification.offerPk != 0 %}
-                                            <p><span style="font-weight: bolder;">Notification:</span> {{ notification.notification }}</p>
+                                            <div class="row" style="margin-top: 1%; margin-bottom: 1%;">
+                                                <div class="col-md-9" style="text-align: left;">
+                                                    <span style="font-weight: bolder;">Notification:</span> {{ notification.notification }}
+                                                </div>
+                                                <div class="col-md-3" style="text-align: right;">
+                                                    <span style="font-weight: bolder;">On:</span> {{ notification.date }}
+                                                </div>
+                                            </div>
                                             <a class="stretched-link" href="{% url 'event-detail' notification.offerPk %}"></a>  
                                         {% else %}  
-                                            <p><span style="font-weight: bolder;">Notification:</span> {{ notification.notification }}</p>
+                                            <div class="row" style="margin-top: 1%; margin-bottom: 1%;">
+                                                <div class="col-md-9" style="text-align: left;">
+                                                    <span style="font-weight: bolder;">Notification:</span> {{ notification.notification }}
+                                                </div>
+                                                <div class="col-md-3" style="text-align: right;">
+                                                    <span style="font-weight: bolder;">On:</span> {{ notification.date }}
+                                                </div>
+                                            </div>
                                         {% endif %}
                                     {% elif notification.offerType == "user" %}   
                                         {% if notification.offerPk != 0 %}
-                                            <p><span style="font-weight: bolder;">Notification:</span> {{ notification.notification }}</p>
+                                            <div class="row" style="margin-top: 1%; margin-bottom: 1%;">
+                                                <div class="col-md-9" style="text-align: left;">
+                                                    <span style="font-weight: bolder;">Notification:</span> {{ notification.notification }}
+                                                </div>
+                                                <div class="col-md-3" style="text-align: right;">
+                                                    <span style="font-weight: bolder;">On:</span> {{ notification.date }}
+                                                </div>
+                                            </div>
                                             <a class="stretched-link" href="{% url 'profile' notification.offerPk %}"></a>  
                                         {% else %}  
-                                            <p><span style="font-weight: bolder;">Notification:</span> {{ notification.notification }}</p>
+                                            <div class="row" style="margin-top: 1%; margin-bottom: 1%;">
+                                                <div class="col-md-9" style="text-align: left;">
+                                                    <span style="font-weight: bolder;">Notification:</span> {{ notification.notification }}
+                                                </div>
+                                                <div class="col-md-3" style="text-align: right;">
+                                                    <span style="font-weight: bolder;">On:</span> {{ notification.date }}
+                                                </div>
+                                            </div>
                                         {% endif %}
                                     {% else %} 
                                         {% if notification.offerPk != 0 %}
-                                            <p><span style="font-weight: bolder;">Notification:</span> {{ notification.notification }}</p>
+                                            <div class="row" style="margin-top: 1%; margin-bottom: 1%;">
+                                                <div class="col-md-9" style="text-align: left;">
+                                                    <span style="font-weight: bolder;">Notification:</span> {{ notification.notification }}
+                                                </div>
+                                                <div class="col-md-3" style="text-align: right;">
+                                                    <span style="font-weight: bolder;">On:</span> {{ notification.date }}
+                                                </div>
+                                            </div>
                                             <a class="stretched-link" href="{% url 'request-detail' notification.offerPk %}"></a>  
                                         {% else %}  
-                                            <p><span style="font-weight: bolder;">Notification:</span> {{ notification.notification }}</p>
+                                            <div class="row" style="margin-top: 1%; margin-bottom: 1%;">
+                                                <div class="col-md-9" style="text-align: left;">
+                                                    <span style="font-weight: bolder;">Notification:</span> {{ notification.notification }}
+                                                </div>
+                                                <div class="col-md-3" style="text-align: right;">
+                                                    <span style="font-weight: bolder;">On:</span> {{ notification.date }}
+                                                </div>
+                                            </div>
                                         {% endif %}
                                     {% endif %}          
                                 </div>

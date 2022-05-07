@@ -276,7 +276,7 @@ class ServiceDetailView(View):
                     applicant_user_profile.reservehour = applicant_user_profile.reservehour - service.duration
                     applicant_user_profile.save()
                     notification = NotifyUser.objects.create(notify=service.creater, notification=str(
-                        new_application.applicant) + ' applied to service ' + str(new_application.service.name),
+                        new_application.applicant) + ' applied to service ' + str(new_application.service.name)+'.',
                                                              offerType="service", offerPk=new_application.service.pk)
                     notified_user = UserProfile.objects.get(pk=service.creater)
                     notified_user.unreadcount = notified_user.unreadcount + 1
@@ -319,7 +319,7 @@ class ApplicationDeleteView(LoginRequiredMixin, View):
         applicant_user_profile.save()
         if request.user == application.applicant:
             notification = NotifyUser.objects.create(notify=service.creater, notification=str(
-                applicant_user_profile.user.username) + ' canceled application for service ' + str(service.name),
+                applicant_user_profile.user.username) + ' canceled application for service ' + str(service.name)+'.',
                                                      offerType="service", offerPk=service.pk)
             notified_user = UserProfile.objects.get(pk=service.creater)
             notified_user.unreadcount = notified_user.unreadcount + 1
@@ -327,7 +327,7 @@ class ApplicationDeleteView(LoginRequiredMixin, View):
             application.deletionInfo = "cancel"
         elif request.user == application.service.creater:
             notification = NotifyUser.objects.create(notify=application.applicant, notification=str(
-                service_creater_profile.user.username) + ' rejected your application for service ' + str(service.name),
+                service_creater_profile.user.username) + ' rejected your application for service ' + str(service.name)+'.',
                                                      offerType="service", offerPk=service.pk)
             notified_user = UserProfile.objects.get(pk=application.applicant)
             notified_user.unreadcount = notified_user.unreadcount + 1
@@ -704,7 +704,7 @@ class EventApplicationDeleteView(LoginRequiredMixin, View):
         event_creater_profile = UserProfile.objects.get(pk=event.eventcreater.pk)
         if request.user == application.applicant:
             notification = NotifyUser.objects.create(notify=event.eventcreater, notification=str(
-                applicant_user_profile.user.username) + ' canceled application for event ' + str(event.eventname),
+                applicant_user_profile.user.username) + ' canceled application for event ' + str(event.eventname)+'.',
                                                      offerType="event", offerPk=event.pk)
             notified_user = UserProfile.objects.get(pk=event.eventcreater)
             notified_user.unreadcount = notified_user.unreadcount + 1
@@ -712,7 +712,7 @@ class EventApplicationDeleteView(LoginRequiredMixin, View):
             application.deletionInfo = "cancel"
         elif request.user == application.event.eventcreater:
             notification = NotifyUser.objects.create(notify=application.applicant, notification=str(
-                event_creater_profile.user.username) + ' rejected your application for event ' + str(event.eventname),
+                event_creater_profile.user.username) + ' rejected your application for event ' + str(event.eventname)+'.',
                                                      offerType="event", offerPk=event.pk)
             notified_user = UserProfile.objects.get(pk=application.applicant)
             notified_user.unreadcount = notified_user.unreadcount + 1
@@ -828,7 +828,7 @@ class EventDetailView(View):
                 log = Log.objects.create(operation="createeventapplication", itemType="event", itemId=event.pk,
                                          userId=request.user)
                 notification = NotifyUser.objects.create(notify=event.eventcreater, notification=str(
-                    new_application.applicant) + ' applied to event ' + str(new_application.event.eventname),
+                    new_application.applicant) + ' applied to event ' + str(new_application.event.eventname)+'.',
                                                          offerType="event", offerPk=new_application.event.pk)
                 notified_user = UserProfile.objects.get(pk=event.eventcreater)
                 notified_user.unreadcount = notified_user.unreadcount + 1
@@ -1560,7 +1560,7 @@ class SearchLogWordCloud(LoginRequiredMixin, View):
 
 class Notifications(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        notifications = NotifyUser.objects.filter(notify=request.user).filter(hasRead=False)
+        notifications = NotifyUser.objects.filter(notify=request.user).filter(hasRead=False).order_by('-date')
         notifications_count = len(notifications)
         notificationsToRead = notifications.filter(offerPk=0)
         countNotifications = len(notificationsToRead)
@@ -1594,7 +1594,7 @@ class RequestCreateView(LoginRequiredMixin, View):
             messages.success(request, 'Request creation is successful.')
             if (new_request.toPerson):
                 notification = NotifyUser.objects.create(notify=new_request.toPerson, notification=str(
-                    new_request.requester.username) + ' requested service tag ' + str(new_request.tag),
+                    new_request.requester.username) + ' requested service tag ' + str(new_request.tag)+'.',
                                                          offerType="request", offerPk=new_request.pk)
                 notified_user = UserProfile.objects.get(pk=new_request.toPerson)
                 notified_user.unreadcount = notified_user.unreadcount + 1
@@ -1871,7 +1871,7 @@ class ServiceDetailCommunicationView(View):
             if request.user != service.creater:
                 notification = NotifyUser.objects.create(notify=service.creater,
                                                          notification=str(request.user) + ' commented on ' + str(
-                                                             service.name), offerType="service", offerPk=service.pk)
+                                                             service.name)+'.', offerType="service", offerPk=service.pk)
                 notified_user = UserProfile.objects.get(pk=service.creater)
                 notified_user.unreadcount = notified_user.unreadcount + 1
                 notified_user.save()
@@ -1883,7 +1883,7 @@ class ServiceDetailCommunicationView(View):
             if applicationToNotify.applicant != request.user:
                 notification = NotifyUser.objects.create(notify=applicationToNotify.applicant,
                                                          notification=str(request.user) + ' commented on ' + str(
-                                                             service.name), offerType="service", offerPk=service.pk)
+                                                             service.name)+'.', offerType="service", offerPk=service.pk)
                 notified_user = UserProfile.objects.get(pk=applicationToNotify.applicant)
                 notified_user.unreadcount = notified_user.unreadcount + 1
                 notified_user.save()
@@ -1900,7 +1900,7 @@ class ServiceCommunicationDeleteView(LoginRequiredMixin, UserPassesTestMixin, De
         communication = self.get_object()
         if self.request.user != service.creater:
             notification = NotifyUser.objects.create(notify=service.creater, notification=str(
-                self.request.user) + ' deleted communication message on service ' + str(service.name),
+                self.request.user) + ' deleted communication message on service ' + str(service.name)+'.',
                                                      offerType="service", offerPk=service.pk)
             notified_user = UserProfile.objects.get(pk=service.creater)
             notified_user.unreadcount = notified_user.unreadcount + 1
@@ -1910,7 +1910,7 @@ class ServiceCommunicationDeleteView(LoginRequiredMixin, UserPassesTestMixin, De
         for approvedApplication in approvedApplications:
             if self.request.user != approvedApplication.applicant:
                 notification = NotifyUser.objects.create(notify=approvedApplication.applicant, notification=str(
-                    self.request.user) + ' deleted communication message on service ' + str(service.name),
+                    self.request.user) + ' deleted communication message on service ' + str(service.name)+'.',
                                                          offerType="service", offerPk=service.pk)
                 notified_user = UserProfile.objects.get(pk=approvedApplication.applicant)
                 notified_user.unreadcount = notified_user.unreadcount + 1
@@ -1941,7 +1941,7 @@ class EventDetailCommunicationView(View):
             if request.user != event.eventcreater:
                 notification = NotifyUser.objects.create(notify=event.eventcreater,
                                                          notification=str(request.user) + ' commented on ' + str(
-                                                             event.eventname), offerType="event", offerPk=event.pk)
+                                                             event.eventname)+'.', offerType="event", offerPk=event.pk)
                 notified_user = UserProfile.objects.get(pk=event.eventcreater)
                 notified_user.unreadcount = notified_user.unreadcount + 1
                 notified_user.save()
@@ -1953,7 +1953,7 @@ class EventDetailCommunicationView(View):
             if applicationToNotify.applicant != request.user:
                 notification = NotifyUser.objects.create(notify=applicationToNotify.applicant,
                                                          notification=str(request.user) + ' commented on ' + str(
-                                                             event.eventname), offerType="event", offerPk=event.pk)
+                                                             event.eventname)+'.', offerType="event", offerPk=event.pk)
                 notified_user = UserProfile.objects.get(pk=applicationToNotify.applicant)
                 notified_user.unreadcount = notified_user.unreadcount + 1
                 notified_user.save()
@@ -1970,7 +1970,7 @@ class EventCommunicationDeleteView(LoginRequiredMixin, UserPassesTestMixin, Dele
         communication = self.get_object()
         if self.request.user != event.eventcreater:
             notification = NotifyUser.objects.create(notify=event.eventcreater, notification=str(
-                self.request.user) + ' deleted communication message on event ' + str(event.eventname),
+                self.request.user) + ' deleted communication message on event ' + str(event.eventname)+'.',
                                                      offerType="event", offerPk=event.pk)
             notified_user = UserProfile.objects.get(pk=event.eventcreater)
             notified_user.unreadcount = notified_user.unreadcount + 1
@@ -1980,7 +1980,7 @@ class EventCommunicationDeleteView(LoginRequiredMixin, UserPassesTestMixin, Dele
         for approvedApplication in approvedApplications:
             if self.request.user != approvedApplication.applicant:
                 notification = NotifyUser.objects.create(notify=approvedApplication.applicant, notification=str(
-                    self.request.user) + ' deleted communication message on event ' + str(event.eventname),
+                    self.request.user) + ' deleted communication message on event ' + str(event.eventname)+'.',
                                                          offerType="event", offerPk=event.pk)
                 notified_user = UserProfile.objects.get(pk=approvedApplication.applicant)
                 notified_user.unreadcount = notified_user.unreadcount + 1
@@ -2004,7 +2004,7 @@ class ServiceLike(LoginRequiredMixin, View):
         service = Service.objects.get(pk=pk)
         like = Like.objects.create(itemType="service", itemId=pk, liked=request.user)
         notification = NotifyUser.objects.create(notify=service.creater,
-                                                 notification=str(request.user) + ' liked service ' + str(service.name),
+                                                 notification=str(request.user) + ' liked service ' + str(service.name)+'.',
                                                  offerType="service", offerPk=service.pk)
         notified_user = UserProfile.objects.get(pk=service.creater)
         notified_user.unreadcount = notified_user.unreadcount + 1
@@ -2020,7 +2020,7 @@ class ServiceUnlike(LoginRequiredMixin, View):
         like.delete()
         notification = NotifyUser.objects.create(notify=service.creater,
                                                  notification=str(request.user) + ' unliked service ' + str(
-                                                     service.name), offerType="service", offerPk=service.pk)
+                                                     service.name)+'.', offerType="service", offerPk=service.pk)
         notified_user = UserProfile.objects.get(pk=service.creater)
         notified_user.unreadcount = notified_user.unreadcount + 1
         notified_user.save()
@@ -2034,7 +2034,7 @@ class EventLike(LoginRequiredMixin, View):
         like = Like.objects.create(itemType="event", itemId=pk, liked=request.user)
         notification = NotifyUser.objects.create(notify=event.eventcreater,
                                                  notification=str(request.user) + ' liked event ' + str(
-                                                     event.eventname), offerType="event", offerPk=event.pk)
+                                                     event.eventname)+'.', offerType="event", offerPk=event.pk)
         notified_user = UserProfile.objects.get(pk=event.eventcreater)
         notified_user.unreadcount = notified_user.unreadcount + 1
         notified_user.save()
@@ -2049,7 +2049,7 @@ class EventUnlike(LoginRequiredMixin, View):
         like.delete()
         notification = NotifyUser.objects.create(notify=event.eventcreater,
                                                  notification=str(request.user) + ' unliked event ' + str(
-                                                     event.eventname), offerType="event", offerPk=event.pk)
+                                                     event.eventname)+'.', offerType="event", offerPk=event.pk)
         notified_user = UserProfile.objects.get(pk=event.eventcreater)
         notified_user.unreadcount = notified_user.unreadcount + 1
         notified_user.save()
@@ -2745,7 +2745,7 @@ class ComplaintUser(LoginRequiredMixin, View):
             for admin in allAdmins:
                 notification = NotifyUser.objects.create(notify=admin.user,
                                                          notification=str(request.user) + ' created complaint for ' + str(
-                                                             complainted.user), offerType="user",
+                                                             complainted.user)+'.', offerType="user",
                                                          offerPk=complainted.user.pk)
                 notified_user = UserProfile.objects.get(pk=admin.user)
                 notified_user.unreadcount = notified_user.unreadcount + 1
@@ -2776,7 +2776,7 @@ class ComplaintUserEdit(LoginRequiredMixin, View):
             allAdmins = UserProfile.objects.filter(isAdmin=True)
             for admin in allAdmins:
                 notification = NotifyUser.objects.create(notify=admin.user, notification=str(
-                    request.user) + ' edited complaint for ' + str(complaint.complainted), offerType="user",
+                    request.user) + ' edited complaint for ' + str(complaint.complainted)+'.', offerType="user",
                                                          offerPk=complaint.complainted.pk)
                 notified_user = UserProfile.objects.get(pk=admin.user)
                 notified_user.unreadcount = notified_user.unreadcount + 1
@@ -2806,7 +2806,7 @@ class ComplaintUserDelete(LoginRequiredMixin, View):
         for admin in allAdmins:
             notification = NotifyUser.objects.create(notify=admin.user,
                                                      notification=str(request.user) + ' deleted complaint for ' + str(
-                                                         complaint.complainted), offerType="user",
+                                                         complaint.complainted)+'.', offerType="user",
                                                      offerPk=complaint.complainted.pk)
             notified_user = UserProfile.objects.get(pk=admin.user)
             notified_user.unreadcount = notified_user.unreadcount + 1
@@ -2848,7 +2848,7 @@ class DeactivateService(LoginRequiredMixin, View):
         service.creater.profile.reservehour = service.creater.profile.reservehour - service.duration
         notification = NotifyUser.objects.create(notify=service.creater,
                                                  notification=str(request.user) + ' deactivated your service ' + str(
-                                                     service.name), offerType="service", offerPk=0)
+                                                     service.name)+'.', offerType="service", offerPk=0)
         service.creater.profile.unreadcount = service.creater.profile.unreadcount + 1
         service.creater.profile.save()
         serviceApplications = ServiceApplication.objects.filter(service=service).filter(isDeleted=False).filter(
@@ -2878,7 +2878,7 @@ class DeactivateEvent(LoginRequiredMixin, View):
             notificationChange.save()
         notification = NotifyUser.objects.create(notify=event.eventcreater,
                                                  notification=str(request.user) + ' deactivated your event ' + str(
-                                                     event.eventname), offerType="event", offerPk=0)
+                                                     event.eventname)+'.', offerType="event", offerPk=0)
         event.eventcreater.profile.unreadcount = event.eventcreater.profile.unreadcount + 1
         event.eventcreater.profile.save()
         eventApplications = EventApplication.objects.filter(event=event).filter(isDeleted=False).filter(isActive=True)
@@ -2919,7 +2919,7 @@ class DeactivateUser(LoginRequiredMixin, View):
                     notificationChange.save()
                 service.creater.profile.reservehour = service.creater.profile.reservehour - service.duration
                 notification = NotifyUser.objects.create(notify=service.creater, notification=str(
-                    request.user) + ' deactivated your service ' + str(service.name), offerType="service", offerPk=0)
+                    request.user) + ' deactivated your service ' + str(service.name)+'.', offerType="service", offerPk=0)
                 service.creater.profile.unreadcount = service.creater.profile.unreadcount + 1
                 service.creater.profile.save()
                 serviceApplications = ServiceApplication.objects.filter(service=service).filter(isDeleted=False).filter(
@@ -2947,7 +2947,7 @@ class DeactivateUser(LoginRequiredMixin, View):
                     notificationChange.offerPk = 0
                     notificationChange.save()
                 notification = NotifyUser.objects.create(notify=event.eventcreater, notification=str(
-                    request.user) + ' deactivated your event ' + str(event.eventname), offerType="event", offerPk=0)
+                    request.user) + ' deactivated your event ' + str(event.eventname)+'.', offerType="event", offerPk=0)
                 event.eventcreater.profile.unreadcount = event.eventcreater.profile.unreadcount + 1
                 event.eventcreater.profile.save()
                 eventApplications = EventApplication.objects.filter(event=event).filter(isDeleted=False).filter(
