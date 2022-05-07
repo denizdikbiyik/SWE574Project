@@ -2816,7 +2816,7 @@ class ComplaintUserDelete(LoginRequiredMixin, View):
 
 class Complaints(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        complaints = UserComplaints.objects.all()
+        complaints = UserComplaints.objects.all().order_by('-date')
         complaints_count = len(complaints)
         context = {
             'complaints_count': complaints_count,
