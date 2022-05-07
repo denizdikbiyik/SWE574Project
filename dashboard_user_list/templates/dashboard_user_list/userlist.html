@@ -7,45 +7,54 @@
     </head>
     <body>
     <div class="container p-3 my-3 bg-secondary text-warning">
-        <h5> Users</h5> 
-        <form method="get">
-            <div class="form-group">
-                <label for="period type">Period:</label>
-                <select name="type" id="period type" onchange="this.form.submit()">
-                    <option value="">--Select--</option>
-                    <option value="default" {% if type == 'default' %}selected{% endif %}>Default Periods</option>
-                    <option value="pick" {% if type == 'pick' %}selected{% endif %}>Pick Dates</option>
-                </select>
+
+        <div class="row">
+            <div class="col-md-2">
+                <a onClick="javascript:history.go(-1);" class="btn btn-light">Back</a>
             </div>
-        </form>
+            <div class="col-md-8">
+
+                <h5> Users</h5> 
+                <form method="get">
+                    <div class="form-group">
+                        <label for="period type">Period:</label>
+                        <select name="type" id="period type" onchange="this.form.submit()">
+                            <option value="">--Select--</option>
+                            <option value="default" {% if type == 'default' %}selected{% endif %}>Default Periods</option>
+                            <option value="pick" {% if type == 'pick' %}selected{% endif %}>Pick Dates</option>
+                        </select>
+                    </div>
+                </form>
 
 
-        <form method="get">
-            <div class="form-group">
-                {% if type  == "default" %}
-                    <label for="period-select">Choose a Period:</label>
-                    <select name="periods" id="period-select">
-                        <option value="">--Select--</option>
-                        <option value="all" {% if periods == 'all' %}selected{% endif %}>All</option>
-                        <option value="week" {% if periods == 'week' %}selected{% endif %}>Last 7 Days</option>
-                        <option value="month" {% if periods == 'month' %}selected{% endif %}>Last 30 Days</option>
-                        <option value="year" {% if periods == 'year' %}selected{% endif %}>Last 365 Days</option>
-                    </select>
-                {% elif type  == "pick" %}
-                    <label for="beginning">Beginning Date:</label>
-                    <input type="date" id="beginning" name="beginning" value="{{ request.GET.beginning }}">
-                    <label for="ending">Ending Date:</label>
-                    <input type="date" id="ending" name="ending" value="{{ request.GET.ending }}">
+                <form method="get">
+                    <div class="form-group">
+                        {% if type  == "default" %}
+                            <label for="period-select">Choose a Period:</label>
+                            <select name="periods" id="period-select">
+                                <option value="">--Select--</option>
+                                <option value="all" {% if periods == 'all' %}selected{% endif %}>All</option>
+                                <option value="week" {% if periods == 'week' %}selected{% endif %}>Last 7 Days</option>
+                                <option value="month" {% if periods == 'month' %}selected{% endif %}>Last 30 Days</option>
+                                <option value="year" {% if periods == 'year' %}selected{% endif %}>Last 365 Days</option>
+                            </select>
+                        {% elif type  == "pick" %}
+                            <label for="beginning">Beginning Date:</label>
+                            <input type="date" id="beginning" name="beginning" value="{{ request.GET.beginning }}">
+                            <label for="ending">Ending Date:</label>
+                            <input type="date" id="ending" name="ending" value="{{ request.GET.ending }}">
 
-                {% endif %}
+                        {% endif %}
+                    </div>
+
+                
+                    <div class="form-group">
+                        <button type="submit" name="submit" value="submitted">Submit</button>
+                    </div>
+
+                </form>
             </div>
-
-           
-            <div class="form-group">
-                <button type="submit" name="submit" value="submitted">Submit</button>
-            </div>
-
-        </form>
+        </div>
     </div>
     <br>
 

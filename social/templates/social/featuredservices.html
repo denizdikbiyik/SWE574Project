@@ -3,38 +3,42 @@
 
 {% block content %}
     <div class="container">
-        <br/>
-        <div class="row">  
+        <div class="row mt-3">  
+            <div class="col-md-1">
+                <a onClick="javascript:history.go(-1);" class="btn btn-light">Back</a>
+            </div>
+            <div class="col-md-11">
                 <h5 style="text-align:center;">Featured Services</h5>
-                <br/>
-                {% if services_count != 0 %}
-                    {% for service in services %}
-                        <div class="row justify-content-center mt-1">
-                            <div class="card col-md-10 col-sm-12 border-bottom position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
-                                <div class="row">
-                                    <div class="col-md-2">
-                                        <img style="border-radius:10px;" src="{{ service.picture.url }}" width="100" height="100" />
-                                    </div>
-                                    <div class="col-md-6">
-                                        <p><a style="text-decoration: none;" class="text-primary" href="{% url 'profile' service.creater.profile.pk %}">@{{ service.creater }}</a> created</p> 
-                                        <p style="font-weight:bold;">{{ service.name }}</p>       
-                                        <p>Time: {{ service.servicedate }}</p>
-                                        <a class="stretched-link" href="{% url 'service-detail' service.pk %}"></a>                   
-                                    </div>  
-                                    <div class="col-md-4">
-                                        {% for featured in featureds %}
-                                            {% if featured.itemId == service.pk %}
-                                                <p>Featured Time: {{ featured.date }}</p>
-                                            {% endif %}
-                                        {% endfor %}
-                                    </div>       
+            </div>
+            </br>
+            {% if services_count != 0 %}
+                {% for service in services %}
+                    <div class="row justify-content-center mt-1">
+                        <div class="card col-md-10 col-sm-12 border-bottom position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <img style="border-radius:10px;" src="{{ service.picture.url }}" width="100" height="100" />
                                 </div>
+                                <div class="col-md-6">
+                                    <p><a style="text-decoration: none;" class="text-primary" href="{% url 'profile' service.creater.profile.pk %}">@{{ service.creater }}</a> created</p> 
+                                    <p style="font-weight:bold;">{{ service.name }}</p>       
+                                    <p>Time: {{ service.servicedate }}</p>
+                                    <a class="stretched-link" href="{% url 'service-detail' service.pk %}"></a>                   
+                                </div>  
+                                <div class="col-md-4">
+                                    {% for featured in featureds %}
+                                        {% if featured.itemId == service.pk %}
+                                            <p>Featured Time: {{ featured.date }}</p>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>       
                             </div>
                         </div>
-                    {% endfor %}
-                {% else %}
-                    <p class="row justify-content-center mt-3">No services found!</p>
-                {% endif %}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="row justify-content-center mt-3">No services found!</p>
+            {% endif %}
         </div>
         
     </div>
