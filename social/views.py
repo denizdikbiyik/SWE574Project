@@ -2739,7 +2739,7 @@ class ComplaintUser(LoginRequiredMixin, View):
             allAdmins = UserProfile.objects.filter(isAdmin=True)
             for admin in allAdmins:
                 notification = NotifyUser.objects.create(notify=admin.user,
-                                                         notification=str(request.user) + ' complainted for ' + str(
+                                                         notification=str(request.user) + ' created complaint for ' + str(
                                                              complainted.user), offerType="user",
                                                          offerPk=complainted.user.pk)
                 notified_user = UserProfile.objects.get(pk=admin.user)
