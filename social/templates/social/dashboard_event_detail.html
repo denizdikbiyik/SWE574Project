@@ -41,9 +41,9 @@
                 <p style="text-align: start; color:navy;"> Event Name: <a style="text-decoration: none;" class="text-primary" href="{% url 'event-detail' event.pk %}">{{ event.eventname }}</a></p>
                 <p style="text-align: start; color:navy;"> Organizer: {{ event.eventcreater }} </p>
                 {% if is_active == True %}
-                    <p style="text-align: start; color:navy;"> Inactivated by Admin: No </p>
+                    <p style="text-align: start; color:navy;"> Deactivated by Admin: No </p>
                 {% else %}
-                    <p style="text-align: start; color:navy;"> Inactivated by Admin: Yes </p>
+                    <p style="text-align: start; color:navy;"> Deactivated by Admin: Yes </p>
                 {% endif %}
                 {% if isDeleted == True %}
                     <p style="text-align: start; color:navy;"> Deleted by Creator: Yes </p>
@@ -81,7 +81,7 @@
                                             <td>Pending</td>
                                         {% endif %}
                                     {% else %}
-                                        <td>Inactivated</td>
+                                        <td>Deactivated</td>
                                     {% endif %}
                                 {% endif %}
                             </tr>
