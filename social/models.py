@@ -19,6 +19,7 @@ class Tag(models.Model):
                                   on_delete=models.SET_NULL)
     toPerson = models.ForeignKey(User, verbose_name='user', related_name='toPerson', blank=True, null=True,
                                  on_delete=models.SET_NULL)
+    date = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return self.tag
@@ -117,6 +118,7 @@ class UserRatings(models.Model):
     rating = models.IntegerField(blank=False, null=True)
     service = models.ForeignKey('Service', on_delete=models.SET_NULL, null=True)
     feedback = models.TextField(blank=True, null=True)
+    date = models.DateTimeField(default=timezone.now)
 
 
 class UserComplaints(models.Model):
@@ -125,6 +127,7 @@ class UserComplaints(models.Model):
                                     null=True)
     feedback = models.TextField(blank=True, null=True)
     isDeleted = models.BooleanField(default=False)
+    date = models.DateTimeField(default=timezone.now)
 
 
 @receiver(post_save, sender=User)
@@ -144,6 +147,7 @@ class NotifyUser(models.Model):
     hasRead = models.BooleanField(default=False)
     offerType = models.TextField(blank=True, null=True)
     offerPk = models.IntegerField(default=0)
+    date = models.DateTimeField(default=timezone.now)
 
 
 class Log(models.Model):
