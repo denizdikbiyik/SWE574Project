@@ -7,73 +7,82 @@
     </head>
     <body>
     <div class="container p-3 my-3 bg-secondary text-warning">
-        <h5> Services</h5>
-        <form method="get">
-            <div class="form-group">
-                <label for="period type">Period:</label>
-                <select name="type" id="period type" onchange="this.form.submit()">
-                    <option value="">--Select--</option>
-                    <option value="default" {% if type == 'default' %}selected{% endif %}>Default Periods</option>
-                    <option value="pick" {% if type == 'pick' %}selected{% endif %}>Pick Dates</option>
-                </select>
+
+        <div class="row">
+            <div class="col-md-2">
+                <a onClick="javascript:history.go(-1);" class="btn btn-light">Back</a>
             </div>
-        </form>
+            <div class="col-md-8">
+
+                <h5> Services</h5>
+                <form method="get">
+                    <div class="form-group">
+                        <label for="period type">Period:</label>
+                        <select name="type" id="period type" onchange="this.form.submit()">
+                            <option value="">--Select--</option>
+                            <option value="default" {% if type == 'default' %}selected{% endif %}>Default Periods</option>
+                            <option value="pick" {% if type == 'pick' %}selected{% endif %}>Pick Dates</option>
+                        </select>
+                    </div>
+                </form>
 
 
-        <form method="get">
-            <div class="form-group">
-                {% if type  == "default" %}
-                    <label for="period-select">Choose a Period:</label>
-                    <select name="periods" id="period-select">
+                <form method="get">
+                    <div class="form-group">
+                        {% if type  == "default" %}
+                            <label for="period-select">Choose a Period:</label>
+                            <select name="periods" id="period-select">
+                                <option value="">--Select--</option>
+                                <option value="all" {% if periods == 'all' %}selected{% endif %}>All</option>
+                                <option value="week" {% if periods == 'week' %}selected{% endif %}>Last 7 Days</option>
+                                <option value="month" {% if periods == 'month' %}selected{% endif %}>Last 30 Days</option>
+                                <option value="year" {% if periods == 'year' %}selected{% endif %}>Last 365 Days</option>
+                            </select>
+                        {% elif type  == "pick" %}
+                            <label for="beginning">Beginning Date:</label>
+                            <input type="date" id="beginning" name="beginning" value="{{ request.GET.beginning }}">
+                            <label for="ending">Ending Date:</label>
+                            <input type="date" id="ending" name="ending" value="{{ request.GET.ending }}">
+
+                        {% endif %}
+                    </div>
+
+
+                    <label for="status-select">Status:</label>
+                    <select name="status" id="status-select">
                         <option value="">--Select--</option>
-                        <option value="all" {% if periods == 'all' %}selected{% endif %}>All</option>
-                        <option value="week" {% if periods == 'week' %}selected{% endif %}>Last 7 Days</option>
-                        <option value="month" {% if periods == 'month' %}selected{% endif %}>Last 30 Days</option>
-                        <option value="year" {% if periods == 'year' %}selected{% endif %}>Last 365 Days</option>
+                        <option value="all" {% if status == 'all' %}selected{% endif %}>All</option>
+                        <option value="handshake" {% if status == 'handshake' %}selected{% endif %}>Handshake</option>
+                        <option value="isDeleted" {% if status == 'isDeleted' %}selected{% endif %}>Deleted</option>
+                        <option value="isActive" {% if status == 'isActive' %}selected{% endif %}>Inactive</option>
                     </select>
-                {% elif type  == "pick" %}
-                    <label for="beginning">Beginning Date:</label>
-                    <input type="date" id="beginning" name="beginning" value="{{ request.GET.beginning }}">
-                    <label for="ending">Ending Date:</label>
-                    <input type="date" id="ending" name="ending" value="{{ request.GET.ending }}">
 
-                {% endif %}
+
+                    <label for="admin-search">Search:</label>
+                    <input type="search" id="admin-search" name="q"
+                        aria-label="Search through site content" placeholder="keyword or location"
+                        value="{{ request.GET.q }}">
+
+                    <!--
+                    <label for="admin-search">Search:</label>
+                    <input type="search" id="admin-search" name="qlocation"
+                        aria-label="Search through site content" placeholder="location" value="{{ request.GET.qlocation }}">
+                    -->
+
+                    <label for="sort-select">Sort by:</label>
+                    <select name="sort" id="sort-select">
+                        <option value="">--Select--</option>
+                        <option value="name" {% if sort == 'name' %}selected{% endif %}>Name</option>
+                        <option value="createddate" {% if sort == 'createddate' %}selected{% endif %}>Creation Date</option>
+                        <option value="servicedate" {% if sort == 'servicedate' %}selected{% endif %}>Delivery Date</option>
+                    </select>
+                    <div class="form-group">
+                        <button type="submit" name="submit" value="submitted">Submit</button>
+                    </div>
+
+                </form>
             </div>
-
-
-            <label for="status-select">Status:</label>
-            <select name="status" id="status-select">
-                <option value="">--Select--</option>
-                <option value="all" {% if status == 'all' %}selected{% endif %}>All</option>
-                <option value="handshake" {% if status == 'handshake' %}selected{% endif %}>Handshake</option>
-                <option value="isDeleted" {% if status == 'isDeleted' %}selected{% endif %}>Deleted</option>
-                <option value="isActive" {% if status == 'isActive' %}selected{% endif %}>Inactive</option>
-            </select>
-
-
-            <label for="admin-search">Search:</label>
-            <input type="search" id="admin-search" name="q"
-                   aria-label="Search through site content" placeholder="keyword or location"
-                   value="{{ request.GET.q }}">
-
-            <!--
-            <label for="admin-search">Search:</label>
-            <input type="search" id="admin-search" name="qlocation"
-                   aria-label="Search through site content" placeholder="location" value="{{ request.GET.qlocation }}">
-            -->
-
-            <label for="sort-select">Sort by:</label>
-            <select name="sort" id="sort-select">
-                <option value="">--Select--</option>
-                <option value="name" {% if sort == 'name' %}selected{% endif %}>Name</option>
-                <option value="createddate" {% if sort == 'createddate' %}selected{% endif %}>Creation Date</option>
-                <option value="servicedate" {% if sort == 'servicedate' %}selected{% endif %}>Delivery Date</option>
-            </select>
-            <div class="form-group">
-                <button type="submit" name="submit" value="submitted">Submit</button>
-            </div>
-
-        </form>
+        </div>
     </div>
     <br>
 
