@@ -8,21 +8,21 @@
                 <a onClick="javascript:history.go(-1);" class="btn btn-light">Back</a>
             </div>
         </div>
-        <div class="row justify-content-center mt-3">
+        <div class="row justify-content-center mt-1">
             <div class="col-md-5 col-sm-12">
                 <h5>Likes of {{ event.eventname }}</h5>
             </div>
         </div>
         {% if likesCount == 0 %}
-        <div class="row justify-content-center mt-3">
-            <div class="col-md-5 col-sm-12 border-bottom position-relative">
+        <div class="row justify-content-center mt-1">
+            <div class="col-md-5 col-sm-12 position-relative">
                 <p>No like found.</p>
             </div>
         </div>
         {% else %}
             {% for like in likes %}
-            <div class="row justify-content-center mt-3">
-                <div class="col-md-5 col-sm-12 border-bottom position-relative">
+            <div class="row justify-content-center mt-1">
+                <div class="col-md-5 col-sm-12 position-relative">
 
                     <div class="row">
                         <div class="col">

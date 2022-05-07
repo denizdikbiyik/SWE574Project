@@ -12,24 +12,14 @@
             <p style="text-align:center;">No requests found wanted from you.</p>
             {% else %}
                 {% for request in requests %}
-                    <div class="row justify-content-center mt-3">
-                        <div class="card col-md-12 col-sm-12 border-bottom position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
+                    <div class="row justify-content-center mt-1">
+                        <div class="card col-md-6 col-sm-12 position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
                             <div class="row">
-                                <div class="col-md-4">
-                                    
-                                </div>
-                                <div class="col-md-6">
-                                    <p>Requester: <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' request.requester.profile.pk %}">@{{ request.requester }}</a></p> 
-                                    <p style="font-weight:bold;">{{ request.tag }}</p>       
+                                <div class="col">
+                                    <a>Requester: <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' request.requester.profile.pk %}">@{{ request.requester }}</a></a> 
+                                    <a style="font-weight:bold;">{{ request.tag }}</a>       
                                     <a class="stretched-link" href="{% url 'request-detail' request.pk %}"></a>                   
-                                </div>      
-                                {% if request.isAccepted == True %}
-                                    <div class="col-md-2">
-                                        <p style="font-weight:bold;">Accepted</p>  
-                                        <p></p> 
-                                        <p></p>                
-                                    </div> 
-                                {% endif %}      
+                                </div>         
                             </div>
                         </div>
                     </div>

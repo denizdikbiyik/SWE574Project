@@ -36,8 +36,8 @@
                 <a onClick="javascript:history.go(-1);" class="btn btn-light">Back</a>
             </div>
         </div>
-        <div class="row justify-content-center mt-3">
-            <div class="col-md-5 col-sm-12 border-bottom">
+        <div class="row justify-content-center mt-1">
+            <div class="col-md-5 col-sm-12">
                 <p style="text-align: start; color:navy;"> Event Name: <a style="text-decoration: none;" class="text-primary" href="{% url 'event-detail' event.pk %}">{{ event.eventname }}</a></p>
                 <p style="text-align: start; color:navy;"> Organizer: {{ event.eventcreater }} </p>
                 {% if is_active == True %}
@@ -53,8 +53,8 @@
                 <p style="text-align: start; color:navy;"> Number of Applications: {{ application_number }} </p>
             </div>
         </div>
-        <div class="row justify-content-center mt-3">
-            <div class="col-md-5 col-sm-12 border-bottom">
+        <div class="row justify-content-center mt-1">
+            <div class="col-md-5 col-sm-12">
                 {% if application_number > 0 %}
                     <table>
                         <tr>
@@ -90,8 +90,8 @@
                 {% endif %}
             </div>
         </div>
-        <div class="row justify-content-center mt-3">
-            <div class="col-md-5 col-sm-12 border-bottom">
+        <div class="row justify-content-center mt-1">
+            <div class="col-md-5 col-sm-12">
                 <table>
                     <tr>
                         <th>Operation Logs</th>

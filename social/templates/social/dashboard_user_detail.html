@@ -19,8 +19,8 @@
                 <a onClick="javascript:history.go(-1);" class="btn btn-light">Back</a>
             </div>
         </div>
-        <div class="row justify-content-center mt-3">
-            <div class="col-md-5 col-sm-12 border-bottom">
+        <div class="row justify-content-center mt-1">
+            <div class="col-md-5 col-sm-12">
                 <p style="text-align: start; color:navy;"> Username: <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' profile.user.pk %}">{{ profile.user.username }}</a></p>
                 {% if profile.name %}
                     <p style="text-align: start; color:navy;"> Name: {{ profile.name }} </p>
@@ -180,8 +180,8 @@
                 </table>
             </div>
         </div>
-        <div class="row justify-content-center mt-3">
-            <div class="col-md-6 col-sm-12 border-bottom">
+        <div class="row justify-content-center mt-1">
+            <div class="col-md-6 col-sm-12">
                 <table>
                     <tr>
                         <th>Operation Logs</th>
