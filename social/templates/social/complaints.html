@@ -13,8 +13,8 @@
             </br>
             {% if complaints_count != 0 %}
                 {% for complaint in complaints %}
-                    <div class="row justify-content-center mt-3">
-                        <div class="card col-md-10 col-sm-12 border-bottom position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
+                    <div class="row justify-content-center mt-1">
+                        <div class="card col-md-10 col-sm-12 position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
                             <div class="row">
                                 <div class="col-md-8">
                                     <a style="text-decoration: none;">@{{ complaint.complainter.username }} gave </a>     

@@ -9,8 +9,8 @@
                 <br/>
                 {% if notifications_count != 0 %}
                     {% for notification in notifications %}
-                        <div class="row justify-content-center mt-3">
-                            <div class="card col-md-8 col-sm-12 border-bottom position-relative" style="border-radius:15px; background-color:whitesmoke; border-color: dimgrey; text-align: center;">
+                        <div class="row justify-content-center mt-1">
+                            <div class="card col-md-8 col-sm-12 position-relative" style="border-radius:15px; background-color:whitesmoke; border-color: dimgrey; text-align: center;">
                                 <div class="row">
                                     {% if notification.offerType == "service" %}
                                         {% if notification.offerPk != 0 %}

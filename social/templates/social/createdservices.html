@@ -12,8 +12,8 @@
             <p style="text-align:center;">No services found that you created.</p>
             {% else %}
                 {% for service in services %}
-                    <div class="row justify-content-center mt-3">
-                        <div class="card col-md-12 col-sm-12 border-bottom position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
+                    <div class="row justify-content-center mt-1">
+                        <div class="card col-md-10 col-sm-12 position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
                             <div class="row">
                                 <div class="col-md-4">
                                     <img style="border-radius:10px;" src="{{ service.picture.url }}" width="100" height="100" />
