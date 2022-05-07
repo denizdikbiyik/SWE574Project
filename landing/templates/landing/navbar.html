@@ -16,8 +16,6 @@
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     {% if user.is_authenticated %}
                         {% if request.user.profile.isActive %}
-                            <a style="color: white;" class="navbar-brand" href="{% url 'timeline' %}">TimeLine</a>
-                            <a style="color: white;" class="navbar-brand" href="{% url 'allusers' %}">All Users</a>
                             <div class="nav-item dropdown">
                                 <a style="color: white;" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"
                                    role="buton" aria-expanded="false">Service</a>
@@ -47,21 +45,15 @@
                                     </li>
                                 </ul>
                             </div>
-                            <a style="color: white; text-decoration: none; margin-top: auto; margin-bottom: auto;"
+                            <a style="color: white; text-decoration: none; margin-top: auto; margin-bottom: auto; margin-left: 10px;"
+                               class="navbar-light" href="{% url 'timeline' %}">TimeLine</a>
+                            <a style="color: white; text-decoration: none; margin-top: auto; margin-bottom: auto; margin-left: 15px;"
+                               class="navbar-light" href="{% url 'allusers' %}">All Users</a>
+                            <a style="color: white; text-decoration: none; margin-top: auto; margin-bottom: auto; margin-left: 15px;"
                                class="navbar-light" href="{% url 'searchloglist' %}">Search Logs</a>
                             {% if request.user.profile.isAdmin %}
-                                <div class="nav-item dropdown">
-                                    <a style="color:darkkhaki;" class="nav-link dropdown-toggle"
-                                       data-bs-toggle="dropdown"
-                                       role="buton" aria-expanded="false">Admin Dashboard</a>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item"
-                                               href="{% url 'admindashboardindex' %}">Dashboard</a></li>
-                                        <li><a class="dropdown-item" href="{% url 'servicelist' %}">Services</a></li>
-                                        <li><a class="dropdown-item" href="{% url 'eventlist' %}">Events</a></li>
-                                        <li><a class="dropdown-item" href="{% url 'userlist' %}">Users</a></li>
-                                    </ul>
-                                </div>
+                                <a style="color: darkkhaki; text-decoration: none; margin-top: auto; margin-bottom: auto; margin-left: 15px;"
+                               class="navbar-light" href="{% url 'admindashboardindex' %}">Admin Dashboard</a>
                             {% endif %}
                         {% endif %}
                     {% else %}
