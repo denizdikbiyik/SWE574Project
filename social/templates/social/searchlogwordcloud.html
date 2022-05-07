@@ -7,7 +7,11 @@
             <p></p>
             <h5 style="text-align:center;">Search logs Wordcloud for Services!</h5>
             <p></p>
-            <img width="600" height="600" src="/media/searchlogwordcloud.png"/>
+            {% if showCloud %}
+                <img width="600" height="600" src="/media/searchlogwordcloud.png"/>
+            {% else %}
+                <p style="text-align:center;">No search done yet.</p>
+            {% endif %}
         </div>
     </div>
 {% endblock content %}

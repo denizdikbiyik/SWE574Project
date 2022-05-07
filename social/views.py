@@ -1338,9 +1338,10 @@ class ServiceSearch(LoginRequiredMixin, View):
             # do not change the line below or do not remove from this else block
             # if you write separated sorting code, the code below should be together with search result 
             # but not with sorting to not duplicate the log
-            if query != "":
-                searchLog = Search.objects.create(query=query, searchType="service", resultCount=len(services_sorted),
-                                                  userId=request.user)
+            if query != None:
+                if query.strip() != "":
+                    searchLog = Search.objects.create(query=query.replace(" ", ""), searchType="service", resultCount=len(services_sorted),
+                                                    userId=request.user)
             # end of the obligation
 
         services_count = len(services_sorted)
@@ -1486,9 +1487,9 @@ class EventSearch(View):
         # do not change the line below or do not remove from this block
         # if you write separated sorting code, the code below should be together with search result 
         # but not with sorting to not duplicate the log
-        if query != "":
-            searchLog = Search.objects.create(query=query, searchType="event", resultCount=events_count,
-                                              userId=request.user)
+        if query != None:
+            if query.strip() != "":
+                searchLog = Search.objects.create(query=query.replace(" ", ""), searchType="event", resultCount=events_count, userId=request.user)
         # end of the obligation
 
         context = {
@@ -1536,19 +1537,23 @@ class SearchLogListZero(LoginRequiredMixin, View):
 class SearchLogWordCloud(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         searchLogsServices = Search.objects.filter(searchType="service")
+        showCloud = False
 
         logList = []
         for log in searchLogsServices:
-            logList.append(log.query)
-        unique_string = (" ").join(logList)
-        wordcloud = WordCloud(width=600, height=300).generate(unique_string)
-        plt.figure(figsize=(13, 5))
-        plt.imshow(wordcloud, aspect="auto")
-        plt.axis("off")
-        plt.savefig('media/searchlogwordcloud.png', dpi=100, bbox_inches='tight', pad_inches=0)
+            logList.append(log.query.replace(" ", ""))
+
+        if len(logList) > 0:
+            unique_string = (" ").join(logList)
+            wordcloud = WordCloud(width=600, height=300).generate(unique_string)
+            plt.figure(figsize=(13, 5))
+            plt.imshow(wordcloud, aspect="auto")
+            plt.axis("off")
+            plt.savefig('media/searchlogwordcloud.png', dpi=100, bbox_inches='tight', pad_inches=0)
+            showCloud = True
 
         context = {
-
+            'showCloud': showCloud
         }
         return render(request, 'social/searchlogwordcloud.html', context)
 
