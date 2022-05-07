@@ -16,13 +16,14 @@
                     <div class="row justify-content-center mt-1">
                         <div class="card col-md-10 col-sm-12 position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
                             <div class="row">
-                                <div class="col-md-8">
+                                <div class="col-md-10">
                                     <a style="text-decoration: none;">@{{ complaint.complainter.username }} gave </a>     
                                     {% if complaint.feedback %}
                                         <a>feedback: "{{ complaint.feedback }}"</a>           
                                     {% else %}
                                     {% endif %}
                                     for <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' complaint.complainted.pk %}">@{{ complaint.complainted.username }}</a>  
+                                    <a>on {{ complaint.date }}</a>  
                                     {% if complaint.isDeleted %}
                                     {% else %}
                                         <a class="stretched-link" href="{% url 'profile' complaint.complainted.pk %}"></a> 
