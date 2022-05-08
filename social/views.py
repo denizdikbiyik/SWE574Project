@@ -551,6 +551,7 @@ class ServiceEditView(LoginRequiredMixin, View):
                             service.description = edit_service.description
                             service.servicedate = edit_service.servicedate
                             service.location = edit_service.location
+                            service.address=reverse_location(edit_service.location)
                             service.capacity = edit_service.capacity
                             service.duration = edit_service.duration
                             service.category = edit_service.category
