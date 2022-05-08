@@ -972,6 +972,7 @@ class EventEditView(LoginRequiredMixin, View):
                         event.eventdescription = edit_event.eventdescription
                         event.eventdate = edit_event.eventdate
                         event.eventlocation = edit_event.eventlocation
+                        event.event_address=reverse_location(edit_event.eventlocation)
                         event.eventcapacity = edit_event.eventcapacity
                         event.eventduration = edit_event.eventduration
                         event.save()
