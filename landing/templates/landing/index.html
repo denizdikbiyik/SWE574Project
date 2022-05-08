@@ -8,7 +8,13 @@
             <p class="mt-2 lead">Follow people who interests you, stay up to date on the latest services and join events!</p>
 
             <div class="row border border-dark border-2">
-                <h5 style="font-weight: bolder; margin-top: 1%;">Featured</h5>
+                {% if user.is_authenticated %}
+                    {% if request.user.profile.isActive %}
+                        <h5 style="font-weight: bolder; margin-top: 1%;">Featured</h5>  
+                    {% endif %} 
+                {% else %}    
+                    <h5 style="font-weight: bolder; margin-top: 1%;">Featured</h5>
+                {% endif %}  
                 {% if user.is_authenticated %}
                     {% if request.user.profile.isActive %}
                         <div class="col">
