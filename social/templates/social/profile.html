@@ -151,13 +151,21 @@
             {% endif %}
             <div class="interest">
             <p><a style="font-weight: bolder;">Interests: </a>
-            {% if interests %}
-                    {% for interest in interests %}
-                          <span title="{{ interest.wiki_description }}" > <u>{{ interest.name }}</u> <button aria-label='delete item' title="remove" onClick="location.href='{% url 'profile' request.user.id %}?deleted={{ interest.wiki_description }}'" type='button'><b>-</b></button></span>
-                    {% endfor %}
+            {% if interests|length > 0 %}
+                {% for interest in interests %}
+                    {% if request.user != user %}
+                        <span title="{{ interest.wiki_description }}" > <u>{{ interest.name }}</u></span>
+                    {% else %}
+                        <span title="{{ interest.wiki_description }}" > <u>{{ interest.name }}</u> <button aria-label='delete item' title="remove" onClick="location.href='{% url 'profile' request.user.id %}?deleted={{ interest.wiki_description }}'" type='button'><b>-</b></button></span>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <a> No interest yet</a>
             {% endif %}
-            <a href="{% url 'wiki_interest' %}">+Add</a></p>
-            </div>
+            {% if request.user == user %}
+                <a href="{% url 'wiki_interest' %}">+Add</a>
+            {% endif %}
+            </p></div>
             <p><a style="font-weight: bolder;">Location: </a>{{ profile.location }}</p>
             <div class="form-row field-location">
                 <div>
