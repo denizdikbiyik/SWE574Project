@@ -1423,7 +1423,7 @@ class ServiceSearch(LoginRequiredMixin, View):
             services_query = Service.objects.filter(isDeleted=False).filter(isActive=True).filter(
                 servicedate__gte=currentTime)
 
-            if category == "all":
+            if category == "all" or category == None:
                 services_query = services_query
             else:
                 services_query = services_query.filter(category__tag=category)
