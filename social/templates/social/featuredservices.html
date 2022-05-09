@@ -4,12 +4,15 @@
 {% block content %}
     <div class="container">
         <div class="row mt-3">  
-            <div class="col-md-1">
-                <a onClick="javascript:history.go(-1);" class="btn btn-light">Back</a>
+            <div class="col-md-2">
+                <a onClick="javascript:history.go(-1);" class="btn btn-light">Back to Dashboard</a>
             </div>
-            <div class="col-md-11">
+            <div class="col-md-8">
                 <h5 style="text-align:center;">Featured Services</h5>
             </div>
+            <div class="col-md-2">
+            </div>
+            </br>
             </br>
             {% if services_count != 0 %}
                 {% for service in services %}
@@ -39,7 +42,6 @@
             {% else %}
                 <p class="row justify-content-center mt-3">No services found!</p>
             {% endif %}
-        </div>
-        
+        </div> 
     </div>
 {% endblock content %}
