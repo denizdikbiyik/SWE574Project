@@ -1957,11 +1957,11 @@ class DashboardEventDetailView(View):
             application_number = len(applications)
             logs = Log.objects.filter(itemType="event").filter(itemId=pk)
             conversion = {'createevent': 'Event is created.',
-                        'createeventapplication': 'Application done to event.',
+                        'createeventapplication': 'Applied to this event.',
                         'editevent': 'Event is edited.',
                         'deleteevent': 'Event is deleted.',
-                        'editserviceapplication': 'Service application is edited.',
-                        'deleteeventapplication': 'Event application is deleted.',
+                        'editeventapplication': 'Application to this event is edited.',
+                        'deleteeventapplication': 'Application to this event is removed.',
                         'spentcredit': 'Credit spent.',
                         'createeventcommunication': 'A message sent under event.',
                         'deleteeventcommunication': 'A message under event is deleted.',
@@ -2042,11 +2042,11 @@ class DashboardServiceDetailView(View):
             application_number = len(applications)
             logs = Log.objects.filter(itemType="service").filter(itemId=pk)
             conversion = {'createservice': 'Service is created.',
-                        'createserviceapplication': 'Application done to service.',
+                        'createserviceapplication': 'Applied to this service.',
                         'editservice': 'Service is edited.',
                         'deleteservice': 'Service is deleted.',
-                        'editserviceapplication': 'An application to service is edited.',
-                        'deleteserviceapplication': 'An application to service is deleted.',
+                        'editserviceapplication': 'Application to this service is edited.',
+                        'deleteserviceapplication': 'Application to this service is removed.',
                         'confirmtaken': 'Service taken is confirmed.',
                         'confirmgiven': 'Service given is confirmed.',
                         'earncredit': 'Credit earned.',
@@ -3003,7 +3003,7 @@ class ComplaintUser(LoginRequiredMixin, View):
                 allAdmins = UserProfile.objects.filter(isAdmin=True)
                 for admin in allAdmins:
                     notification = NotifyUser.objects.create(notify=admin.user,
-                                                            notification=str(request.user) + ' created complaint for ' + str(
+                                                            notification=str(request.user) + ' created complaint about ' + str(
                                                                 complainted.user)+'.', offerType="user",
                                                             offerPk=complainted.user.pk)
                     notified_user = UserProfile.objects.get(pk=admin.user)
@@ -3041,7 +3041,7 @@ class ComplaintUserEdit(LoginRequiredMixin, View):
                 allAdmins = UserProfile.objects.filter(isAdmin=True)
                 for admin in allAdmins:
                     notification = NotifyUser.objects.create(notify=admin.user, notification=str(
-                        request.user) + ' edited complaint for ' + str(complaint.complainted)+'.', offerType="user",
+                        request.user) + ' edited complaint about ' + str(complaint.complainted)+'.', offerType="user",
                                                             offerPk=complaint.complainted.pk)
                     notified_user = UserProfile.objects.get(pk=admin.user)
                     notified_user.unreadcount = notified_user.unreadcount + 1
@@ -3076,7 +3076,7 @@ class ComplaintUserDelete(LoginRequiredMixin, View):
             allAdmins = UserProfile.objects.filter(isAdmin=True)
             for admin in allAdmins:
                 notification = NotifyUser.objects.create(notify=admin.user,
-                                                        notification=str(request.user) + ' deleted complaint for ' + str(
+                                                        notification=str(request.user) + ' deleted complaint about ' + str(
                                                             complaint.complainted)+'.', offerType="user",
                                                         offerPk=complaint.complainted.pk)
                 notified_user = UserProfile.objects.get(pk=admin.user)
