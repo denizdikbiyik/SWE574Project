@@ -1,4 +1,5 @@
 from django.contrib.postgres.search import SearchVector
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models.functions import Lower
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
@@ -1487,8 +1488,21 @@ class ServiceSearch(LoginRequiredMixin, View):
             services_count = len(services_sorted)
             alltags = Tag.objects.all()
             category_list = Tag.objects.values_list("tag", flat=True).distinct()
+            # Pagination
+            object_list = services_sorted
+            page_num = request.GET.get('page', 1)
+            paginator = Paginator(object_list, 5)
+            try:
+                page_obj = paginator.page(page_num)
+            except PageNotAnInteger:
+                # if page is not an integer, deliver the first page
+                page_obj = paginator.page(1)
+            except EmptyPage:
+                # if the page is out of range, deliver the last page
+                page_obj = paginator.page(paginator.num_pages)
+            # End of Pagination
             context = {
-                'services': services_sorted,
+                'page_obj': page_obj,
                 'services_count': services_count,
                 'currentTime': currentTime,
                 'alltags': alltags,
@@ -1496,7 +1510,6 @@ class ServiceSearch(LoginRequiredMixin, View):
                 "cat_sel": cat_sel,
                 "category_list": category_list,
                 "sorting": sorting,
-
             }
             return render(request, 'social/service-search.html', context)
         else:
