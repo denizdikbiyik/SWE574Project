@@ -4,13 +4,15 @@
 {% block content %}
     <div class="container">
         <div class="row mt-3">
-            <div class="col-md-1">
-                <a onClick="javascript:history.go(-1);" class="btn btn-light">Back</a>
+            <div class="col-md-2">
+                <a onClick="javascript:history.go(-1);" class="btn btn-light">Back to Dashboard</a>
             </div>
-            <div class="col-md-11">
+            <div class="col-md-8">
                 <h5 style="text-align:center;">All Complaints</h5>
             </div>
-            </br>
+            <div class="col-md-2">
+            </div>
+            </br></br>
             {% if complaints_count != 0 %}
                 {% for complaint in complaints %}
                     <div class="row justify-content-center mt-1">
