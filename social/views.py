@@ -8,7 +8,7 @@ from django.views import View
 from .models import Service, UserProfile, Event, ServiceApplication, UserRatings, NotifyUser, EventApplication, Tag, \
     Log, Communication, Like, UserComplaints, Featured, Interest, Search
 from .forms import ServiceForm, EventForm, ServiceApplicationForm, RatingForm, EventApplicationForm, ProfileForm, \
-    RequestForm, ComplaintForm
+    RequestForm, ComplaintForm, MyLocation
 from django.views.generic.edit import UpdateView, DeleteView
 from django.http import HttpResponseRedirect
 from django.contrib import messages, auth
@@ -21,6 +21,7 @@ import re
 from random import randrange
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth.models import User
+from geopy.distance import distance
 
 # MatPlotLib
 import matplotlib
@@ -1434,6 +1435,7 @@ class ServiceSearch(LoginRequiredMixin, View):
             if query == None or query == "":
                 services_query = services_query
             else:
+                '''
                 # for searching in Turkish characters
                 services_pk = set()
                 for service in services_query:
@@ -1445,6 +1447,55 @@ class ServiceSearch(LoginRequiredMixin, View):
                 services_query = services_query.filter(
                     Q(name__icontains=query) | Q(description__icontains=query) | Q(wiki_description__icontains=query) | Q(
                         address__icontains=query) | Q(pk__in=services_pk))
+                '''
+                services_query = services_query.filter(
+                    Q(name__icontains=query) | Q(description__icontains=query) | Q(wiki_description__icontains=query))
+
+            # Map
+            type=request.GET.get("type")
+            form = MyLocation(request.GET)
+            query_address = request.GET.get("query_address")
+            distance_map=request.GET.get("distance_map")
+            distance_home=request.GET.get("distance_home")
+            target_location= None
+            dist=0
+            if query_address == None and  distance_map == None and distance_home == None:
+                services_query = services_query
+            else:
+                if query_address != None:
+                    # for searching in Turkish characters
+                    services_pk = set()
+                    for service in services_query:
+                        address = service.address
+                        if address:
+                            if re.search(query_address, address, re.IGNORECASE):
+                                services_pk.add(service.pk)
+                    services_query = services_query.filter(Q(address__icontains=query_address) | Q(pk__in=services_pk))
+                else:
+                    if distance_map != None:
+                        dist=int(distance_map)
+                        if form.is_valid():
+                            target_location = form.cleaned_data.get("location")
+                    if distance_home != None:
+                        dist = int(distance_home)
+                        target_location = request.user.profile.location
+                    services_location_pk = set()
+                    for service in services_query:
+                        service_location = service.location
+                        if distance(target_location, service_location).km <= dist:
+                            services_location_pk.add(service.pk)
+                    services_query = services_query.filter(Q(pk__in=services_location_pk))
+
+            if 'submit' in request.GET:
+                if query_address != None:
+                    type="address"
+                elif distance_map != None:
+                    type="map"
+                elif distance_home != None:
+                    type = "home"
+                else:
+                    type="all"
+            # End of Map
 
             services_sorted = []
             if sorting == "newest":
@@ -1501,6 +1552,7 @@ class ServiceSearch(LoginRequiredMixin, View):
                 # if the page is out of range, deliver the last page
                 page_obj = paginator.page(paginator.num_pages)
             # End of Pagination
+
             context = {
                 'page_obj': page_obj,
                 'services_count': services_count,
@@ -1510,6 +1562,10 @@ class ServiceSearch(LoginRequiredMixin, View):
                 "cat_sel": cat_sel,
                 "category_list": category_list,
                 "sorting": sorting,
+                "form": form,
+                "type": type,
+                "distance_home":distance_home,
+                "distance_map":distance_map,
             }
             return render(request, 'social/service-search.html', context)
         else:
@@ -3520,3 +3576,4 @@ class RemoveEventFeatured(LoginRequiredMixin, View):
             return redirect('event-detail', pk=pk)
         else:
             return redirect('index')
+

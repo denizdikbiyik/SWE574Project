@@ -2,6 +2,7 @@ from django import forms
 from .models import Service, Event, ServiceApplication, UserRatings, EventApplication, UserProfile, Tag, User, UserComplaints
 from django.utils import timezone
 from django.core.exceptions import ValidationError
+from location_field.models.plain import PlainLocationField
 
 def validate_date(date):
     if date < timezone.now():
@@ -175,3 +176,10 @@ class RequestForm(forms.ModelForm):
     class Meta:
         model = Tag
         fields = ['tag', 'toPerson']
+
+class MyLocation(forms.ModelForm):
+    class Meta:
+        model = Service
+        fields = ['city', 'location']
+
+
