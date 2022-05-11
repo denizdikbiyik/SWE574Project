@@ -1,9 +1,82 @@
+<head>
+    <script type="text/javascript" src="/admin/jsi18n/"></script>
+    <script type="text/javascript" src="/static/admin/js/vendor/jquery/jquery.js"></script>
+    <script type="text/javascript" src="/static/admin/js/calendar.js"></script>
+    <script type="text/javascript" src="/static/location_field/js/form.js"></script>
+    <script type="text/javascript" src="/static/admin/js/jquery.init.js"></script>
+    <script type="text/javascript" src="/static/admin/js/admin/DateTimeShortcuts.js"></script>
+    <script type="text/javascript" src="/static/admin/js/core.js"></script>
+    <script type="text/javascript" src="/static/admin/js/admin/RelatedObjectLookups.js"></script>
+    <script type="text/javascript" src="/static/admin/js/actions.js"></script>
+    <script type="text/javascript" src="/static/admin/js/urlify.js"></script>
+    <script type="text/javascript" src="/static/admin/js/prepopulate.js"></script>
+    <script type="text/javascript" src="/static/admin/js/vendor/xregexp/xregexp.js"></script>
+
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/static/admin/css/responsive.css">
+
+    <meta name="robots" content="NONE,NOARCHIVE">
+</head>
+
 {% extends 'landing/base.html' %}
 {% load crispy_forms_tags %}
 
 {% block content %}
     <div class="container p-3 my-3 bg-secondary ">
+
+         <form method="get">
+                <div class="form-group">
+                    <label for="period type">Service Location Search Type:</label>
+                    <select name="type" id="period type" onchange="this.form.submit()">
+                        <option value="all" {% if type == 'all' %}selected{% endif %}>--All--</option>
+                        <option value="address" {% if type == 'address' %}selected{% endif %}>By Keyword in Address</option>
+                        <option value="home" {% if type == 'home' %}selected{% endif %}>By My Home Address</option>
+                        <option value="map" {% if type == 'map' %}selected{% endif %}>By Map</option>
+                    </select>
+                </div>
+         </form>
+
         <form method="get">
+
+            <div class="form-group">
+            {% if type  == "map" %}
+                <label for="{{ form.city.id_for_label }}">Location Name:</label>
+                {{ form.city }}
+                <div class="fieldWrapper">
+                    <label for="{{ form.location.id_for_label }}">Coordinates:</label>
+                    {{ form.location }}
+                </div> <br>
+                <label for="distance-select">Select Distance:</label>
+                <select name="distance_map" id="distance-select">
+                    <option value="3" {% if distance_map == "3" %}selected{% endif %}>--Select--</option>
+                    <option value="1" {% if distance_map == '1' %}selected{% endif %}>1 km
+                    </option>
+                    <option value="3" {% if distance_map == '3' %}selected{% endif %}>3 km</option>
+                    <option value="5" {% if distance_map == '5' %}selected{% endif %}>5 km</option>
+                    <option value="10" {% if distance_map == '10' %}selected={% endif %}>10 km
+                    </option>
+                </select>
+            {% elif type  == "address" %}
+                <label for="addr-search">Search in Address:</label>
+                <input type="search" id="addr-search" name='query_address'
+                   aria-label="Search through site content"
+                   placeholder="address keyword"
+                   value="{{ request.GET.query_address }}">
+            {% elif type  == "home" %}
+                <label for="distance-select">Select Distance:</label>
+                <select name="distance_home" id="distance-select">
+                    <option value="3" {% if distance_home == "3" %}selected{% endif %}>--Select--</option>
+                    <option value="1" {% if distance_home == '1' %}selected{% endif %}>1 km
+                    </option>
+                    <option value="3" {% if distance_home == '3' %}selected{% endif %}>3 km</option>
+                    <option value="5" {% if distance_home == '5' %}selected{% endif %}>5 km</option>
+                    <option value="10" {% if distance_home == '10' %}selected={% endif %}>10 km
+                    </option>
+                </select>
+            {% endif %}
+            </div> <br>
+
+
             <label for="category-select">Categories:</label>
             <select name="category" id="category-select">
                 <option value="all">All</option>
@@ -16,7 +89,7 @@
             <label for="admin-search">Search:</label>
             <input type="search" id="admin-search" name='query'
                    aria-label="Search through site content"
-                   placeholder="keyword or location"
+                   placeholder="keyword"
                    value="{{ request.GET.query }}">
 
             <label for="sort-select">Sort by:</label>
@@ -29,11 +102,14 @@
                 <option value="servicedate" {% if sorting == 'servicedate' %}selected={% endif %}>Delivery
                     Date
                 </option>
-
             </select>
+
+
+
             <div class="form-group">
                 <button type="submit" name="submit" value="submitted">Submit</button>
             </div>
+
 
         
         </form>
