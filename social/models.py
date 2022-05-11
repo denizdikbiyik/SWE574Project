@@ -128,6 +128,13 @@ class UserComplaints(models.Model):
     feedback = models.TextField(blank=True, null=True)
     isDeleted = models.BooleanField(default=False)
     date = models.DateTimeField(default=timezone.now)
+    isSolved = models.BooleanField(default=False)
+    solutionAdmin = models.ForeignKey(User, verbose_name='user', related_name='solutionAdmin', on_delete=models.SET_NULL,
+                                    null=True)
+    solutionText = models.TextField(blank=True, null=True)
+    solutionAction = models.TextField(blank=False, null=True)
+    adminDate = models.DateTimeField(default=timezone.now)
+
 
 
 @receiver(post_save, sender=User)

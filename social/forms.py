@@ -114,6 +114,7 @@ class RatingForm(forms.ModelForm):
         model = UserRatings
         fields = ['rating', 'feedback']
 
+
 class ComplaintForm(forms.ModelForm):
     feedback = forms.CharField(
         label = 'Feedback',
@@ -126,6 +127,32 @@ class ComplaintForm(forms.ModelForm):
     class Meta:
         model = UserComplaints
         fields = ['feedback']
+
+class ComplaintFormAdmin(forms.ModelForm):
+    SolutionList =(
+        ('No need to block anyone', 'No need to block anyone'),
+        ('Blocked the person complaint is created about', 'Blocked the person complaint is created about'),
+        ('Blocked the person who created the complaint', 'Blocked the person who created the complaint'),
+        ('Blocked both complaint creator and the person created about', 'Blocked both complaint creator and the person created about'),
+    )
+
+    solutionAction = forms.ChoiceField(
+        label = 'Solution',
+        choices = SolutionList
+    )
+
+    solutionText = forms.CharField(
+        label = 'Solution Operation',
+        widget = forms.Textarea(attrs={
+            'rows': '3',
+            'placeholder': 'Please write what you have done to solve...'
+        })
+    )
+
+    class Meta:
+        model = UserComplaints
+        fields = ['solutionAction', 'solutionText']
+
 
 class ServiceApplicationForm(forms.ModelForm):    
 

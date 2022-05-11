@@ -12,16 +12,24 @@
                     <div class="row justify-content-center mt-1">
                         <div class="card col-md-10 col-sm-12 position-relative" style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
                             <div class="row">
-                                <div class="col-md-8">    
+                                <div class="col-md-10">    
                                     {% if complaint.feedback %}
-                                        <a>Feedback: "{{ complaint.feedback }}"</a>           
+                                        <a>"{{ complaint.feedback }}"</a>           
                                     {% else %}
                                     {% endif %}
-                                    for <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' complaint.complainted.pk %}">@{{ complaint.complainted.username }}</a>  
+                                    about <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' complaint.complainted.pk %}">@{{ complaint.complainted.username }}</a> 
+                                    on <a>{{ complaint.date }}</a>  
                                     {% if complaint.isDeleted %}
                                     {% else %}
                                         <a class="stretched-link" href="{% url 'profile' complaint.complainted.pk %}"></a> 
                                     {% endif %}                  
+                                </div> 
+                                <div class="col-md-2">
+                                    {% if complaint.isSolved %}
+                                        <div class="row">
+                                            <a style="font-weight:bold;">Solved</a> 
+                                        </div>
+                                    {% endif %} 
                                 </div>         
                             </div>
                         </div>

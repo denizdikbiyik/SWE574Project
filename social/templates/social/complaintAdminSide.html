@@ -1,0 +1,46 @@
+{% extends 'landing/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="container">
+        <div class="row mt-5">
+            <div class="col-md-5 col-sm-6">
+                
+            </div>
+        </div>
+        <div class="row justify-content-center mt-1">
+            <div class="col-md-5 col-sm-12">
+                <h5>Solution Page for this Complaint!</h5>
+            </div>
+        </div>
+        <div class="row justify-content-center mt-1">
+            <div class="col-md-5 col-sm-12">
+                {% if isSolved %}
+                    <b>This complaint is solved.</b>
+                    <p></p>
+                    <p><b>Creator:</b> <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' record.complainter.pk %}">@{{ record.complainter }}</a></p>
+                    <p><b>Complaint about:</b> <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' record.complainted.pk %}">@{{ record.complainted }}</a></p>
+                    <p><b>Comment was:</b> {{ record.feedback }}</p>
+                    <p><b>Time:</b> {{ record.date }}</p>
+                    <p><b>Solution Admin:</b> <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' record.solutionAdmin.pk %}">@{{ record.solutionAdmin }}</a></p>
+                    <p><b>Solution Comment:</b> {{ record.solutionText }}</p>
+                    <p><b>Solution Action:</b> {{ record.solutionAction }}</p>
+                    <p><b>Solution Time:</b> {{ record.adminDate }}</p>
+                {% else %}
+                    <p></p>
+                    <p><b>Creator:</b> <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' record.complainter.pk %}">@{{ record.complainter }}</a></p>
+                    <p><b>Complaint about:</b> <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' record.complainted.pk %}">@{{ record.complainted }}</a></p>
+                    <p><b>Comment was:</b> {{ record.feedback }}</p>
+                    <p><b>Time:</b> {{ record.date }}</p>
+                    <form method="POST" enctype='multipart/form-data'>
+                        {% csrf_token %}
+                        {{ form | crispy }}
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-success mt-3">Submit!</button>
+                        </div>
+                    </form>
+                {% endif %}  
+            </div>
+        </div>
+    </div>
+{% endblock content %}

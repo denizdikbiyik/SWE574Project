@@ -93,6 +93,9 @@
                             {% if profile.isActive %}
                                 <a class="btn btn-primary mt-3" href="{% url 'complaintuser' profile.pk %}">Complaint</a>
                             {% endif %}
+                            <div class="mb-3 mt-3">
+                                <a href="{% url 'complaintsdonebyme' profile.pk %}">Past Complaints By Me</a>
+                            </div>
                         {% endif %}
                     {% endif %}
                 </div>
@@ -120,6 +123,15 @@
                 <h3 class="py-4">{{ profile.name }}</h3>           
             {% else %}
                 <h3 class="py-4">{{ user.username }}</h3>
+            {% endif %}
+
+            {% if request.user.profile.isAdmin %}
+                <div class="mb-3">
+                    <a href="{% url 'complaintscreatedabout' profile.pk %}">Complaints Created About This User</a>
+                </div>
+                <div class="mb-3">
+                    <a href="{% url 'complaintscreator' profile.pk %}">Complaints Which This User Created</a>
+                </div>
             {% endif %}
 
             <div class="mb-3">

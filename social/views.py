@@ -8,7 +8,7 @@ from django.views import View
 from .models import Service, UserProfile, Event, ServiceApplication, UserRatings, NotifyUser, EventApplication, Tag, \
     Log, Communication, Like, UserComplaints, Featured, Interest, Search
 from .forms import ServiceForm, EventForm, ServiceApplicationForm, RatingForm, EventApplicationForm, ProfileForm, \
-    RequestForm, ComplaintForm, MyLocation
+    RequestForm, ComplaintForm, MyLocation, ComplaintFormAdmin
 from django.views.generic.edit import UpdateView, DeleteView
 from django.http import HttpResponseRedirect
 from django.contrib import messages, auth
@@ -2066,6 +2066,7 @@ class DashboardUserDetailView(View):
                         'createcomplaint': 'Created complaint.',
                         'editcomplaint': 'Edited complaint.',
                         'deletecomplaint': 'Deleted complaint.',
+                        'solvecomplaint': 'Solved complaint.',
                         'deactivate': 'Deactivated.',
                         'activate': 'Activated.'}
             for log in logs:
@@ -3033,7 +3034,7 @@ class ComplaintUser(LoginRequiredMixin, View):
             form = ComplaintForm()
             complainted = UserProfile.objects.get(user=pk)
             complaintRecord = UserComplaints.objects.filter(complainted=complainted.user).filter(
-                complainter=request.user).filter(isDeleted=False)
+                complainter=request.user).filter(isDeleted=False).filter(isSolved=False)
             isComplainted = len(complaintRecord)
             context = {
                 'form': form,
@@ -3060,8 +3061,8 @@ class ComplaintUser(LoginRequiredMixin, View):
                 for admin in allAdmins:
                     notification = NotifyUser.objects.create(notify=admin.user,
                                                             notification=str(request.user) + ' created complaint about ' + str(
-                                                                complainted.user)+'.', offerType="user",
-                                                            offerPk=complainted.user.pk)
+                                                                complainted.user)+'.', offerType="complaint",
+                                                            offerPk=new_complaint.pk)
                     notified_user = UserProfile.objects.get(pk=admin.user)
                     notified_user.unreadcount = notified_user.unreadcount + 1
                     notified_user.save()
@@ -3097,8 +3098,8 @@ class ComplaintUserEdit(LoginRequiredMixin, View):
                 allAdmins = UserProfile.objects.filter(isAdmin=True)
                 for admin in allAdmins:
                     notification = NotifyUser.objects.create(notify=admin.user, notification=str(
-                        request.user) + ' edited complaint about ' + str(complaint.complainted)+'.', offerType="user",
-                                                            offerPk=complaint.complainted.pk)
+                        request.user) + ' edited complaint about ' + str(complaint.complainted)+'.', offerType="complaint",
+                                                            offerPk=complaint.pk)
                     notified_user = UserProfile.objects.get(pk=admin.user)
                     notified_user.unreadcount = notified_user.unreadcount + 1
                     notified_user.save()
@@ -3129,6 +3130,15 @@ class ComplaintUserDelete(LoginRequiredMixin, View):
             complaint.save()
             log = Log.objects.create(operation="deletecomplaint", itemType="user", itemId=complaint.complainted.pk,
                                     userId=request.user)
+
+            notificationsToRead = NotifyUser.objects.filter(offerType="complaint").filter(offerPk=complaint.pk)
+            for notification in notificationsToRead:
+                notification.hasRead = True
+                notification.save()
+                userNotified = UserProfile.objects.get(pk=notification.notify)
+                userNotified.unreadcount = userNotified.unreadcount - 1
+                userNotified.save()
+
             allAdmins = UserProfile.objects.filter(isAdmin=True)
             for admin in allAdmins:
                 notification = NotifyUser.objects.create(notify=admin.user,
@@ -3157,6 +3167,56 @@ class Complaints(LoginRequiredMixin, View):
             return redirect('index')
 
 
+class ComplaintUserAdminSide(LoginRequiredMixin, View):
+    def get(self, request, *args, pk, **kwargs):
+        if request.user.profile.isActive:
+            form = ComplaintFormAdmin()
+            record = UserComplaints.objects.get(pk=pk)
+            isSolved = record.isSolved
+            context = {
+                'form': form,
+                'record': record,
+                'isSolved': isSolved,
+            }
+            return render(request, 'social/complaintAdminSide.html', context)
+        else:
+            return redirect('index')
+
+    def post(self, request, *args, pk, **kwargs):
+        if request.user.profile.isActive:
+            form = ComplaintFormAdmin(request.POST)
+            complaint = UserComplaints.objects.get(pk=pk)
+            if form.is_valid():
+                edit_complaint = form.save(commit=False)
+                complaint.solutionAction = edit_complaint.solutionAction
+                complaint.solutionText = edit_complaint.solutionText
+                complaint.adminDate = timezone.now()
+                complaint.isSolved = True
+                complaint.solutionAdmin = request.user
+                complaint.save()
+                log = Log.objects.create(operation="solvecomplaint", itemType="user", itemId=complaint.complainted.pk,
+                                        userId=request.user)
+
+                notificationsToRead = NotifyUser.objects.filter(offerType="complaint").filter(offerPk=complaint.pk)
+                for notification in notificationsToRead:
+                    notification.hasRead = True
+                    notification.save()
+                    userNotified = UserProfile.objects.get(pk=notification.notify)
+                    userNotified.unreadcount = userNotified.unreadcount - 1
+                    userNotified.save()
+
+                notification = NotifyUser.objects.create(notify=complaint.complainter, notification=str(request.user) + ' solved your complaint about ' + str(complaint.complainted)+'.', offerType="user", offerPk=complaint.complainted.pk)
+                notified_user = UserProfile.objects.get(pk=complaint.complainter)
+                notified_user.unreadcount = notified_user.unreadcount + 1
+                notified_user.save()
+            context = {
+                'form': form,
+            }
+            return redirect('complaintsolve', pk=complaint.pk)
+        else:
+            return redirect('index')
+
+
 class MyComplaints(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
@@ -3167,6 +3227,51 @@ class MyComplaints(LoginRequiredMixin, View):
                 'complaints': complaints,
             }
             return render(request, 'social/mycomplaints.html', context)
+        else:
+            return redirect('index')
+
+
+class ComplaintsCreatedAbout(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        if request.user.profile.isActive:
+            pk = self.kwargs['pk']
+            complaints = UserComplaints.objects.filter(complainted=pk).order_by('-date')
+            complaints_count = len(complaints)
+            context = {
+                'complaints_count': complaints_count,
+                'complaints': complaints,
+            }
+            return render(request, 'social/complaintsCreatedAbout.html', context)
+        else:
+            return redirect('index')
+
+
+class ComplaintsCreator(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        if request.user.profile.isActive:
+            pk = self.kwargs['pk']
+            complaints = UserComplaints.objects.filter(complainter=pk).order_by('-date')
+            complaints_count = len(complaints)
+            context = {
+                'complaints_count': complaints_count,
+                'complaints': complaints,
+            }
+            return render(request, 'social/complaintsCreator.html', context)
+        else:
+            return redirect('index')
+
+
+class ComplaintsDoneByMe(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        if request.user.profile.isActive:
+            pk = self.kwargs['pk']
+            complaints = UserComplaints.objects.filter(complainted=pk).filter(complainter=request.user).filter(isDeleted=False).order_by('-date')
+            complaints_count = len(complaints)
+            context = {
+                'complaints_count': complaints_count,
+                'complaints': complaints,
+            }
+            return render(request, 'social/complaintsCreator.html', context)
         else:
             return redirect('index')
 
