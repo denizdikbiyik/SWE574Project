@@ -22,7 +22,7 @@
                                 <img style="border-radius:10px;" src="{{ log.userId.profile.picture.url }}" width="40" height="40" />
                             </div>
                             <div class="col-md-11">
-                                <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' log.userId.profile.pk %}">@{{ log.userId.profile.user.username }}</a>{{ log.operation }}
+                                <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' log.userId.profile.pk %}">@{{ log.userId.profile.user.username }}</a> on {{ log.date }}, {{ log.operation }}
                                 {% if log.itemType == "service" %}
                                     {% for serviceItem in allServices %}
                                         {% if log.itemId == serviceItem.pk  %}
@@ -34,7 +34,6 @@
                                     {% for serviceItemToClick in allServicesToClick %}
                                         {% if log.itemId == serviceItemToClick.pk %}
                                             <a style="font-weight:bold; text-decoration: none;" href="{% url 'service-detail' serviceItemToClick.pk %}">{{ serviceItemToClick.name }}</a> 
-                                            <!-- <a class="stretched-link" href="{% url 'service-detail' serviceItemToClick.pk %}"></a>   -->
                                         {% endif %}
                                     {% endfor %}
                                     {% for serviceItem in allServices %}
@@ -42,7 +41,6 @@
                                             <a>at {{ serviceItem.address }}</a>  
                                         {% endif %}
                                     {% endfor %}
-                                     
                                 {% elif log.itemType == "event" %}
                                     {% for eventItem in allEvents %}
                                         {% if log.itemId == eventItem.pk %}
@@ -74,8 +72,7 @@
                                             <a style="font-weight:bold; text-decoration: none;" href="{% url 'profile' userItemToClick.user.pk %}">{{ userItemToClick.user.username }}</a>  
                                         {% endif %}
                                     {% endfor %}
-                                {% endif %}      
-                                <a>on {{ log.date }}</a>      
+                                {% endif %}           
                             </div>
                         </div>
                     </div>
