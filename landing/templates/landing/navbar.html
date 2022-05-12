@@ -50,7 +50,7 @@
                             <a style="color: white; text-decoration: none; margin-top: auto; margin-bottom: auto; margin-left: 15px;"
                                class="navbar-light" href="{% url 'allusers' %}">All Users</a>
                             <a style="color: white; text-decoration: none; margin-top: auto; margin-bottom: auto; margin-left: 15px;"
-                               class="navbar-light" href="{% url 'searchloglist' %}">Search Logs</a>
+                               class="navbar-light" href="{% url 'searchlogwordcloud' %}">Search Logs</a>
                             {% if request.user.profile.isAdmin %}
                                 <a style="color: darkkhaki; text-decoration: none; margin-top: auto; margin-bottom: auto; margin-left: 15px;"
                                class="navbar-light" href="{% url 'admindashboardindex' %}">Admin Dashboard</a>

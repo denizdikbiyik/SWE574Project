@@ -5,13 +5,20 @@
     <div class="container">
         <div class="row">
             <p></p>
-            <h5 style="text-align:center;">Search logs Wordcloud for Services!</h5>
-            <p></p>
+            <div class="col-md-9">
+                <h5 style="text-align:center;">Search logs Wordcloud for Services!</h5>
+            </div>
+            <div class="col-md-3">
+                <a style="text-decoration: none; text-align: right; font-weight: bolder;" class="text-primary" href="{% url 'searchloglistzero' %}">Hint for Service Creators</a>
+                </br>
+                <a style="text-decoration: none; text-align: right; font-weight: bolder;" class="text-primary" href="{% url 'searchloglist' %}">All Search Logs</a>
+            </div>
             {% if showCloud %}
-                <img width="600" height="600" src="/media/searchlogwordcloud.png"/>
+                <img style="border-radius: 25px; margin-top: 1%;" width="600" height="600" src="/media/searchlogwordcloud.png"/>
             {% else %}
                 <p style="text-align:center;">No search done yet.</p>
             {% endif %}
+            <p></p>
         </div>
     </div>
 {% endblock content %}
