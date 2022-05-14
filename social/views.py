@@ -22,6 +22,8 @@ from random import randrange
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth.models import User
 from geopy.distance import distance
+from functools import reduce
+import operator
 
 # MatPlotLib
 import matplotlib
@@ -297,6 +299,11 @@ class ServiceDetailView(View):
                                                 itemId=service.pk, userId=request.user)
                         applicant_user_profile.reservehour = applicant_user_profile.reservehour - service.duration
                         applicant_user_profile.save()
+                        if service.wiki_description is not None:
+                            definitions = service.wiki_description.split("as ")
+                            if len(Interest.objects.filter(user=request.user, wiki_description=definitions[1])) == 0:
+                                new_interest = Interest.objects.create(user=request.user, name=definitions[0], wiki_description=definitions[1], implicit=True, origin='like')
+                                new_interest.save()
                         notification = NotifyUser.objects.create(notify=service.creater, notification=str(
                             new_application.applicant) + ' applied to service ' + str(new_application.service.name)+'.',
                                                                 offerType="service", offerPk=new_application.service.pk)
@@ -1055,7 +1062,7 @@ class ProfileView(View):
             ratings_average = UserRatings.objects.filter(rated=profile.user).aggregate(Avg('rating'))
             interest = request.GET.get("deleted")
             if interest:
-                Interest.objects.filter(user=user, wiki_description=interest).delete()
+                Interest.objects.filter(user=user, wiki_description=interest, implicit=False).delete()
 
             if len(followers) == 0:
                 is_following = False
@@ -2289,6 +2296,13 @@ class ServiceLike(LoginRequiredMixin, View):
         if request.user.profile.isActive:
             service = Service.objects.get(pk=pk)
             like = Like.objects.create(itemType="service", itemId=pk, liked=request.user)
+            if service.wiki_description is not None:
+                definitions = service.wiki_description.split("as ")
+                if len(Interest.objects.filter(user=request.user, wiki_description=definitions[1])) == 0:
+                    new_interest = Interest.objects.create(user=request.user, name=definitions[0], wiki_description=definitions[1], implicit= True, origin='like')
+                    new_interest.save()
+                    for interest in Interest.objects.filter(user=request.user):
+                        print("**** " + interest.name + " *** " + interest.wiki_description)
             notification = NotifyUser.objects.create(notify=service.creater,
                                                     notification=str(request.user) + ' liked service ' + str(service.name)+'.',
                                                     offerType="service", offerPk=service.pk)
@@ -3682,3 +3696,72 @@ class RemoveEventFeatured(LoginRequiredMixin, View):
         else:
             return redirect('index')
 
+
+class RecommendationsView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        interests = Interest.objects.filter(user=request.user).order_by('feedbackFactor')
+
+        def smart_sort(services):
+            random_pick = randrange(2)
+            if random_pick == 0:
+                service = self.sub_date_picked(services)
+                return service
+            elif random_pick == 1:
+                service = self.rating_picked(services)
+                return service
+
+        desc = []
+        for interest in interests:
+            desc.append(interest.wiki_description)
+
+        all_services = list(Service.objects.exclude(wiki_description__isnull=True).filter(reduce(operator.or_, (Q(wiki_description__contains=x) for x in desc))).exclude(creater=request.user))
+        all_services_sorted = []
+
+        while len(all_services) > len(all_services_sorted):
+            for interest in interests:
+                current_interest_list = list(filter(lambda it: interest.wiki_description in it.wiki_description, all_services))
+                if len(current_interest_list) > interest.feedbackFactor:
+                    for i in range(interest.feedbackFactor):
+                        selected_service = smart_sort(current_interest_list)
+                        all_services_sorted.append(selected_service)
+                        all_services.remove(selected_service)
+                elif len(current_interest_list) > 0:
+                    all_services_sorted.append(current_interest_list)
+                    for service in current_interest_list:
+                        all_services.remove(service)
+                else:
+                    pass
+
+        recommendations = [all_services_sorted[i:i + 2] for i in range(0, len(all_services_sorted), 2)]
+        print(str(recommendations))
+        context = {
+            "recommendations":all_services_sorted,
+            "recommendations_count": len(all_services_sorted)
+        }
+        return render(request, 'social/recommendations.html', context)
+
+    def sub_date_picked(self, search_results):
+        def sub_date_sorted(service):
+            return service.creater.date_joined
+
+        services_sub_date_sorted = sorted(search_results, reverse=True, key=sub_date_sorted)
+        return services_sub_date_sorted[0]
+
+    def rating_picked(self, search_results):
+        ratings = []
+
+        def rating_sorted(service):
+            past_ratings = UserRatings.objects.filter(service=service)
+            ratings_average = UserRatings.objects.filter(rated=service.creater).aggregate(Avg('rating'))['rating__avg']
+            return ratings_average if (len(past_ratings) != 0) else 0
+
+        for service in search_results:
+            ratings.append(rating_sorted(service))
+
+        services_rating_sorted = sorted(search_results, reverse=True, key=rating_sorted)
+
+        num_of_services = ratings.count(ratings[0])
+        if num_of_services > 1:
+            return services_rating_sorted[randrange(num_of_services)]
+        else:
+            return services_rating_sorted[0]

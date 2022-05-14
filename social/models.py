@@ -192,6 +192,12 @@ class Interest(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.TextField(blank=False, null=False)
     wiki_description = models.TextField(blank=False, null=False)
+    implicit = models.BooleanField(default=False)
+    active = models.BooleanField(default=True)
+    origin = models.TextField(blank=False, null=False, default='profile')
+    feedbackGiven = models.BooleanField(default=False)
+    feedbackLiked = models.BooleanField(null=True, blank=True)
+    feedbackFactor = models.IntegerField(default=1)
 
 class Search(models.Model):
     date = models.DateTimeField(default=timezone.now)
