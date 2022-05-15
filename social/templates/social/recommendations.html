@@ -26,9 +26,21 @@
                                                 <a class="stretched-link" href="{% url 'service-detail' service.pk %}"></a>
                                                 {% else %}    
                                                 {% endif %}            
-                                            </div>          
+                                            </div>
                                         </div>
                                     </div>
+                                    {% if not service.feedbackGiven %}
+                                    <div class="col" align="start">
+                                        <form method="GET" action="{% url 'recommendations-approve' service.pk %}">
+                                            {% csrf_token %}
+                                            <button class="btn btn-outline-success" type="submit" name="approve" style="width: fit-content">👍</button>
+                                        </form>
+                                        <form method="GET" action="{% url 'recommendations-disapprove' service.pk %}">
+                                            {% csrf_token %}
+                                            <button class="btn btn-outline-danger" type="submit" name="disapprove" style="width: fit-content">👎</button>
+                                        </form>
+                                    </div>
+                                    {% endif %}
                                 </div>
                                 {% endfor %}
                             {% else %}

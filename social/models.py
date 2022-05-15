@@ -198,6 +198,7 @@ class Interest(models.Model):
     feedbackGiven = models.BooleanField(default=False)
     feedbackLiked = models.BooleanField(null=True, blank=True)
     feedbackFactor = models.IntegerField(default=1)
+    disapprovedServices = models.ManyToManyField(Service, blank=True, related_name='disapprovedservices')
 
 class Search(models.Model):
     date = models.DateTimeField(default=timezone.now)
