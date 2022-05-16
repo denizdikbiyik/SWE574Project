@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.views import View
-from social.models import Service, UserProfile, Event, ServiceApplication, Featured, Interest
+from social.models import Service, UserProfile, Event, ServiceApplication, Featured, Interest, UserRatings
 from django.contrib.auth.models import User
 from social.forms import ServiceForm, EventForm, ServiceApplicationForm
 from django.views.generic.edit import UpdateView, DeleteView
@@ -14,7 +14,7 @@ from online_users.models import OnlineUserActivity
 from functools import reduce
 import operator
 from random import randrange
-from django.db.models import Q, F
+from django.db.models import Q, F, Avg
 
 class Index(View):
     def get(self, request, *args, **kwargs):
@@ -103,10 +103,10 @@ def get_recommendations(request):
     def smart_sort(services):
         random_pick = randrange(2)
         if random_pick == 0:
-            service = self.sub_date_picked(services)
+            service = sub_date_picked(services)
             return service
         elif random_pick == 1:
-            service = self.rating_picked(services)
+            service = rating_picked(services)
             return service
 
     def sort_interests(interests):
@@ -114,12 +114,13 @@ def get_recommendations(request):
         for interest in interests:
             desc.append(interest.wiki_description)
         currentTime = timezone.now()
+        all_services_sorted = []
+
         if len(desc) == 0:
-            return []
+            return all_services_sorted
         else:
             all_services = list(Service.objects.exclude(wiki_description__isnull=True).filter(
                 reduce(operator.or_, (Q(wiki_description__contains=x) for x in desc))).exclude(creater=request.user).filter(isDeleted=False).filter(isActive=True).filter(servicedate__gte=currentTime))
-        all_services_sorted = []
 
         while len(all_services) > len(all_services_sorted):
             for interest in interests:
@@ -143,11 +144,14 @@ def get_recommendations(request):
     if User.objects.get(pk=request.user.pk).date_joined > timezone.now() - timedelta(days=30):
         followed_list = []
         profiles = UserProfile.objects.filter(followers__id__exact=request.user.id)
-        for followed in profiles:
-            followed_list.append(followed.user)
-        followed_interests = Interest.objects.exclude(user=request.user).filter(
-            reduce(operator.or_, (Q(user=followed) for followed in followed_list)))
-        if len(followed_interests) > 0:
-            for service in sort_interests(followed_interests):
-                own_recommendations.append(service)
+        if len(profiles) == 0:
+            return own_recommendations
+        else:
+            for followed in profiles:
+                followed_list.append(followed.user)
+            followed_interests = Interest.objects.exclude(user=request.user).filter(
+                reduce(operator.or_, (Q(user=followed) for followed in followed_list)))
+            if len(followed_interests) > 0:
+                for service in sort_interests(followed_interests):
+                    own_recommendations.append(service)
     return own_recommendations
