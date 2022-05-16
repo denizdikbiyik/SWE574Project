@@ -3786,8 +3786,11 @@ def get_recommendations(request):
         for interest in interests:
             desc.append(interest.wiki_description)
         currentTime = timezone.now()
-        all_services = list(Service.objects.exclude(wiki_description__isnull=True).filter(
-            reduce(operator.or_, (Q(wiki_description__contains=x) for x in desc))).exclude(creater=request.user).filter(isDeleted=False).filter(isActive=True).filter(servicedate__gte=currentTime))
+        if len(desc) == 0:
+            return []
+        else:
+            all_services = list(Service.objects.exclude(wiki_description__isnull=True).filter(
+                reduce(operator.or_, (Q(wiki_description__contains=x) for x in desc))).exclude(creater=request.user).filter(isDeleted=False).filter(isActive=True).filter(servicedate__gte=currentTime))
         all_services_sorted = []
 
         while len(all_services) > len(all_services_sorted):

@@ -49,11 +49,7 @@ class Index(View):
             if eventToGet not in featured_events:
                 events.append(eventToGet)
         events_count = len(events)
-        recommendation = None
-        if request.user is not None:
-            recommendations = get_recommendations(request)
-            if len(recommendations)>0:
-                recommendation = recommendations[randrange(len(recommendations))]
+
         context = {
             'services': services,
             'events': events,
@@ -63,9 +59,16 @@ class Index(View):
             'featured_events': featured_events,
             'featured_services_count': featured_services_count,
             'featured_events_count': featured_events_count,
-            'currentTime': currentTime,
-            'recommendation': recommendation
+            'currentTime': currentTime
         }
+
+        if request.user.is_anonymous:
+            pass
+        else:
+            recommendations = get_recommendations(request)
+            if len(recommendations)>0:
+                recommendation = recommendations[randrange(len(recommendations))]
+                context['recommendation'] = recommendation
 
         return render(request, 'landing/index.html', context)
 
@@ -111,8 +114,11 @@ def get_recommendations(request):
         for interest in interests:
             desc.append(interest.wiki_description)
         currentTime = timezone.now()
-        all_services = list(Service.objects.exclude(wiki_description__isnull=True).filter(
-            reduce(operator.or_, (Q(wiki_description__contains=x) for x in desc))).exclude(creater=request.user).filter(isDeleted=False).filter(isActive=True).filter(servicedate__gte=currentTime))
+        if len(desc) == 0:
+            return []
+        else:
+            all_services = list(Service.objects.exclude(wiki_description__isnull=True).filter(
+                reduce(operator.or_, (Q(wiki_description__contains=x) for x in desc))).exclude(creater=request.user).filter(isDeleted=False).filter(isActive=True).filter(servicedate__gte=currentTime))
         all_services_sorted = []
 
         while len(all_services) > len(all_services_sorted):
