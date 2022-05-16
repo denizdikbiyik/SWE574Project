@@ -45,7 +45,7 @@ def list_events(request):
             ending = request.GET.get("ending")
             status = request.GET.get("status")
             q = request.GET.get("q")
-            # qlocation = request.GET.get("qlocation")
+            qlocation = request.GET.get("qlocation")
             sort = request.GET.get("sort")
             # submit = request.GET.get("submitted")
             events = Event.objects.all()
@@ -98,23 +98,20 @@ def list_events(request):
             if q == None or q == "":
                 events = events
             else:
-                events_pk = set()
-                for event in events:
-                    address = event.event_address
-                    if re.search(q, address, re.IGNORECASE):
-                        events_pk.add(event.pk)
                 events = events.filter(
                     Q(eventname__icontains=q) | Q(eventdescription__icontains=q) | Q(
-                        event_wiki_description__icontains=q) | Q(
-                        event_address__icontains=q) | Q(pk__in=events_pk))
+                        event_wiki_description__icontains=q))
 
-            '''
             if qlocation == None or qlocation == "":
                 events = events
             else:
+                events_pk = set()
+                for event in events:
+                    address = str(event.event_address)
+                    if re.search(qlocation, address, re.IGNORECASE):
+                        events_pk.add(event.pk)
                 events = events.filter(
-                    Q(event_address__icontains=qlocation))
-            '''
+                    Q(event_address__icontains=qlocation)| Q(pk__in=events_pk))
 
             if sort == "name":
                 events = events.order_by(Lower("eventname"))
@@ -145,7 +142,7 @@ def list_events(request):
                 page_obj = paginator.page(paginator.num_pages)
             return render(request, 'dashboard_event_list/eventlist.html',
                         {'page_obj': page_obj, "type": type, "periods": periods, "beginning": beginning, "ending": ending,
-                        "status": status, "q": q, "sort": sort, "event_count": event_count,
+                        "status": status, "q": q, "qlocation": qlocation,"sort": sort, "event_count": event_count,
                         "is_admin": is_admin, "status_message": status_message, "period_message": period_message,
                         "outdated_events": outdated_events, "show_count": show_count})
 
