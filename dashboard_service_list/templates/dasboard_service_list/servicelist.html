@@ -57,17 +57,16 @@
                         <option value="isActive" {% if status == 'isActive' %}selected{% endif %}>Inactive</option>
                     </select>
 
+                    <div class="form-group">
+                        <label for="admin-search">Search:</label>
+                        <input type="search" id="admin-search" name="q"
+                            aria-label="Search through site content" placeholder="keyword"
+                            value="{{ request.GET.q }}">
 
-                    <label for="admin-search">Search:</label>
-                    <input type="search" id="admin-search" name="q"
-                        aria-label="Search through site content" placeholder="keyword or location"
-                        value="{{ request.GET.q }}">
-
-                    <!--
-                    <label for="admin-search">Search:</label>
-                    <input type="search" id="admin-search" name="qlocation"
-                        aria-label="Search through site content" placeholder="location" value="{{ request.GET.qlocation }}">
-                    -->
+                        <label for="admin-search-loc">Search in Address:</label>
+                        <input type="search" id="admin-search-loc" name="qlocation"
+                            aria-label="Search through site content" placeholder="keyword in address" value="{{ request.GET.qlocation }}">
+                    </div>
 
                     <label for="sort-select">Sort by:</label>
                     <select name="sort" id="sort-select">
@@ -168,26 +167,26 @@
                 <ul class="pagination pagination-sm justify-content-center">
                     {% if page_obj.has_previous %}
                         <li class="page-item">
-                            <a href="?page=1&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}"
+                            <a href="?page=1&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&qlocation={{ qlocation }}"
                                class="page-link">First</a>
                         </li>
 
                         <li class="page-item">
-                            <a href="?page={{ page_obj.previous_page_number }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}"
+                            <a href="?page={{ page_obj.previous_page_number }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&qlocation={{ qlocation }}"
                                class="page-link">Previous</a>
                         </li>
 
                         {% if not page_obj.has_next and page_obj.previous_page_number > 1 %}
                             <li class="page-item ">
                                 <a class="page-link"
-                                   href="?page={{ page_obj.previous_page_number|add:'-1' }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}">
+                                   href="?page={{ page_obj.previous_page_number|add:'-1' }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&qlocation={{ qlocation }}">
                                     {{ page_obj.previous_page_number|add:'-1' }}
                                 </a>
                             </li>
                         {% endif %}
                         <li>
                             <a class="page-link"
-                               href="?page={{ page_obj.previous_page_number }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}">
+                               href="?page={{ page_obj.previous_page_number }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&qlocation={{ qlocation }}">
                                 {{ page_obj.previous_page_number }}
                             </a>
                         </li>
@@ -208,26 +207,26 @@
                     {% if page_obj.has_next %}
                         <li class="page-item">
                             <a class="page-link"
-                               href="?page={{ page_obj.next_page_number }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}">
+                               href="?page={{ page_obj.next_page_number }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&qlocation={{ qlocation }}">
                                 {{ page_obj.next_page_number }}
                             </a>
                         </li>
                         {% if not page_obj.has_previous and page_obj.next_page_number < page_obj.paginator.num_pages %}
                             <li class="page-item ">
                                 <a class="page-link"
-                                   href="?page={{ page_obj.next_page_number|add:'1' }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}">
+                                   href="?page={{ page_obj.next_page_number|add:'1' }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&qlocation={{ qlocation }}">
                                     {{ page_obj.next_page_number|add:'1' }}
                                 </a>
                             </li>
                         {% endif %}
                         <li class="page-item ">
                             <a class="page-link"
-                               href="?page={{ page_obj.next_page_number }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}">Next</a>
+                               href="?page={{ page_obj.next_page_number }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&qlocation={{ qlocation }}">Next</a>
                         </li>
 
                         <li class="page-item ">
                             <a class="page-link"
-                               href="?page={{ page_obj.paginator.num_pages }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}">Last</a>
+                               href="?page={{ page_obj.paginator.num_pages }}&sort={{ sort }}&status={{ status }}&type={{ type }}&periods={{ periods }}&beginning={{ beginning }}&ending={{ ending }}&q={{ q }}&qlocation={{ qlocation }}">Last</a>
                         </li>
                     {% else %}
                         <li class="page-item disabled">

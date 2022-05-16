@@ -45,7 +45,7 @@ def list_services(request):
             ending = request.GET.get("ending")
             status = request.GET.get("status")
             q = request.GET.get("q")
-            # qlocation = request.GET.get("qlocation")
+            qlocation = request.GET.get("qlocation")
             sort = request.GET.get("sort")
             # submit = request.GET.get("submitted")
             services = Service.objects.all()
@@ -101,22 +101,19 @@ def list_services(request):
             if q == None or q == "":
                 services = services
             else:
-                services_pk = set()
-                for service in services:
-                    address = service.address
-                    if re.search(q, address, re.IGNORECASE):
-                        services_pk.add(service.pk)
                 services = services.filter(
-                    Q(name__icontains=q) | Q(description__icontains=q) | Q(wiki_description__icontains=q) | Q(
-                        address__icontains=q) | Q(pk__in=services_pk))
+                    Q(name__icontains=q) | Q(description__icontains=q) | Q(wiki_description__icontains=q))
 
-            '''
             if qlocation == None or qlocation == "":
                 services = services
             else:
+                services_pk = set()
+                for service in services:
+                    address = service.address
+                    if re.search(qlocation, address, re.IGNORECASE):
+                        services_pk.add(service.pk)
                 services = services.filter(
-                    Q(address__icontains=qlocation))
-            '''
+                    Q(address__icontains=qlocation)| Q(pk__in=services_pk))
 
             if sort == "name":
                 services = services.order_by(Lower("name"))
@@ -147,7 +144,7 @@ def list_services(request):
                 page_obj = paginator.page(paginator.num_pages)
             return render(request, 'dasboard_service_list/servicelist.html',
                         {'page_obj': page_obj, "type": type, "periods": periods, "beginning": beginning, "ending": ending,
-                        "status": status, "q": q, "sort": sort, "service_count": service_count,
+                        "status": status, "q": q, "qlocation": qlocation,"sort": sort, "service_count": service_count,
                         "is_admin": is_admin, "status_message": status_message, "period_message": period_message,
                         "outdated_services": outdated_services, "show_count": show_count})
 
