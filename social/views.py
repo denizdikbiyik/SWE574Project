@@ -1937,9 +1937,24 @@ class AllUsersView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
             users = UserProfile.objects.filter(isActive=True)
+            # Pagination
+            object_list = users
+            page_num = request.GET.get('page', 1)
+            paginator = Paginator(object_list, 10)
+            try:
+                page_obj = paginator.page(page_num)
+            except PageNotAnInteger:
+                # if page is not an integer, deliver the first page
+                page_obj = paginator.page(1)
+            except EmptyPage:
+                # if the page is out of range, deliver the last page
+                page_obj = paginator.page(paginator.num_pages)
+            # End of Pagination
             context = {
+                'page_obj': page_obj,
                 'users': users,
             }
+
             return render(request, 'social/allusers.html', context)
         else:
             return redirect('index')
