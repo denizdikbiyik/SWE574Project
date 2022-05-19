@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 import requests
-from social.models import User, Interest, Service
+from social.models import User, Interest, Service, Event
 
 
 # Check 01.05.22 15:47
@@ -67,7 +67,7 @@ def list_descriptions(request):
     else:
         return redirect('index')
 
-def edit_descriptions(request, pk):
+def edit_service_descriptions(request, pk):
     if request.user.profile.isActive:
         service=Service.objects.get(pk=pk)
         wiki_description=service.wiki_description
@@ -103,6 +103,41 @@ def edit_descriptions(request, pk):
     else:
         return redirect('index')
 
+def edit_event_descriptions(request, pk):
+    if request.user.profile.isActive:
+        event=Event.objects.get(pk=pk)
+        wiki_description=event.event_wiki_description
+        if wiki_description == None:
+            wiki_description="None"
+        q = request.GET.get("q")
+        description = request.POST.get("choose_description")
+        message = ""
+        is_choice = False
+        descriptions = []
+
+        if 'submit' in request.GET:
+            if q == None or q == "":
+                message = "Please enter a keyword!"
+            else:
+                descriptions = get_wiki_description(q)
+                is_choice = True
+                if len(descriptions) == 0:
+                    message = "No descriptions found!"
+
+        if "save" in request.POST:
+            if description is None or description == "" or description == "Descriptions":
+                request.session['description'] = None
+                message = "Nothing to save!"
+
+            else:
+                request.session['description'] = q + " as a(n) " + description
+                message = "New Description Saved: " + request.session['description']
+
+        return render(request, 'wiki/wiki_event_desc_edit.html',
+                    {'message': message, "descriptions": descriptions, "q": q, "is_choice": is_choice,
+                    "wiki_description": wiki_description, "event":event})
+    else:
+        return redirect('index')
 
 def list_interests(request):
     if request.user.profile.isActive:

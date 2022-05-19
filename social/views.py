@@ -949,6 +949,7 @@ class EventEditView(LoginRequiredMixin, View):
                     form = EventForm(instance=event)
                     context = {
                         'form': form,
+                        'event': event,
                     }
                     return render(request, 'social/event_edit.html', context)
                 else:
@@ -989,7 +990,9 @@ class EventEditView(LoginRequiredMixin, View):
                         event.event_address = reverse_location(edit_event.eventlocation)
                         event.eventcapacity = edit_event.eventcapacity
                         event.eventduration = edit_event.eventduration
+                        event.event_wiki_description=request.session.get("description")
                         event.save()
+                        request.session["description"] = None
                         log = Log.objects.create(operation="editevent", itemType="event", itemId=event.pk,
                                                 userId=request.user)
                         messages.success(request, 'Event editing is successful.')
@@ -1002,6 +1005,7 @@ class EventEditView(LoginRequiredMixin, View):
                             notified_user.save()
             context = {
                 'form': form,
+                'event': event,
             }
             return render(request, 'social/event_edit.html', context)
         else:
