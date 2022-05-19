@@ -64,6 +64,28 @@ class ServiceCreateView(LoginRequiredMixin, View):
         if request.user.profile.isActive:
             services = Service.objects.filter(isDeleted=False).filter(isActive=True).order_by('-createddate')
             creater_user_profile = UserProfile.objects.get(pk=request.user)
+
+            oldApplications = ServiceApplication.objects.filter(applicant=request.user).filter(
+                approved=False).filter(isDeleted=False).filter(isActive=True)
+            for oldApplication in oldApplications:
+                if oldApplication.service.servicedate <= timezone.now() and oldApplication.service.is_given == False and oldApplication.service.is_taken == False:
+                    creater_user_profile.reservehour = creater_user_profile.reservehour + oldApplication.service.duration
+                    oldApplication.service.is_given = True
+                    oldApplication.service.is_taken = True
+                    oldApplication.save()
+            oldServices = Service.objects.filter(creater=request.user).filter(is_given=False).filter(
+                is_taken=False).filter(isDeleted=False).filter(isActive=True)
+            applicationsForOldServiceCheck = ServiceApplication.objects.filter(isDeleted=False).filter(
+                isActive=True)
+            for oldService in oldServices:
+                if oldService.servicedate <= timezone.now():
+                    if len(applicationsForOldServiceCheck.filter(service=oldService)) == 0 or len(
+                            applicationsForOldServiceCheck.filter(service=oldService).filter(approved=True)) == 0:
+                        creater_user_profile.reservehour = creater_user_profile.reservehour - oldService.duration
+                        oldService.is_taken = True
+                        oldService.is_given = True
+                        oldService.save()
+
             form = ServiceForm(request.POST, request.FILES)
             if form.is_valid():
                 totalcredit = creater_user_profile.reservehour + creater_user_profile.credithour
@@ -530,6 +552,28 @@ class ServiceEditView(LoginRequiredMixin, View):
             service = Service.objects.get(pk=pk)
             if form.is_valid():
                 service_creater_profile = UserProfile.objects.get(pk=service.creater)
+
+                oldApplications = ServiceApplication.objects.filter(applicant=request.user).filter(
+                    approved=False).filter(isDeleted=False).filter(isActive=True)
+                for oldApplication in oldApplications:
+                    if oldApplication.service.servicedate <= timezone.now() and oldApplication.service.is_given == False and oldApplication.service.is_taken == False:
+                        service_creater_profile.reservehour = service_creater_profile.reservehour + oldApplication.service.duration
+                        oldApplication.service.is_given = True
+                        oldApplication.service.is_taken = True
+                        oldApplication.save()
+                oldServices = Service.objects.filter(creater=request.user).filter(is_given=False).filter(
+                    is_taken=False).filter(isDeleted=False).filter(isActive=True)
+                applicationsForOldServiceCheck = ServiceApplication.objects.filter(isDeleted=False).filter(
+                    isActive=True)
+                for oldService in oldServices:
+                    if oldService.servicedate <= timezone.now():
+                        if len(applicationsForOldServiceCheck.filter(service=oldService)) == 0 or len(
+                                applicationsForOldServiceCheck.filter(service=oldService).filter(approved=True)) == 0:
+                            service_creater_profile.reservehour = service_creater_profile.reservehour - oldService.duration
+                            oldService.is_taken = True
+                            oldService.is_given = True
+                            oldService.save()
+
                 applications = ServiceApplication.objects.filter(service=service).filter(isDeleted=False).filter(
                     isActive=True)
                 totalcredit = service_creater_profile.reservehour + service_creater_profile.credithour - service.duration
