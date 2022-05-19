@@ -1425,6 +1425,7 @@ class TimeLine(LoginRequiredMixin, View):
 class ServiceSearch(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["search"] = "servicesearch"
             query = self.request.GET.get('query')
             sorting = self.request.GET.get('sorting')
             category = self.request.GET.get('category')  # For combining with ServiceFilter() AT
@@ -1671,20 +1672,69 @@ class ServiceFilter(View):
 class EventSearch(View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["search"]="eventsearch"
             query = self.request.GET.get('query')
+            sorting = self.request.GET.get('sorting')
             currentTime = timezone.now()
-            # for searching in Turkish characters
-            events_pk = set()
-            for event in Event.objects.filter(isDeleted=False).filter(isActive=True).filter(eventdate__gte=currentTime):
-                address = event.event_address
-                if address:
-                    if re.search(query, address, re.IGNORECASE):
-                        events_pk.add(event.pk)
 
-            events = Event.objects.filter(isDeleted=False).filter(isActive=True).filter(eventdate__gte=currentTime).filter(
-                Q(eventname__icontains=query) | Q(eventdescription__icontains=query) | Q(
-                    event_wiki_description__icontains=query) | Q(
-                    event_address__icontains=query) | Q(pk__in=events_pk))
+            events = Event.objects.filter(isDeleted=False).filter(isActive=True).filter(eventdate__gte=currentTime)
+
+            if "query" in request.GET:
+                events_pk = set()
+                for event in events:
+                    address = event.event_address
+                    if address:
+                        if re.search(query, address, re.IGNORECASE):
+                            events_pk.add(event.pk)
+
+                events =events.filter(
+                    Q(eventname__icontains=query) | Q(eventdescription__icontains=query) | Q(
+                        event_wiki_description__icontains=query) | Q(
+                        event_address__icontains=query) | Q(pk__in=events_pk))
+            else:
+                events = events
+
+
+            # Map
+            message = ""
+            slocation = request.GET.get("slocation")
+            if "slocation" in request.GET:
+                if slocation == "map":
+                    if request.session.get("target_location") != None or request.session.get("distance") != None:
+                        target_location = str(request.session.get("target_location"))
+                        distance_target = int(request.session.get("distance"))
+                        event_location_pk = set()
+                        for event in events:
+                            event_location = event.eventlocation
+                            if distance(target_location, event_location).km <= distance_target:
+                                event_location_pk.add(event.pk)
+                        events = events.filter(Q(pk__in=event_location_pk))
+                    else:
+                        message = "Please choose a location from map."
+                        events = events
+                elif slocation == "home":
+                    target_location = request.user.profile.location
+                    event_location_for_home_pk = set()
+                    for event in events:
+                        event_location = event.eventlocation
+                        if distance(target_location, event_location).km <= 10:
+                            event_location_for_home_pk.add(event.pk)
+                    events = events.filter(Q(pk__in=event_location_for_home_pk))
+                else:
+                    events = events
+                    request.session["target_location"] = None
+                    request.session["distance"] = None
+            # End of Map
+
+            if "sorting" in request.GET:
+                if sorting == "createdate":
+                    events=events.order_by("eventcreateddate")
+                elif sorting == "name":
+                    events = events.order_by(Lower("eventname"))
+                else :
+                    events = events.order_by("eventdate")
+
+
             events_count = len(events)
 
             # do not change the line below or do not remove from this block
@@ -1695,11 +1745,30 @@ class EventSearch(View):
                     searchLog = Search.objects.create(query=query.replace(" ", ""), searchType="event", resultCount=events_count, userId=request.user)
             # end of the obligation
 
+            # Pagination
+            object_list = events
+            page_num = request.GET.get('page', 1)
+            paginator = Paginator(object_list, 10)
+            try:
+                page_obj = paginator.page(page_num)
+            except PageNotAnInteger:
+                # if page is not an integer, deliver the first page
+                page_obj = paginator.page(1)
+            except EmptyPage:
+                # if the page is out of range, deliver the last page
+                page_obj = paginator.page(paginator.num_pages)
+            # End of Pagination
+
             context = {
-                'events': events,
+                'page_obj': page_obj,
                 'events_count': events_count,
                 'currentTime': currentTime,
+                'sorting': sorting,
+                'query': query,
+                'message': message,
+                'slocation': slocation,
             }
+
             return render(request, 'social/event-search.html', context)
         else:
             return redirect('index')
@@ -3812,6 +3881,7 @@ def get_recommendations(request):
 def find_location(request):
 
     form = MyLocation(request.GET)
+    search=request.session.get("search")
 
 
     if 'submit' in request.GET:
@@ -3823,5 +3893,6 @@ def find_location(request):
 
     context={
         "form":form,
+        "search":search,
     }
     return render(request, "social/map.html", context)

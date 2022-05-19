@@ -40,7 +40,11 @@
                     <input type="number" id="distance" name="distance" min="5" max="150" required value="{{ request.GET.distance }}">
                     <button type="submit" name="submit" >Save</button>
                 </form>
-                <a type="button" class="btn btn-success" href="{% url 'service-search'  %}">Back to Search</a>
+                {% if search == "servicesearch" %}
+                    <a type="button" class="btn btn-success" href="{% url 'service-search'  %}">Back to Search</a>
+                {% elif search == "eventsearch" %}
+                    <a type="button" class="btn btn-success" href="{% url 'event-search'  %}">Back to Search</a>
+                {% endif %}
             </div>
         </div>
     </div>
