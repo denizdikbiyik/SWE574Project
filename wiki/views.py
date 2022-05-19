@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 import requests
-from social.models import User, Interest
+from social.models import User, Interest, Service
+
 
 # Check 01.05.22 15:47
 
@@ -36,10 +37,11 @@ def list_descriptions(request):
         message = ""
         is_choice = False
         descriptions = []
+        back_link= None
         if request.session.get("type") == "event":
-            type_event = True
-        else:
-            type_event = False
+            back_link="event"
+        elif request.session.get("type") == "service":
+            back_link = "service"
 
         if 'submit' in request.GET:
             if q == None or q == "":
@@ -61,7 +63,43 @@ def list_descriptions(request):
 
         return render(request, 'wiki/wiki_description.html',
                     {'message': message, "descriptions": descriptions, "q": q, "is_choice": is_choice,
-                    "type_event": type_event})
+                    "back_link": back_link})
+    else:
+        return redirect('index')
+
+def edit_descriptions(request, pk):
+    if request.user.profile.isActive:
+        service=Service.objects.get(pk=pk)
+        wiki_description=service.wiki_description
+        if wiki_description == None:
+            wiki_description="None"
+        q = request.GET.get("q")
+        description = request.POST.get("choose_description")
+        message = ""
+        is_choice = False
+        descriptions = []
+
+        if 'submit' in request.GET:
+            if q == None or q == "":
+                message = "Please enter a keyword!"
+            else:
+                descriptions = get_wiki_description(q)
+                is_choice = True
+                if len(descriptions) == 0:
+                    message = "No descriptions found!"
+
+        if "save" in request.POST:
+            if description is None or description == "" or description == "Descriptions":
+                request.session['description'] = None
+                message = "Nothing to save!"
+
+            else:
+                request.session['description'] = q + " as a(n) " + description
+                message = "New Description Saved: " + request.session['description']
+
+        return render(request, 'wiki/wiki_ser_desc_edit.html',
+                    {'message': message, "descriptions": descriptions, "q": q, "is_choice": is_choice,
+                    "wiki_description": wiki_description, "service":service})
     else:
         return redirect('index')
 

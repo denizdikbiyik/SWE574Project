@@ -510,6 +510,7 @@ class ServiceEditView(LoginRequiredMixin, View):
                     form = ServiceForm(instance=service)
                     context = {
                         'form': form,
+                        'service': service,
                     }
                     return render(request, 'social/service_edit.html', context)
                 else:
@@ -564,7 +565,9 @@ class ServiceEditView(LoginRequiredMixin, View):
                             service.capacity = edit_service.capacity
                             service.duration = edit_service.duration
                             service.category = edit_service.category
+                            service.wiki_description=request.session.get("description")
                             service.save()
+                            request.session["description"]=None
                             log = Log.objects.create(operation="editservice", itemType="service", itemId=service.pk,
                                                     userId=request.user)
                             messages.success(request, 'Service editing is successful.')
@@ -582,6 +585,7 @@ class ServiceEditView(LoginRequiredMixin, View):
                     messages.warning(request, 'You cannot make this service which causes credit hours exceed 15.')
             context = {
                 'form': form,
+                'service': service,
             }
             return render(request, 'social/service_edit.html', context)
         else:

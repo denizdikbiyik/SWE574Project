@@ -2,6 +2,7 @@
 {% load crispy_forms_tags %}
 {% block content %}
     <div class="container p-3 my-3 bg-secondary ">
+        Your Wiki Description: {{ wiki_description }}
         <form method="get">
             <label for="admin-search">Search in Wikidata:</label>
             <input type="search" id="admin-search" name="q"
@@ -30,14 +31,9 @@
         
         {{ message }} <br>
 
+        <a type="button" class="btn btn-success" href="{% url 'service-edit' service.pk %}">Back to Form</a>
 
-        {% if type_interest == True %}
-            <a type="button" class="btn btn-success" href="{% url 'profile' request.user.id %}">Back to Form</a>
-        {% elif back_link == "event" %}
-            <a type="button" class="btn btn-success" href="{% url 'event-create' %}">Back to Form</a>
-         {% elif back_link == "service" %}
-            <a type="button" class="btn btn-success" href="{% url 'service-create' %}">Back to Form</a>
-        {% endif %}
+
     </div>
 
 
