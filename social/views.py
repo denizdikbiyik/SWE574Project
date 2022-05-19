@@ -1489,7 +1489,7 @@ class ServiceSearch(LoginRequiredMixin, View):
             # End of Map
 
             services_sorted = []
-            if "page" not in request.GET and request.session['services_sorted'] is not None:
+            if "page" not in request.GET or request.session.get('services_sorted') is  None:
                 if sorting == "newest":
                     services_sorted = services_query.order_by('createddate')
                 elif sorting == "rating":
@@ -1534,7 +1534,7 @@ class ServiceSearch(LoginRequiredMixin, View):
                         session_services.append(service.pk)
                     request.session['services_sorted'] = session_services
             else:
-                for pk in request.session['services_sorted']:
+                for pk in request.session.get('services_sorted'):
                     service = Service.objects.get(pk=pk)
                     if service is not None:
                         services_sorted.append(service)
