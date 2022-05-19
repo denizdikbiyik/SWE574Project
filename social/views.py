@@ -1489,43 +1489,55 @@ class ServiceSearch(LoginRequiredMixin, View):
             # End of Map
 
             services_sorted = []
-            if sorting == "newest":
-                services_sorted = services_query.order_by('createddate')
-            elif sorting == "rating":
-                services_sorted = self.highest_rated_picked(list(services_query.order_by('createddate')))
-            elif sorting == "name":
-                services_sorted = services_query.order_by(Lower("name"))
-            elif sorting == "servicedate":
-                services_sorted = services_query.order_by("servicedate")
+            if "page" not in request.GET and request.session['services_sorted'] is not None:
+                if sorting == "newest":
+                    services_sorted = services_query.order_by('createddate')
+                elif sorting == "rating":
+                    services_sorted = self.highest_rated_picked(list(services_query.order_by('createddate')))
+                elif sorting == "name":
+                    services_sorted = services_query.order_by(Lower("name"))
+                elif sorting == "servicedate":
+                    services_sorted = services_query.order_by("servicedate")
+                else:
+                    services = list(services_query)
+                    i = 0
+                    while i < len(services):
+                        random_pick = randrange(4)
+                        if random_pick == 0:
+                            service = self.sub_date_picked(services)
+                            services_sorted.append(service)
+                            services.remove(service)
+                        elif random_pick == 1:
+                            service = self.rating_picked(services)
+                            services_sorted.append(service)
+                            services.remove(service)
+                        elif random_pick == 2:
+                            service = self.follow_status_picked(services, request.user.id)
+                            services_sorted.append(service)
+                            services.remove(service)
+                        else:
+                            service = self.interest_picked(services,
+                                                           list(Interest.objects.filter(user=request.user.id)))
+                            services_sorted.append(service)
+                            services.remove(service)
+                    # do not change the line below or do not remove from this else block
+                    # if you write separated sorting code, the code below should be together with search result
+                    # but not with sorting to not duplicate the log
+                    if query != None:
+                        if query.strip() != "":
+                            searchLog = Search.objects.create(query=query.replace(" ", ""), searchType="service",
+                                                              resultCount=len(services_sorted),
+                                                              userId=request.user)
+                    # end of the obligation
+                    session_services = []
+                    for service in services_sorted:
+                        session_services.append(service.pk)
+                    request.session['services_sorted'] = session_services
             else:
-                services = list(services_query)
-                i = 0
-                while i < len(services):
-                    random_pick = randrange(4)
-                    if random_pick == 0:
-                        service = self.sub_date_picked(services)
+                for pk in request.session['services_sorted']:
+                    service = Service.objects.get(pk=pk)
+                    if service is not None:
                         services_sorted.append(service)
-                        services.remove(service)
-                    elif random_pick == 1:
-                        service = self.rating_picked(services)
-                        services_sorted.append(service)
-                        services.remove(service)
-                    elif random_pick == 2:
-                        service = self.follow_status_picked(services, request.user.id)
-                        services_sorted.append(service)
-                        services.remove(service)
-                    else:
-                        service = self.interest_picked(services, list(Interest.objects.filter(user=request.user.id)))
-                        services_sorted.append(service)
-                        services.remove(service)
-                # do not change the line below or do not remove from this else block
-                # if you write separated sorting code, the code below should be together with search result 
-                # but not with sorting to not duplicate the log
-                if query != None:
-                    if query.strip() != "":
-                        searchLog = Search.objects.create(query=query.replace(" ", ""), searchType="service", resultCount=len(services_sorted),
-                                                        userId=request.user)
-                # end of the obligation
 
             services_count = len(services_sorted)
             alltags = Tag.objects.all()
