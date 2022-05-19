@@ -1439,69 +1439,52 @@ class ServiceSearch(LoginRequiredMixin, View):
             else:
                 services_query = services_query.filter(category__tag=category)
 
-            if query == None or query == "":
-                services_query = services_query
-            else:
-                '''
-                # for searching in Turkish characters
-                services_pk = set()
-                for service in services_query:
-                    address = service.address
-                    if address:
-                        if re.search(query, address, re.IGNORECASE):
-                            services_pk.add(service.pk)
-
-                services_query = services_query.filter(
-                    Q(name__icontains=query) | Q(description__icontains=query) | Q(wiki_description__icontains=query) | Q(
-                        address__icontains=query) | Q(pk__in=services_pk))
-                '''
-                services_query = services_query.filter(
-                    Q(name__icontains=query) | Q(description__icontains=query) | Q(wiki_description__icontains=query))
-
-            # Map
-            type=request.GET.get("type")
-            form = MyLocation(request.GET)
-            query_address = request.GET.get("query_address")
-            distance_map=request.GET.get("distance_map")
-            distance_home=request.GET.get("distance_home")
-            target_location= None
-            dist=0
-            if query_address == None and  distance_map == None and distance_home == None:
-                services_query = services_query
-            else:
-                if query_address != None:
-                    # for searching in Turkish characters
-                    services_pk = set()
+            if "query" in request.GET:
+                if query == None or query == "":
+                    services_query = services_query
+                else:
+                    services_address_pk = set()
                     for service in services_query:
                         address = service.address
                         if address:
-                            if re.search(query_address, address, re.IGNORECASE):
-                                services_pk.add(service.pk)
-                    services_query = services_query.filter(Q(address__icontains=query_address) | Q(pk__in=services_pk))
-                else:
-                    if distance_map != None:
-                        dist=int(distance_map)
-                        if form.is_valid():
-                            target_location = form.cleaned_data.get("location")
-                    if distance_home != None:
-                        dist = int(distance_home)
-                        target_location = request.user.profile.location
-                    services_location_pk = set()
+                            if re.search(query, address, re.IGNORECASE):
+                                services_address_pk.add(service.pk)
+                    services_query = services_query.filter(
+                        Q(name__icontains=query) | Q(description__icontains=query) | Q(
+                            wiki_description__icontains=query) | Q(
+                            address__icontains=query) | Q(pk__in=services_address_pk))
+            else:
+                query=""
+
+            # Map
+            message=""
+            slocation = request.GET.get("slocation")
+            if "slocation" in request.GET:
+                if slocation == "map":
+                    if request.session.get("target_location") !=None or request.session.get("distance") !=None:
+                        target_location = str(request.session.get("target_location"))
+                        distance_target = int(request.session.get("distance"))
+                        services_location_pk = set()
+                        for service in services_query:
+                            service_location = service.location
+                            if distance(target_location, service_location).km <= distance_target:
+                                services_location_pk.add(service.pk)
+                        services_query = services_query.filter(Q(pk__in=services_location_pk))
+                    else:
+                        message="Please choose a location from map."
+                        services_query = services_query
+                elif slocation == "home":
+                    target_location = request.user.profile.location
+                    services_location_for_home_pk = set()
                     for service in services_query:
                         service_location = service.location
-                        if distance(target_location, service_location).km <= dist:
-                            services_location_pk.add(service.pk)
-                    services_query = services_query.filter(Q(pk__in=services_location_pk))
-
-            if 'submit' in request.GET:
-                if query_address != None:
-                    type="address"
-                elif distance_map != None:
-                    type="map"
-                elif distance_home != None:
-                    type = "home"
+                        if distance(target_location, service_location).km <= 10:
+                            services_location_for_home_pk.add(service.pk)
+                    services_query = services_query.filter(Q(pk__in=services_location_for_home_pk))
                 else:
-                    type="all"
+                    services_query = services_query
+                    request.session["target_location"]=None
+                    request.session["distance"]=None
             # End of Map
 
             services_sorted = []
@@ -1549,7 +1532,7 @@ class ServiceSearch(LoginRequiredMixin, View):
             # Pagination
             object_list = services_sorted
             page_num = request.GET.get('page', 1)
-            paginator = Paginator(object_list, 5)
+            paginator = Paginator(object_list, 10)
             try:
                 page_obj = paginator.page(page_num)
             except PageNotAnInteger:
@@ -1565,14 +1548,12 @@ class ServiceSearch(LoginRequiredMixin, View):
                 'services_count': services_count,
                 'currentTime': currentTime,
                 'alltags': alltags,
-                'query': query,
                 "cat_sel": cat_sel,
                 "category_list": category_list,
                 "sorting": sorting,
-                "form": form,
-                "type": type,
-                "distance_home":distance_home,
-                "distance_map":distance_map,
+                "slocation": slocation,
+                "message": message,
+                "query": query,
             }
             return render(request, 'social/service-search.html', context)
         else:
@@ -3827,3 +3808,20 @@ def get_recommendations(request):
                 for service in sort_interests(followed_interests):
                     own_recommendations.append(service)
     return own_recommendations
+
+def find_location(request):
+
+    form = MyLocation(request.GET)
+
+
+    if 'submit' in request.GET:
+        if form.is_valid():
+            target_location = form.cleaned_data.get("location")
+            request.session["target_location"]=target_location
+            distance=request.GET.get("distance")
+            request.session["distance"] = distance
+
+    context={
+        "form":form,
+    }
+    return render(request, "social/map.html", context)

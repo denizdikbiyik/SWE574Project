@@ -1,0 +1,51 @@
+<head>
+    <script type="text/javascript" src="/admin/jsi18n/"></script>
+    <script type="text/javascript" src="/static/admin/js/vendor/jquery/jquery.js"></script>
+    <script type="text/javascript" src="/static/admin/js/calendar.js"></script>
+    <script type="text/javascript" src="/static/location_field/js/form.js"></script>
+    <script type="text/javascript" src="/static/admin/js/jquery.init.js"></script>
+    <script type="text/javascript" src="/static/admin/js/admin/DateTimeShortcuts.js"></script>
+    <script type="text/javascript" src="/static/admin/js/core.js"></script>
+    <script type="text/javascript" src="/static/admin/js/admin/RelatedObjectLookups.js"></script>
+    <script type="text/javascript" src="/static/admin/js/actions.js"></script>
+    <script type="text/javascript" src="/static/admin/js/urlify.js"></script>
+    <script type="text/javascript" src="/static/admin/js/prepopulate.js"></script>
+    <script type="text/javascript" src="/static/admin/js/vendor/xregexp/xregexp.js"></script>
+
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/static/admin/css/responsive.css">
+
+    <meta name="robots" content="NONE,NOARCHIVE">
+</head>
+
+
+{% extends 'landing/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="container">
+
+
+        <div class="row justify-content-center mt-3 mb-5">
+
+            <div class="col-md-5 col-sm-12">
+                <form method="GET" enctype='multipart/form-data'>
+                    <label for="{{ form.city.id_for_label }}">Location Name:</label>
+                    {{ form.city }}
+                    <div class="fieldWrapper">
+                        <label for="{{ form.location.id_for_label }}">Coordinates:</label>
+                        {{ form.location }}
+                    </div> <br>
+                    <label for="distance">Select Range:</label>
+                    <input type="number" id="distance" name="distance" min="5" max="150" required value="{{ request.GET.distance }}">
+                    <button type="submit" name="submit" >Save</button>
+                </form>
+                <a type="button" class="btn btn-success" href="{% url 'service-search'  %}">Back to Search</a>
+            </div>
+        </div>
+    </div>
+
+
+
+
+{% endblock content %}

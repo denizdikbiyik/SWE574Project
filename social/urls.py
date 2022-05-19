@@ -1,5 +1,20 @@
 from django.urls import path
-from .views import ServiceCreateView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventCreateView, EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, AddFollower, RemoveFollower, ApplicationDeleteView, ApplicationEditView, FollowersListView, FollowingsListView, RemoveMyFollower, TimeLine, AllServicesView, AllEventsView, CreatedServicesView, CreatedEventsView, AppliedServicesView, ConfirmServiceTaken, ConfirmServiceGiven, RateUser, RateUserDelete, RateUserEdit, ServiceSearch, EventSearch, Notifications, EventApplicationDeleteView, AppliedEventsView, RequestCreateView, CreatedRequestsView, RequestsFromMeView, RequestDetailView, RequestDeleteView, ServiceFilter, AllUsersView, UsersServicesListView, UsersEventsListView, AddAdminView, RemoveAdminView, DashboardServiceDetailView, DashboardEventDetailView, DashboardUserDetailView, ServiceDetailCommunicationView, EventDetailCommunicationView, ServiceCommunicationDeleteView, EventCommunicationDeleteView, ServiceLike, ServiceUnlike, EventLike, EventUnlike, ServiceLikesList, EventLikesList, MyLikes, AdminDashboardIndex, OnlineUsersList, ComplaintUser, ComplaintUserEdit, ComplaintUserDelete, Complaints, MyComplaints, DeactivateService, DeactivateEvent, DeactivateUser, ActivateUser, DeactivateServiceApplication, DeactivateEventApplication, Deactivateds, FeaturedServicesView, FeaturedEventsView, AddServiceFeatured, RemoveServiceFeatured, AddEventFeatured, RemoveEventFeatured, SearchLogList, SearchLogListZero, SearchLogWordCloud, ComplaintUserAdminSide, ComplaintsCreatedAbout, ComplaintsCreator, ComplaintsDoneByMe, RecommendationsView, RecommendationApproveView, RecommendationDisapproveView
+from .views import ServiceCreateView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventCreateView, \
+    EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, AddFollower, RemoveFollower, \
+    ApplicationDeleteView, ApplicationEditView, FollowersListView, FollowingsListView, RemoveMyFollower, TimeLine, \
+    AllServicesView, AllEventsView, CreatedServicesView, CreatedEventsView, AppliedServicesView, ConfirmServiceTaken, \
+    ConfirmServiceGiven, RateUser, RateUserDelete, RateUserEdit, ServiceSearch, EventSearch, Notifications, \
+    EventApplicationDeleteView, AppliedEventsView, RequestCreateView, CreatedRequestsView, RequestsFromMeView, \
+    RequestDetailView, RequestDeleteView, ServiceFilter, AllUsersView, UsersServicesListView, UsersEventsListView, \
+    AddAdminView, RemoveAdminView, DashboardServiceDetailView, DashboardEventDetailView, DashboardUserDetailView, \
+    ServiceDetailCommunicationView, EventDetailCommunicationView, ServiceCommunicationDeleteView, \
+    EventCommunicationDeleteView, ServiceLike, ServiceUnlike, EventLike, EventUnlike, ServiceLikesList, EventLikesList, \
+    MyLikes, AdminDashboardIndex, OnlineUsersList, ComplaintUser, ComplaintUserEdit, ComplaintUserDelete, Complaints, \
+    MyComplaints, DeactivateService, DeactivateEvent, DeactivateUser, ActivateUser, DeactivateServiceApplication, \
+    DeactivateEventApplication, Deactivateds, FeaturedServicesView, FeaturedEventsView, AddServiceFeatured, \
+    RemoveServiceFeatured, AddEventFeatured, RemoveEventFeatured, SearchLogList, SearchLogListZero, SearchLogWordCloud, \
+    ComplaintUserAdminSide, ComplaintsCreatedAbout, ComplaintsCreator, ComplaintsDoneByMe, RecommendationsView, \
+    RecommendationApproveView, RecommendationDisapproveView, find_location
 
 urlpatterns = [
     path('service/create', ServiceCreateView.as_view(), name='service-create'),
@@ -101,4 +116,5 @@ urlpatterns = [
     path('searchloglist', SearchLogList.as_view(), name='searchloglist'),
     path('searchloglistzero', SearchLogListZero.as_view(), name='searchloglistzero'),
     path('searchlogwordcloud', SearchLogWordCloud.as_view(), name='searchlogwordcloud'),
+    path('mapsearch', find_location, name='mapsearch'),
 ]
