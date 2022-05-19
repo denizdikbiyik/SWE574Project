@@ -135,7 +135,7 @@ def list_events(request):
             event_count = events.count()
             object_list = events
             page_num = request.GET.get('page', 1)
-            paginator = Paginator(object_list, 5)
+            paginator = Paginator(object_list, 10)
             try:
                 page_obj = paginator.page(page_num)
             except PageNotAnInteger:
