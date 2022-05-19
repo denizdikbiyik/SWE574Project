@@ -35,7 +35,7 @@ from geopy.geocoders import Nominatim
 
 from operator import attrgetter
 
-import pandas as pd
+#import pandas as pd
 import matplotlib as mpl
 from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
 from PIL import Image

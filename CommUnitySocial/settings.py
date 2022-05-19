@@ -65,7 +65,7 @@ INSTALLED_APPS = [
     'online_users',
     'matplotlib',
     'wiki',
-    'pandas',
+    #'pandas',
     'wordcloud',
 ]
 
