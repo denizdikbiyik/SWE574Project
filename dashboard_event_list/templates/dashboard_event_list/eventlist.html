@@ -50,6 +50,7 @@
                     <select name="status" id="status-select">
                         <option value="">--Select--</option>
                         <option value="all" {% if status == 'all' %}selected{% endif %}>All</option>
+                        <option value="open" {% if status == 'open' %}selected{% endif %}>Open</option>
                         <option value="isDeleted" {% if status == 'isDeleted' %}selected{% endif %}>Deleted</option>
                         <option value="isActive" {% if status == 'isActive' %}selected{% endif %}>Inactive</option>
                     </select>
