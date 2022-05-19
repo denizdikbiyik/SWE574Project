@@ -41,6 +41,14 @@
                 {% endfor %}
             </ul>
         {% endif %}
+        <div class="row justify-content-center mt-3">
+            <div class="col-md-5 col-sm-12">
+                <h5>Add a Service! <a style="text-decoration: none; font-weight: bolder;" class="text-primary" href="{% url 'searchloglistzero' %}">(Hint for Service Creators)</a></h5>
+                <a class="row justify-content-center mt-5 mb-3" href="{% url 'wikiedit' service.pk %}">I
+                    want to add /edit  Wikidata
+                    description.</a>
+            </div>
+        </div>
         <div class="col-md-5 col-sm-12 border-bottom">
             <form method="POST" enctype='multipart/form-data'>
                 {% csrf_token %}
