@@ -6,7 +6,7 @@ from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 import datetime
 import re
 from django.db.models.functions import Lower
-
+from django.utils import timezone
 
 def make_query_for_service_list(*args):
     date_today = datetime.datetime.now()
@@ -55,6 +55,7 @@ def list_services(request):
             outdated_services = Service.objects.all().filter(servicedate__lte=date_today)
             period = make_query_for_service_list(periods, beginning, ending)
             show_count = False
+            currentTime = timezone.now()
 
             if 'submit' in request.GET and ((beginning == "" and ending == "") or (periods == "") or (
                     periods == None and beginning == None and ending == None)):
@@ -94,6 +95,10 @@ def list_services(request):
             elif status == "isActive":
                 services = services.filter(isActive=False)
                 status_message = "Status: Inactive"
+            elif status == "open":
+                services = services.filter(isDeleted=False).filter(isActive=True).filter(
+                servicedate__gte=currentTime).filter(is_taken=False, is_given=False)
+                status_message = "Status: Open"
             else:
                 services = services
                 status_message = status_message
