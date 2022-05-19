@@ -5,26 +5,44 @@
     <div class="container">
         <br/>
         <div class="row">
-            <div class="row">
-                <div class="col">
-                    <h5 style="text-align:center;">Events</h5>
-                </div>
-                <div class="col">
-                    <form class="d-flex" method="GET" action="{% url 'event-search' %}">
-                        <div class="input-group">
-                            <input type="text" class="form-control" placeholder="Search Event by keyword or location"
-                                   aria-label="Event" aria-describedby="basic-addon1" name='query'
-                                   value="{{ request.GET.query }}">
-                            <button style="border: none; background-color: white; box-shadow: none" type="submit">
-                                Search
-                            </button>
-                        </div>
-                    </form>
-                </div>
+            <div class="container p-3 my-3 bg-secondary ">
+                {{ message }} <br>
+                Search by Map :<a href = "{% url 'mapsearch' %}"  >Go to Map </a> <br>
+                <form method="get">
+
+                    <div class="form-group">
+                        <label for="period type">Location:</label>
+                        <select name="slocation" id="period type" onchange="this.form.submit()">
+                            <option value="all" {% if slocation == 'all' %}selected{% endif %}>Everywhere on Earth</option>
+                            <option value="map" {% if slocation == 'map' %}selected{% endif %}>Use Map Coordinates</option>
+                            <option value="home" {% if slocation == 'home' %}selected{% endif %}>Home Address (10 km)</option>
+                        </select>
+                    </div>
+
+                    <label for="admin-search">Search:</label>
+                    <input type="search" id="admin-search" name='query'
+                           aria-label="Search through site content"
+                           placeholder="keyword"
+                           value="{{ request.GET.query }}">
+
+                    <label for="sort-select">Sort by:</label>
+                    <select name="sorting" id="sort-select">
+                        <option value="">--Select--</option>
+                        <option value="createdate" {% if sorting == 'createdate' %}selected{% endif %}>Creation Date
+                        </option>
+                        <option value="name" {% if sorting == 'name' %}selected{% endif %}>Name</option>
+                        <option value="eventdate" {% if sorting == 'eventdate' %}selected={% endif %}>Delivery
+                            Date
+                        </option>
+                    </select>
+                    <div class="form-group">
+                        <button type="submit" name="submit" value="submitted">Submit</button>
+                    </div>
+                </form>
             </div>
             <br/>
             {% if events_count != 0 %}
-                {% for event in events %}
+                {% for event in page_obj %}
                     <div class="row justify-content-center mt-1">
                         <div class="card col-md-10 col-sm-12 position-relative"
                              style="padding:1%; border-radius:15px; background-color:whitesmoke; border-color: dimgrey;">
@@ -50,5 +68,87 @@
             {% endif %}
         </div>
 
+    </div> <br>
+
+     <div class="row">
+        <div class="col-4 offset-4">
+            <nav aria-label="...">
+                <ul class="pagination pagination-sm justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a href="?page=1&sorting={{ sorting }}&query={{ query }}"
+                               class="page-link">First</a>
+                        </li>
+
+                        <li class="page-item">
+                            <a href="?page={{ page_obj.previous_page_number }}&sorting={{ sorting }}&query={{ query }}&slocation={{ slocation }}"
+                               class="page-link">Previous</a>
+                        </li>
+
+                        {% if not page_obj.has_next and page_obj.previous_page_number > 1 %}
+                            <li class="page-item ">
+                                <a class="page-link"
+                                   href="?page={{ page_obj.previous_page_number|add:'-1' }}&sorting={{ sorting }}&query={{ query }}&slocation={{ slocation }}">
+                                    {{ page_obj.previous_page_number|add:'-1' }}
+                                </a>
+                            </li>
+                        {% endif %}
+                        <li>
+                            <a class="page-link"
+                               href="?page={{ page_obj.previous_page_number }}&sorting={{ sorting }}&query={{ query }}&slocation={{ slocation }}">
+                                {{ page_obj.previous_page_number }}
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">First</span>
+                        </li>
+
+                        <li class="page-item disabled">
+                            <span class="page-link">Previous</span>
+                        </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">{{ page_obj.number }}</span>
+                    </li>
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?page={{ page_obj.next_page_number }}&sorting={{ sorting }}&query={{ query }}&slocation={{ slocation }}">
+                                {{ page_obj.next_page_number }}
+                            </a>
+                        </li>
+                        {% if not page_obj.has_previous and page_obj.next_page_number < page_obj.paginator.num_pages %}
+                            <li class="page-item ">
+                                <a class="page-link"
+                                   href="?page={{ page_obj.next_page_number|add:'1' }}&sorting={{ sorting }}&query={{ query }}&slocation={{ slocation }}">
+                                    {{ page_obj.next_page_number|add:'1' }}
+                                </a>
+                            </li>
+                        {% endif %}
+                        <li class="page-item ">
+                            <a class="page-link"
+                               href="?page={{ page_obj.next_page_number }}&sorting={{ sorting }}&query={{ query }}&slocation={{ slocation }}">Next</a>
+                        </li>
+
+                        <li class="page-item ">
+                            <a class="page-link"
+                               href="?page={{ page_obj.paginator.num_pages }}&sorting={{ sorting }}&query={{ query }}&slocation={{ slocation }}">Last</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Next</span>
+                        </li>
+
+                        <li class="page-item disabled">
+                            <span class="page-link">Last</span>
+                        </li>
+
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
     </div>
 {% endblock content %}
