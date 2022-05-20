@@ -76,9 +76,9 @@ def list_users(request):
                     period_message = period["text"]
                     show_count = True
 
-                if 'submit' in request.GET:
-                    if periods != None or periods != None:
-                        type = "default"
+            if 'submit' in request.GET:
+                if periods != None or periods != None:
+                    type = "default"
                 elif (beginning != None or beginning != None) or (ending != None or ending != None):
                     type = "pick"
                 else:
