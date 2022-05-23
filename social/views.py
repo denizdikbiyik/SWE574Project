@@ -1553,25 +1553,31 @@ class ServiceSearch(LoginRequiredMixin, View):
                 else:
                     services = list(services_query)
                     i = 0
+                    sub_date_sorted = self.sub_date_picked(services)
+                    rating_sorted = self.rating_picked(services)
+                    follow_status_sorted = self.follow_status_picked(services, request.user.id)
+                    interest_sorted = self.interest_picked(services, list(Interest.objects.filter(user=request.user.id)))
+
                     while i < len(services):
                         random_pick = randrange(4)
                         if random_pick == 0:
-                            service = self.sub_date_picked(services)
+                            service = sub_date_sorted[0]
                             services_sorted.append(service)
-                            services.remove(service)
                         elif random_pick == 1:
-                            service = self.rating_picked(services)
+                            service = rating_sorted[0]
                             services_sorted.append(service)
-                            services.remove(service)
                         elif random_pick == 2:
-                            service = self.follow_status_picked(services, request.user.id)
+                            service = follow_status_sorted[0]
                             services_sorted.append(service)
-                            services.remove(service)
                         else:
-                            service = self.interest_picked(services,
-                                                           list(Interest.objects.filter(user=request.user.id)))
+                            service = interest_sorted[0]
                             services_sorted.append(service)
-                            services.remove(service)
+
+                        interest_sorted.remove(service)
+                        follow_status_sorted.remove(service)
+                        rating_sorted.remove(service)
+                        sub_date_sorted.remove(service)
+                        services.remove(service)
                     # do not change the line below or do not remove from this else block
                     # if you write separated sorting code, the code below should be together with search result
                     # but not with sorting to not duplicate the log
@@ -1629,7 +1635,7 @@ class ServiceSearch(LoginRequiredMixin, View):
             return service.creater.date_joined
 
         services_sub_date_sorted = sorted(search_results, reverse=True, key=sub_date_sorted)
-        return services_sub_date_sorted[0]
+        return services_sub_date_sorted
 
     def rating_picked(self, search_results):
         ratings = []
@@ -1644,11 +1650,7 @@ class ServiceSearch(LoginRequiredMixin, View):
 
         services_rating_sorted = sorted(search_results, reverse=True, key=rating_sorted)
 
-        num_of_services = ratings.count(ratings[0])
-        if num_of_services > 1:
-            return services_rating_sorted[randrange(num_of_services)]
-        else:
-            return services_rating_sorted[0]
+        return services_rating_sorted
 
     def follow_status_picked(self, search_results, searcher):
         follow_table = []
@@ -1666,11 +1668,7 @@ class ServiceSearch(LoginRequiredMixin, View):
 
         services_follow_sorted = sorted(search_results, reverse=True, key=follow_status_sorted)
 
-        num_of_services = follow_table.count(follow_table[0])
-        if num_of_services > 1:
-            return services_follow_sorted[randrange(num_of_services)]
-        else:
-            return services_follow_sorted[0]
+        return services_follow_sorted
 
     def interest_picked(self, search_results, user_interests):
         interest_table = []
@@ -1688,11 +1686,7 @@ class ServiceSearch(LoginRequiredMixin, View):
             interest_table.append(interest_sorted(service))
 
         services_interest_sorted = sorted(search_results, reverse=True, key=interest_sorted)
-        num_of_services = interest_table.count(interest_table[0])
-        if num_of_services > 1:
-            return services_interest_sorted[randrange(num_of_services)]
-        else:
-            return services_interest_sorted[0]
+        return services_interest_sorted
 
     def highest_rated_picked(self, search_results):
         ratings = []
