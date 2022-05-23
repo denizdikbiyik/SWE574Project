@@ -322,7 +322,7 @@ class ServiceDetailView(View):
                         applicant_user_profile.reservehour = applicant_user_profile.reservehour - service.duration
                         applicant_user_profile.save()
                         if service.wiki_description is not None:
-                            definitions = service.wiki_description.split("as ")
+                            definitions = service.wiki_description.split("as a(n) ")
                             if len(Interest.objects.filter(user=request.user, wiki_description=definitions[1])) == 0:
                                 new_interest = Interest.objects.create(user=request.user, name=definitions[0], wiki_description=definitions[1], implicit=True, origin='like')
                                 new_interest.save()
@@ -1130,7 +1130,7 @@ class ProfileView(View):
             events = Event.objects.filter(eventcreater=profile.user).filter(isDeleted=False).filter(isActive=True)
             number_of_events = len(events)
             comments = UserRatings.objects.filter(rated=profile.user)
-            interests = Interest.objects.filter(user=user)
+            interests = Interest.objects.filter(user=user, implicit=False)
 
             followings = []
             allUsers = UserProfile.objects.all()
@@ -2426,7 +2426,7 @@ class ServiceLike(LoginRequiredMixin, View):
             service = Service.objects.get(pk=pk)
             like = Like.objects.create(itemType="service", itemId=pk, liked=request.user)
             if service.wiki_description is not None:
-                definitions = service.wiki_description.split("as ")
+                definitions = service.wiki_description.split("as a(n) ")
                 if len(Interest.objects.filter(user=request.user, wiki_description=definitions[1])) == 0:
                     new_interest = Interest.objects.create(user=request.user, name=definitions[0], wiki_description=definitions[1], implicit= True, origin='like')
                     new_interest.save()
@@ -3897,36 +3897,41 @@ def get_recommendations(request):
 
     def sort_interests(interests):
         desc = []
-        for interest in interests:
-            desc.append(interest.wiki_description)
+        all_services = []
         currentTime = timezone.now()
+        for interest in interests:
+            desc.append(interest.name + " as a(n) " + interest.wiki_description)
+            current_interest_list = list(Service.objects.exclude(wiki_description__isnull=True).filter(
+                reduce(operator.or_, (Q(wiki_description=x) for x in desc))).exclude(creater=request.user).filter(
+                isDeleted=False).filter(isActive=True).filter(servicedate__gte=currentTime).filter(
+                wiki_description=interest.name + " as a(n) " + interest.wiki_description).exclude(
+                pk__in=list(interest.disapprovedServices.values_list("pk", flat=True))))
+            for service in current_interest_list:
+                all_services.append(service)
+
         all_services_sorted = []
 
         if len(desc) == 0:
             return all_services_sorted
-        else:
-            all_services = list(Service.objects.exclude(wiki_description__isnull=True).filter(
-                reduce(operator.or_, (Q(wiki_description__contains=x) for x in desc))).exclude(creater=request.user).filter(isDeleted=False).filter(isActive=True).filter(servicedate__gte=currentTime))
 
-        while len(all_services) > len(all_services_sorted):
+        while len(all_services) > 0:
             for interest in interests:
-                current_interest_list = list(
-                    filter(lambda it: interest.wiki_description in it.wiki_description and it not in interest.disapprovedServices.all(), all_services))
-                if len(current_interest_list) > interest.feedbackFactor:
-                    for i in range(interest.feedbackFactor):
-                        selected_service = smart_sort(current_interest_list)
+                current_list = list(filter(lambda service: service.wiki_description == interest.name + " as a(n) " +interest.wiki_description, all_services))
+                if len(current_list) > interest.feedbackFactor:
+                    for _ in range(interest.feedbackFactor):
+                        selected_service = smart_sort(current_list)
                         all_services_sorted.append(selected_service)
-                        all_services.remove(selected_service)
-                elif len(current_interest_list) > 0:
-                    for service in current_interest_list:
+                        if selected_service in all_services:
+                            all_services.remove(selected_service)
+                elif len(current_list) > 0:
+                    for service in current_list:
                         all_services_sorted.append(service)
-                    for service in current_interest_list:
                         all_services.remove(service)
                 else:
                     pass
         return all_services_sorted
 
-    own_recommendations = sort_interests(Interest.objects.filter(user=request.user).order_by('feedbackFactor'))
+    own_recommendations = sort_interests(Interest.objects.filter(user=request.user).filter(feedbackFactor__gt=0).order_by('feedbackFactor'))
     if User.objects.get(pk=request.user.pk).date_joined > timezone.now() - timedelta(days=30):
         followed_list = []
         profiles = UserProfile.objects.filter(followers__id__exact=request.user.id)
