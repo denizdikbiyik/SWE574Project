@@ -11,11 +11,44 @@ from django.utils import timezone
 
 class TestViews(TestCase):
 
-    # P
-    def test_url_exists(self):
+
+    def test_view_url_exists_at_desired_location(self):
+        test_user1 = User.objects.create_user(username='testuser1', password='1X<ISRUkw+tuK')
+        test_user1.profile.isAdmin = True
+        test_user1.save()
         client = Client()
-        response = client.get("/dashboard/servicelist/")
-        self.assertEqual(response.status_code, 404)
+        client.login(username='testuser1', password='1X<ISRUkw+tuK')
+        response = client.get("/dashboardservice/servicelist/")
+        self.assertEqual(response.status_code, 200)
+
+    def test_view_url_accessible_by_name(self):
+        test_user1 = User.objects.create_user(username='testuser1', password='1X<ISRUkw+tuK')
+        test_user1.profile.isAdmin = True
+        test_user1.save()
+        client = Client()
+        client.login(username='testuser1', password='1X<ISRUkw+tuK')
+        response = client.get(reverse('servicelist'))
+        self.assertEqual(response.status_code, 200)
+
+
+    def test_view_uses_correct_template(self):
+        test_user1 = User.objects.create_user(username='testuser1', password='1X<ISRUkw+tuK')
+        test_user1.profile.isAdmin = True
+        test_user1.save()
+        client = Client()
+        client.login(username='testuser1', password='1X<ISRUkw+tuK')
+        response = client.get(reverse('servicelist'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'dasboard_service_list/servicelist.html')
+
+    def test_view_pagination(self):
+        test_user1 = User.objects.create_user(username='testuser1', password='1X<ISRUkw+tuK')
+        test_user1.profile.isAdmin = True
+        test_user1.save()
+        client = Client()
+        client.login(username='testuser1', password='1X<ISRUkw+tuK')
+        response = client.get(reverse('servicelist'))
+        self.assertEquals(response.context['page_obj'].number, response.context['page_obj'].paginator.page(1).number)
 
     def test_make_context_for_service_list(self):
         test_user1 = User.objects.create_user(username='testuser1', password='1X<ISRUkw+tuK')
