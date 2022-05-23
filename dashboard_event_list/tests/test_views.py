@@ -11,11 +11,42 @@ from django.contrib.auth.models import User
 
 class TestViews(TestCase):
 
-    # P
-    def test_url_exists(self):
+    def test_view_url_exists_at_desired_location(self):
+        test_user1 = User.objects.create_user(username='testuser1', password='1X<ISRUkw+tuK')
+        test_user1.profile.isAdmin = True
+        test_user1.save()
         client = Client()
-        response = client.get("/dashboard/eventlist/")
-        self.assertEqual(response.status_code, 404)
+        client.login(username='testuser1', password='1X<ISRUkw+tuK')
+        response = client.get("/dashboardevent/eventlist/")
+        self.assertEqual(response.status_code, 200)
+
+    def test_view_url_accessible_by_name(self):
+        test_user1 = User.objects.create_user(username='testuser1', password='1X<ISRUkw+tuK')
+        test_user1.profile.isAdmin = True
+        test_user1.save()
+        client = Client()
+        client.login(username='testuser1', password='1X<ISRUkw+tuK')
+        response = client.get(reverse('eventlist'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_view_uses_correct_template(self):
+        test_user1 = User.objects.create_user(username='testuser1', password='1X<ISRUkw+tuK')
+        test_user1.profile.isAdmin = True
+        test_user1.save()
+        client = Client()
+        client.login(username='testuser1', password='1X<ISRUkw+tuK')
+        response = client.get(reverse('eventlist'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'dashboard_event_list/eventlist.html')
+
+    def test_view_pagination(self):
+        test_user1 = User.objects.create_user(username='testuser1', password='1X<ISRUkw+tuK')
+        test_user1.profile.isAdmin = True
+        test_user1.save()
+        client = Client()
+        client.login(username='testuser1', password='1X<ISRUkw+tuK')
+        response = client.get(reverse('eventlist'))
+        self.assertEquals(response.context['page_obj'].number, response.context['page_obj'].paginator.page(1).number)
 
     def test_make_query_for_service_list(self):
         test_user1 = User.objects.create_user(username='testuser1', password='1X<ISRUkw+tuK')
