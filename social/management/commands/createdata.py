@@ -16,7 +16,7 @@ class Command(BaseCommand):
         fakedata_count = 1
 
         def load_interest_example():
-            wb = load_workbook(filename='social\management\commands\interest_example.xlsx')
+            wb = load_workbook(filename='social/management/commands/interest_example.xlsx')
             ws = wb.active
             interest_dict = {}
             for row in list(ws.rows)[1:]:
