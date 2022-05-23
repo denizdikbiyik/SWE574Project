@@ -1741,7 +1741,7 @@ class EventSearch(View):
             sorting = self.request.GET.get('sorting')
             currentTime = timezone.now()
 
-            events = Event.objects.filter(isDeleted=False).filter(isActive=True).filter(eventdate__gte=currentTime)
+            events = Event.objects.filter(isDeleted=False).filter(isActive=True).filter(eventdate__gte=currentTime).order_by(Lower("eventname"))
 
             if "query" in request.GET:
                 events_pk = set()
@@ -1757,6 +1757,7 @@ class EventSearch(View):
                         event_address__icontains=query) | Q(pk__in=events_pk))
             else:
                 events = events
+                query=""
 
 
             # Map
@@ -1791,12 +1792,17 @@ class EventSearch(View):
             # End of Map
 
             if "sorting" in request.GET:
+                sort_message="sorting"
                 if sorting == "createdate":
                     events=events.order_by("eventcreateddate")
                 elif sorting == "name":
                     events = events.order_by(Lower("eventname"))
-                else :
+                elif sorting == "eventdate":
                     events = events.order_by("eventdate")
+                else:
+                    events = events.order_by(Lower("eventname"))
+            else:
+                events = events.order_by(Lower("eventname"))
 
 
             events_count = len(events)
