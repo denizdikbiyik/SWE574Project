@@ -43,18 +43,16 @@ class Index(View):
         for serviceToGet in servicesToGet:
             if serviceToGet not in featured_services:
                 services.append(serviceToGet)
-        services_count = len(services)
         eventsToGet = Event.objects.filter(isDeleted=False).filter(isActive=True).filter(eventdate__gte=currentTime).order_by('-eventcreateddate')
         for eventToGet in eventsToGet:
             if eventToGet not in featured_events:
                 events.append(eventToGet)
-        events_count = len(events)
 
         context = {
-            'services': services,
-            'events': events,
-            'services_count': services_count,
-            'events_count': events_count,
+            'services': services[:5],
+            'events': events[:5],
+            'services_count': 5,
+            'events_count': 5,
             'featured_services': featured_services,
             'featured_events': featured_events,
             'featured_services_count': featured_services_count,
@@ -130,7 +128,8 @@ def get_recommendations(request):
                     for i in range(interest.feedbackFactor):
                         selected_service = smart_sort(current_interest_list)
                         all_services_sorted.append(selected_service)
-                        all_services.remove(selected_service)
+                        if selected_service in all_services:
+                            all_services.remove(selected_service)
                 elif len(current_interest_list) > 0:
                     for service in current_interest_list:
                         all_services_sorted.append(service)
