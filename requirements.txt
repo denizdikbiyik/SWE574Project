@@ -28,6 +28,7 @@ django-static-fontawesome==5.14.0.0
 entrypoints==0.4
 env==0.1.0
 executing==0.8.3
+faker==13.11.1
 fastjsonschema==2.15.3
 fonttools==4.32.0
 geographiclib==1.52
@@ -60,6 +61,7 @@ nest-asyncio==1.5.5
 notebook==6.4.10
 numpy==1.22.3
 oauthlib==3.1.1
+openpyxl==3.0.10
 packaging==21.3
 pandocfilters==1.5.0
 parso==0.8.3
