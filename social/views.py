@@ -1930,7 +1930,6 @@ class EventSearch(View):
             # End of Map
 
             if "sorting" in request.GET:
-                sort_message="sorting"
                 if sorting == "createdate":
                     events=events.order_by("eventcreateddate")
                 elif sorting == "name":
@@ -1956,7 +1955,7 @@ class EventSearch(View):
             # Pagination
             object_list = events
             page_num = request.GET.get('page', 1)
-            paginator = Paginator(object_list, 1)
+            paginator = Paginator(object_list, 10)
             try:
                 page_obj = paginator.page(page_num)
             except PageNotAnInteger:
