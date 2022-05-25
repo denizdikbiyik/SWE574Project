@@ -51,6 +51,8 @@ def reverse_location(coordinates):
 class ServiceCreateView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             request.session["type"] = "service"
             form = ServiceForm()
             context = {
@@ -62,6 +64,8 @@ class ServiceCreateView(LoginRequiredMixin, View):
 
     def post(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             services = Service.objects.filter(isDeleted=False).filter(isActive=True).order_by('-createddate')
             creater_user_profile = UserProfile.objects.get(pk=request.user)
 
@@ -141,6 +145,8 @@ class ServiceCreateView(LoginRequiredMixin, View):
 class AllServicesView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             currentTime = timezone.now()
             services = Service.objects.all().order_by('-createddate').filter(isDeleted=False).filter(isActive=True).filter(
                 servicedate__gte=currentTime)
@@ -161,6 +167,8 @@ class AllServicesView(LoginRequiredMixin, View):
 class CreatedServicesView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             services = Service.objects.filter(creater=request.user).filter(isDeleted=False).filter(isActive=True).order_by(
                 '-createddate')
             form = ServiceForm()
@@ -179,6 +187,8 @@ class CreatedServicesView(LoginRequiredMixin, View):
 class AppliedServicesView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             services = Service.objects.filter(isDeleted=False)
             serviceapplications = ServiceApplication.objects.filter(isDeleted=False).filter(isActive=True)
             servicesapplied = []
@@ -204,6 +214,8 @@ class AppliedServicesView(LoginRequiredMixin, View):
 class ServiceDetailView(View):
     def get(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             service = Service.objects.get(pk=pk)
             is_featured = False
             featured = Featured.objects.filter(itemId=pk).filter(itemType="service")
@@ -273,6 +285,8 @@ class ServiceDetailView(View):
 
     def post(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             service = Service.objects.get(pk=pk)
             form = ServiceApplicationForm(request.POST)
             applications = ServiceApplication.objects.filter(service=pk).filter(isDeleted=False).filter(
@@ -350,6 +364,8 @@ class ServiceDetailView(View):
 class ApplicationDeleteView(LoginRequiredMixin, View):
     def get(self, request, *args, pk, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             application = ServiceApplication.objects.get(pk=pk)
             if request.user == application.applicant or request.user == application.service.creater:
                 if application.service.servicedate > timezone.now():
@@ -368,6 +384,8 @@ class ApplicationDeleteView(LoginRequiredMixin, View):
 
     def post(self, request, *args, pk, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             service_pk = self.kwargs['service_pk']
             service = Service.objects.get(pk=service_pk)
             application = ServiceApplication.objects.get(pk=pk)
@@ -404,6 +422,8 @@ class ApplicationDeleteView(LoginRequiredMixin, View):
 class ApplicationEditView(LoginRequiredMixin, View):
     def get(self, request, *args, pk, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             application = ServiceApplication.objects.get(pk=pk)
             if application.service.creater == request.user:
                 form = ServiceApplicationForm(instance=application)
@@ -418,6 +438,8 @@ class ApplicationEditView(LoginRequiredMixin, View):
 
     def post(self, request, *args, pk, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             form = ServiceApplicationForm(request.POST, request.FILES)
             application = ServiceApplication.objects.get(pk=pk)
             if form.is_valid():
@@ -445,6 +467,8 @@ class ApplicationEditView(LoginRequiredMixin, View):
 class ConfirmServiceTaken(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             service = Service.objects.get(pk=pk)
             service.is_taken = True
             service.save()
@@ -473,6 +497,8 @@ class ConfirmServiceTaken(LoginRequiredMixin, View):
 class ConfirmServiceGiven(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             service = Service.objects.get(pk=pk)
             service.is_given = True
             service.save()
@@ -524,6 +550,8 @@ def CreditExchange(service):
 class ServiceEditView(LoginRequiredMixin, View):
     def get(self, request, *args, pk, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             service = Service.objects.get(pk=pk)
             editLogs = Log.objects.filter(itemType="service").filter(itemId=pk).filter(operation="editservice")
             remaining = (service.servicedate - datetime.today()).total_seconds()
@@ -548,6 +576,8 @@ class ServiceEditView(LoginRequiredMixin, View):
 
     def post(self, request, *args, pk, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             form = ServiceForm(request.POST, request.FILES)
             service = Service.objects.get(pk=pk)
             if form.is_valid():
@@ -639,6 +669,8 @@ class ServiceEditView(LoginRequiredMixin, View):
 class ServiceDeleteView(LoginRequiredMixin, View):
     def get(self, request, *args, pk, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             service = Service.objects.get(pk=pk)
             remaining = (service.servicedate - datetime.today()).total_seconds()
             if service.creater == request.user:
@@ -658,6 +690,8 @@ class ServiceDeleteView(LoginRequiredMixin, View):
 
     def post(self, request, *args, pk, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             service = Service.objects.get(pk=pk)
             service.creater = request.user
             service_creater_profile = UserProfile.objects.get(pk=service.creater)
@@ -699,6 +733,8 @@ class ServiceDeleteView(LoginRequiredMixin, View):
 class EventCreateView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             request.session["type"] = "event"
             form = EventForm()
             context = {
@@ -710,6 +746,8 @@ class EventCreateView(LoginRequiredMixin, View):
 
     def post(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             events = Event.objects.filter(isDeleted=False).filter(isActive=True).order_by('-eventcreateddate')
             form = EventForm(request.POST, request.FILES)
             if form.is_valid():
@@ -749,6 +787,8 @@ class EventCreateView(LoginRequiredMixin, View):
 class AllEventsView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             currentTime = timezone.now()
             events = Event.objects.filter(isDeleted=False).filter(isActive=True).filter(
                 eventdate__gte=currentTime).order_by('-eventcreateddate')
@@ -767,6 +807,8 @@ class AllEventsView(LoginRequiredMixin, View):
 class CreatedEventsView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             events = Event.objects.filter(eventcreater=request.user).filter(isDeleted=False).filter(isActive=True).order_by(
                 '-eventcreateddate')
             number_of_createdevent = len(events)
@@ -785,6 +827,8 @@ class CreatedEventsView(LoginRequiredMixin, View):
 class AppliedEventsView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             events = Event.objects.filter(isDeleted=False)
             eventapplications = EventApplication.objects.filter(isDeleted=False).filter(isActive=True)
             eventsapplied = []
@@ -810,6 +854,8 @@ class AppliedEventsView(LoginRequiredMixin, View):
 class EventApplicationDeleteView(LoginRequiredMixin, View):
     def get(self, request, *args, pk, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             application = EventApplication.objects.get(pk=pk)
             if request.user == application.applicant or request.user == application.event.eventcreater:
                 if application.event.eventdate > timezone.now():
@@ -827,6 +873,8 @@ class EventApplicationDeleteView(LoginRequiredMixin, View):
 
     def post(self, request, *args, pk, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             event_pk = self.kwargs['event_pk']
             event = Event.objects.get(pk=event_pk)
             application = EventApplication.objects.get(pk=pk)
@@ -869,6 +917,8 @@ class EventApplicationDeleteView(LoginRequiredMixin, View):
 class EventDetailView(View):
     def get(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             event = Event.objects.get(pk=pk)
             is_featured = False
             featured = Featured.objects.filter(itemId=pk).filter(itemType="event")
@@ -937,6 +987,8 @@ class EventDetailView(View):
 
     def post(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             event = Event.objects.get(pk=pk)
             form = EventApplicationForm(request.POST)
             applications = EventApplication.objects.filter(event=pk).filter(isDeleted=False).filter(isActive=True).order_by(
@@ -985,6 +1037,8 @@ class EventDetailView(View):
 class EventEditView(LoginRequiredMixin, View):
     def get(self, request, *args, pk, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             event = Event.objects.get(pk=pk)
             editLogs = Log.objects.filter(itemType="event").filter(itemId=pk).filter(operation="editevent")
             remaining = (event.eventdate - datetime.today()).total_seconds()
@@ -1009,6 +1063,8 @@ class EventEditView(LoginRequiredMixin, View):
 
     def post(self, request, *args, pk, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             form = EventForm(request.POST, request.FILES)
             event = Event.objects.get(pk=pk)
             applications = EventApplication.objects.filter(event=event).filter(isDeleted=False).filter(isActive=True)
@@ -1059,6 +1115,8 @@ class EventEditView(LoginRequiredMixin, View):
 class EventDeleteView(LoginRequiredMixin, View):
     def get(self, request, *args, pk, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             event = Event.objects.get(pk=pk)
             remaining = (event.eventdate - datetime.today()).total_seconds()
             if event.eventcreater == request.user:
@@ -1078,6 +1136,8 @@ class EventDeleteView(LoginRequiredMixin, View):
 
     def post(self, request, *args, pk, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             event = Event.objects.get(pk=pk)
             applications = EventApplication.objects.filter(event=event).filter(isDeleted=False).filter(isActive=True)
             for application in applications:
@@ -1108,6 +1168,8 @@ class EventDeleteView(LoginRequiredMixin, View):
 class ProfileView(View):
     def get(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             profile = UserProfile.objects.get(pk=pk)
             user = profile.user
             followers = profile.followers.all()
@@ -1173,6 +1235,8 @@ class ProfileView(View):
 class ProfileEditView(LoginRequiredMixin, View):
     def get(self, request, *args, pk, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             profile = UserProfile.objects.get(pk=pk)
             if profile.user == request.user:
                 form = ProfileForm(instance=profile)
@@ -1187,6 +1251,8 @@ class ProfileEditView(LoginRequiredMixin, View):
 
     def post(self, request, *args, pk, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             form = ProfileForm(request.POST, request.FILES)
             profile = UserProfile.objects.get(pk=pk)
             if form.is_valid():
@@ -1212,6 +1278,8 @@ class ProfileEditView(LoginRequiredMixin, View):
 class AddFollower(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             follow_pk = self.kwargs['followpk']
             profile = UserProfile.objects.get(pk=follow_pk)
             profile.followers.add(request.user)
@@ -1229,6 +1297,8 @@ class AddFollower(LoginRequiredMixin, View):
 class RemoveFollower(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             follow_pk = self.kwargs['followpk']
             profile = UserProfile.objects.get(pk=follow_pk)
             profile.followers.remove(request.user)
@@ -1241,6 +1311,8 @@ class RemoveFollower(LoginRequiredMixin, View):
 class RemoveMyFollower(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             follower_pk = self.kwargs['follower_pk']
             follower = UserProfile.objects.get(pk=follower_pk).user
             profile = UserProfile.objects.get(pk=request.user.pk)
@@ -1254,6 +1326,8 @@ class RemoveMyFollower(LoginRequiredMixin, View):
 class FollowersListView(LoginRequiredMixin, View):
     def get(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             profile = UserProfile.objects.get(pk=pk)
             followers = profile.followers.all()
             number_of_followers = len(followers)
@@ -1270,6 +1344,8 @@ class FollowersListView(LoginRequiredMixin, View):
 class FollowingsListView(LoginRequiredMixin, View):
     def get(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             profile = UserProfile.objects.get(pk=pk)
             followings = []
             allUsers = UserProfile.objects.all()
@@ -1292,6 +1368,8 @@ class FollowingsListView(LoginRequiredMixin, View):
 class RateUser(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             form = RatingForm()
             servicepk = self.kwargs['servicepk']
             service = Service.objects.get(pk=servicepk)
@@ -1312,6 +1390,8 @@ class RateUser(LoginRequiredMixin, View):
 
     def post(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             form = RatingForm(request.POST)
             servicepk = self.kwargs['servicepk']
             service = Service.objects.get(pk=servicepk)
@@ -1334,6 +1414,8 @@ class RateUser(LoginRequiredMixin, View):
 class RateUserEdit(LoginRequiredMixin, View):
     def get(self, request, *args, pk, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             rating = UserRatings.objects.get(pk=pk)
             form = RatingForm(instance=rating)
             context = {
@@ -1346,6 +1428,8 @@ class RateUserEdit(LoginRequiredMixin, View):
 
     def post(self, request, *args, pk, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             form = RatingForm(request.POST)
             rating = UserRatings.objects.get(pk=pk)
             if form.is_valid():
@@ -1367,6 +1451,8 @@ class RateUserEdit(LoginRequiredMixin, View):
 class RateUserDelete(LoginRequiredMixin, View):
     def get(self, request, *args, pk, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             rating = UserRatings.objects.get(pk=pk)
             form = RatingForm(instance=rating)
             context = {
@@ -1378,6 +1464,8 @@ class RateUserDelete(LoginRequiredMixin, View):
 
     def post(self, request, *args, pk, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             rating = UserRatings.objects.get(pk=pk)
             service = rating.service
             log = Log.objects.create(operation="deleterating", itemType="service", itemId=rating.service.pk,
@@ -1391,6 +1479,8 @@ class RateUserDelete(LoginRequiredMixin, View):
 class TimeLine(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             currentTime = timezone.now()
             profile = UserProfile.objects.get(user=request.user)
             allUsers = UserProfile.objects.all()
@@ -1477,6 +1567,8 @@ class TimeLine(LoginRequiredMixin, View):
 class ServiceSearch(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             request.session["search"] = "servicesearch"
             query = self.request.GET.get('query')
             sorting = self.request.GET.get('sorting')
@@ -1712,6 +1804,8 @@ class ServiceSearch(LoginRequiredMixin, View):
 class ServiceFilter(View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             category = self.request.GET.get('category')
             currentTime = timezone.now()
             if category != "all":
@@ -1732,7 +1826,18 @@ class ServiceFilter(View):
         else:
             return redirect('index')
 
-
+'''
+class EventSearch(View):
+    def get(self, request, *args, **kwargs):
+        if request.user.profile.isActive:
+            form = MyLocation(request.GET)
+            context = {
+                'form': form,
+            }
+            return render(request, 'social/event-search.html', context)
+        else:
+            return redirect('index')
+'''
 class EventSearch(View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
@@ -1762,21 +1867,49 @@ class EventSearch(View):
 
             # Map
             message = ""
+            form = MyLocation(request.GET)
+            my_location = request.session.get("target_location")
+            my_city = request.session.get("city")
+            service = Service(location=my_location, city=my_city)
             slocation = request.GET.get("slocation")
+            distance_target = request.GET.get("distance_target")
+
+            if 'submit' in request.GET:
+                request.session["distance_target"] = distance_target
+                if form.is_valid():
+                    target_location = form.cleaned_data.get("location")
+                    city = form.cleaned_data.get("city")
+                    request.session["target_location"] = target_location
+                    request.session["city"] = city
+                    service = Service(location=target_location, city=city)
+                    form = MyLocation(instance=service)
+            else:
+                form = MyLocation(instance=service)
+
+
+
+
             if "slocation" in request.GET:
                 if slocation == "map":
-                    if request.session.get("target_location") != None or request.session.get("distance") != None:
-                        target_location = str(request.session.get("target_location"))
-                        distance_target = int(request.session.get("distance"))
-                        event_location_pk = set()
-                        for event in events:
-                            event_location = event.eventlocation
-                            if distance(target_location, event_location).km <= distance_target:
-                                event_location_pk.add(event.pk)
-                        events = events.filter(Q(pk__in=event_location_pk))
-                    else:
-                        message = "Please choose a location from map."
+                    if request.GET.get("distance_target") == "" or request.GET.get("distance_target") == None :
+                        message = "Please choose a range for the location."
                         events = events
+                    elif request.session.get("target_location") == None:
+                        message = "Please choose a range for the location."
+                        events = events
+                    else:
+                        if request.session.get("target_location") != None or request.GET.get("distance_target") !="" or request.GET.get("distance_target") !=None:
+                            target_location = str(request.session.get("target_location"))
+                            distance_target = int(request.session.get("distance_target"))
+                            event_location_pk = set()
+                            for event in events:
+                                event_location = event.eventlocation
+                                if distance(target_location, event_location).km <= distance_target:
+                                    event_location_pk.add(event.pk)
+                            events = events.filter(Q(pk__in=event_location_pk))
+                        else:
+
+                            events = events
                 elif slocation == "home":
                     target_location = request.user.profile.location
                     event_location_for_home_pk = set()
@@ -1788,7 +1921,12 @@ class EventSearch(View):
                 else:
                     events = events
                     request.session["target_location"] = None
+                    request.session["city"] = None
+
                     request.session["distance"] = None
+
+
+
             # End of Map
 
             if "sorting" in request.GET:
@@ -1808,7 +1946,7 @@ class EventSearch(View):
             events_count = len(events)
 
             # do not change the line below or do not remove from this block
-            # if you write separated sorting code, the code below should be together with search result 
+            # if you write separated sorting code, the code below should be together with search result
             # but not with sorting to not duplicate the log
             if query != None:
                 if query.strip() != "":
@@ -1818,7 +1956,7 @@ class EventSearch(View):
             # Pagination
             object_list = events
             page_num = request.GET.get('page', 1)
-            paginator = Paginator(object_list, 10)
+            paginator = Paginator(object_list, 1)
             try:
                 page_obj = paginator.page(page_num)
             except PageNotAnInteger:
@@ -1837,6 +1975,8 @@ class EventSearch(View):
                 'query': query,
                 'message': message,
                 'slocation': slocation,
+                'form': form,
+                'distance_target': distance_target,
             }
 
             return render(request, 'social/event-search.html', context)
@@ -1847,6 +1987,8 @@ class EventSearch(View):
 class SearchLogList(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             searchLogs = Search.objects.all()
             searchLogsServices = searchLogs.filter(searchType="service")
             searchLogsEvents = searchLogs.filter(searchType="event")
@@ -1867,6 +2009,8 @@ class SearchLogList(LoginRequiredMixin, View):
 class SearchLogListZero(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             searchLogs = Search.objects.all()
             searchLogsServices = searchLogs.filter(searchType="service").filter(resultCount=0)
             searchLogsEvents = searchLogs.filter(searchType="event").filter(resultCount=0)
@@ -1887,6 +2031,8 @@ class SearchLogListZero(LoginRequiredMixin, View):
 class SearchLogWordCloud(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             searchLogsServices = Search.objects.filter(searchType="service")
             showCloud = False
 
@@ -1914,6 +2060,8 @@ class SearchLogWordCloud(LoginRequiredMixin, View):
 class Notifications(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             notifications = NotifyUser.objects.filter(notify=request.user).filter(hasRead=False).order_by('-date')
             notifications_count = len(notifications)
             notificationsToRead = notifications.filter(offerPk=0)
@@ -1936,6 +2084,8 @@ class Notifications(LoginRequiredMixin, View):
 class RequestCreateView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             form = RequestForm()
             context = {
                 'form': form,
@@ -1946,6 +2096,8 @@ class RequestCreateView(LoginRequiredMixin, View):
 
     def post(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             form = RequestForm(request.POST)
             if form.is_valid():
                 new_request = form.save(commit=False)
@@ -1970,6 +2122,8 @@ class RequestCreateView(LoginRequiredMixin, View):
 class CreatedRequestsView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             requests = Tag.objects.filter(requester=request.user)
             number_of_requests = len(requests)
             context = {
@@ -1984,6 +2138,8 @@ class CreatedRequestsView(LoginRequiredMixin, View):
 class RequestsFromMeView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             requests = Tag.objects.filter(toPerson=request.user)
             number_of_requests = len(requests)
             context = {
@@ -1998,6 +2154,8 @@ class RequestsFromMeView(LoginRequiredMixin, View):
 class RequestDetailView(View):
     def get(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             requestDetail = Tag.objects.get(pk=pk)
             notifications = NotifyUser.objects.filter(notify=request.user).filter(offerType="request").filter(
                 offerPk=pk).filter(hasRead=False)
@@ -2019,6 +2177,8 @@ class RequestDetailView(View):
 class RequestDeleteView(LoginRequiredMixin, View):
     def get(self, request, *args, pk, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             requestToDelete = Tag.objects.get(pk=pk)
             if requestToDelete.requester == request.user:
                 form = RequestForm(instance=requestToDelete)
@@ -2033,6 +2193,8 @@ class RequestDeleteView(LoginRequiredMixin, View):
 
     def post(self, request, *args, pk, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             requestToDelete = Tag.objects.get(pk=pk)
             notification = NotifyUser.objects.create(notify=requestToDelete.toPerson, notification=str(
                 requestToDelete.tag) + ' request from you is deleted.', offerType="request")
@@ -2056,6 +2218,8 @@ class RequestDeleteView(LoginRequiredMixin, View):
 class AllUsersView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             users = UserProfile.objects.filter(isActive=True)
             # Pagination
             object_list = users
@@ -2083,6 +2247,8 @@ class AllUsersView(LoginRequiredMixin, View):
 class UsersServicesListView(LoginRequiredMixin, View):
     def get(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             profile = UserProfile.objects.get(pk=pk)
             services = Service.objects.filter(creater=profile.user).filter(isDeleted=False).filter(isActive=True)
             number_of_services = len(services)
@@ -2099,6 +2265,8 @@ class UsersServicesListView(LoginRequiredMixin, View):
 class UsersEventsListView(LoginRequiredMixin, View):
     def get(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             profile = UserProfile.objects.get(pk=pk)
             events = Event.objects.filter(eventcreater=profile.user).filter(isDeleted=False).filter(isActive=True)
             number_of_events = len(events)
@@ -2115,6 +2283,8 @@ class UsersEventsListView(LoginRequiredMixin, View):
 class AddAdminView(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             profile = UserProfile.objects.get(pk=pk)
             profile.isAdmin = True
             profile.save()
@@ -2132,6 +2302,8 @@ class AddAdminView(LoginRequiredMixin, View):
 class RemoveAdminView(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             profile = UserProfile.objects.get(pk=pk)
             profile.isAdmin = False
             profile.save()
@@ -2149,6 +2321,8 @@ class RemoveAdminView(LoginRequiredMixin, View):
 class DashboardEventDetailView(View):
     def get(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             event = Event.objects.get(pk=pk)
             applications = EventApplication.objects.filter(event=pk).order_by('-date')
             number_of_accepted = len(applications.filter(approved=True))
@@ -2186,6 +2360,8 @@ class DashboardEventDetailView(View):
 class DashboardUserDetailView(View):
     def get(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             profile = UserProfile.objects.get(user=pk)
             service_applications = ServiceApplication.objects.filter(applicant=pk)
             service_application_number = len(service_applications)
@@ -2235,6 +2411,8 @@ class DashboardUserDetailView(View):
 class DashboardServiceDetailView(View):
     def get(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             service = Service.objects.get(pk=pk)
             applications = ServiceApplication.objects.filter(service=pk).order_by('-date')
             number_of_accepted = len(applications.filter(approved=True))
@@ -2279,6 +2457,8 @@ class DashboardServiceDetailView(View):
 class ServiceDetailCommunicationView(View):
     def get(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             service = Service.objects.get(pk=pk)
             query = self.request.GET.get('query')
             if (query == ""):
@@ -2354,6 +2534,8 @@ class ServiceCommunicationDeleteView(LoginRequiredMixin, UserPassesTestMixin, De
 class EventDetailCommunicationView(View):
     def get(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             event = Event.objects.get(pk=pk)
             query = self.request.GET.get('query')
             if (query == ""):
@@ -2429,6 +2611,8 @@ class EventCommunicationDeleteView(LoginRequiredMixin, UserPassesTestMixin, Dele
 class ServiceLike(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             service = Service.objects.get(pk=pk)
             like = Like.objects.create(itemType="service", itemId=pk, liked=request.user)
             if service.wiki_description is not None:
@@ -2451,6 +2635,8 @@ class ServiceLike(LoginRequiredMixin, View):
 class ServiceUnlike(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             service = Service.objects.get(pk=pk)
             like = Like.objects.get(itemType="service", itemId=pk, liked=request.user)
             like.delete()
@@ -2469,6 +2655,8 @@ class ServiceUnlike(LoginRequiredMixin, View):
 class EventLike(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             event = Event.objects.get(pk=pk)
             like = Like.objects.create(itemType="event", itemId=pk, liked=request.user)
             notification = NotifyUser.objects.create(notify=event.eventcreater,
@@ -2486,6 +2674,8 @@ class EventLike(LoginRequiredMixin, View):
 class EventUnlike(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             event = Event.objects.get(pk=pk)
             like = Like.objects.get(itemType="event", itemId=pk, liked=request.user)
             like.delete()
@@ -2504,6 +2694,8 @@ class EventUnlike(LoginRequiredMixin, View):
 class ServiceLikesList(LoginRequiredMixin, View):
     def get(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             service = Service.objects.get(pk=pk)
             likes = Like.objects.filter(itemType="service").filter(itemId=pk)
             likesCount = len(likes)
@@ -2520,6 +2712,8 @@ class ServiceLikesList(LoginRequiredMixin, View):
 class EventLikesList(LoginRequiredMixin, View):
     def get(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             event = Event.objects.get(pk=pk)
             likes = Like.objects.filter(itemType="event").filter(itemId=pk)
             likesCount = len(likes)
@@ -2536,6 +2730,8 @@ class EventLikesList(LoginRequiredMixin, View):
 class MyLikes(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             likes = Like.objects.filter(liked=request.user)
             service_likes = likes.filter(itemType="service")
             event_likes = likes.filter(itemType="event")
@@ -2574,6 +2770,8 @@ def make_autopct(values):
 class AdminDashboardIndex(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             # user_activity_objects_15min = OnlineUserActivity.get_user_activities()
             # number_of_active_users_15min = user_activity_objects_15min.count()
 
@@ -3157,6 +3355,8 @@ class AdminDashboardIndex(LoginRequiredMixin, View):
 class OnlineUsersList(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             user_activity_objects = OnlineUserActivity.get_user_activities(timedelta(seconds=5))
             number_of_active_users = user_activity_objects.count()
             activeUsers = (user for user in user_activity_objects)
@@ -3178,6 +3378,8 @@ class OnlineUsersList(LoginRequiredMixin, View):
 class ComplaintUser(LoginRequiredMixin, View):
     def get(self, request, *args, pk, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             form = ComplaintForm()
             complainted = UserProfile.objects.get(user=pk)
             complaintRecord = UserComplaints.objects.filter(complainted=complainted.user).filter(
@@ -3195,6 +3397,8 @@ class ComplaintUser(LoginRequiredMixin, View):
 
     def post(self, request, *args, pk, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             form = ComplaintForm(request.POST)
             complainted = UserProfile.objects.get(user=pk)
             if form.is_valid():
@@ -3222,6 +3426,8 @@ class ComplaintUser(LoginRequiredMixin, View):
 class ComplaintUserEdit(LoginRequiredMixin, View):
     def get(self, request, *args, pk, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             complaint = UserComplaints.objects.get(pk=pk)
             form = ComplaintForm(instance=complaint)
             context = {
@@ -3234,6 +3440,8 @@ class ComplaintUserEdit(LoginRequiredMixin, View):
 
     def post(self, request, *args, pk, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             form = ComplaintForm(request.POST)
             complaint = UserComplaints.objects.get(pk=pk)
             if form.is_valid():
@@ -3261,6 +3469,8 @@ class ComplaintUserEdit(LoginRequiredMixin, View):
 class ComplaintUserDelete(LoginRequiredMixin, View):
     def get(self, request, *args, pk, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             complaint = UserComplaints.objects.get(pk=pk)
             form = ComplaintForm(instance=complaint)
             context = {
@@ -3272,6 +3482,8 @@ class ComplaintUserDelete(LoginRequiredMixin, View):
 
     def post(self, request, *args, pk, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             complaint = UserComplaints.objects.get(pk=pk)
             complaint.isDeleted = True
             complaint.save()
@@ -3303,6 +3515,8 @@ class ComplaintUserDelete(LoginRequiredMixin, View):
 class Complaints(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             complaints = UserComplaints.objects.all().order_by('-date')
             complaints_count = len(complaints)
             context = {
@@ -3317,6 +3531,8 @@ class Complaints(LoginRequiredMixin, View):
 class ComplaintUserAdminSide(LoginRequiredMixin, View):
     def get(self, request, *args, pk, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             form = ComplaintFormAdmin()
             record = UserComplaints.objects.get(pk=pk)
             isSolved = record.isSolved
@@ -3331,6 +3547,8 @@ class ComplaintUserAdminSide(LoginRequiredMixin, View):
 
     def post(self, request, *args, pk, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             form = ComplaintFormAdmin(request.POST)
             complaint = UserComplaints.objects.get(pk=pk)
             if form.is_valid():
@@ -3367,6 +3585,8 @@ class ComplaintUserAdminSide(LoginRequiredMixin, View):
 class MyComplaints(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             complaints = UserComplaints.objects.filter(complainter=request.user).filter(isDeleted=False)
             complaints_count = len(complaints)
             context = {
@@ -3381,6 +3601,8 @@ class MyComplaints(LoginRequiredMixin, View):
 class ComplaintsCreatedAbout(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             pk = self.kwargs['pk']
             complaints = UserComplaints.objects.filter(complainted=pk).order_by('-date')
             complaints_count = len(complaints)
@@ -3396,6 +3618,8 @@ class ComplaintsCreatedAbout(LoginRequiredMixin, View):
 class ComplaintsCreator(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             pk = self.kwargs['pk']
             complaints = UserComplaints.objects.filter(complainter=pk).order_by('-date')
             complaints_count = len(complaints)
@@ -3411,6 +3635,8 @@ class ComplaintsCreator(LoginRequiredMixin, View):
 class ComplaintsDoneByMe(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             pk = self.kwargs['pk']
             complaints = UserComplaints.objects.filter(complainted=pk).filter(complainter=request.user).filter(isDeleted=False).order_by('-date')
             complaints_count = len(complaints)
@@ -3426,6 +3652,8 @@ class ComplaintsDoneByMe(LoginRequiredMixin, View):
 class DeactivateService(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             service = Service.objects.get(pk=pk)
             service.isActive = False
             service.save()
@@ -3460,6 +3688,8 @@ class DeactivateService(LoginRequiredMixin, View):
 class DeactivateEvent(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             event = Event.objects.get(pk=pk)
             event.isActive = False
             event.save()
@@ -3491,6 +3721,8 @@ class DeactivateEvent(LoginRequiredMixin, View):
 class DeactivateUser(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             profile = UserProfile.objects.get(pk=pk)
             profile.isActive = False
             profile.save()
@@ -3612,6 +3844,8 @@ class DeactivateUser(LoginRequiredMixin, View):
 class ActivateUser(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             profile = UserProfile.objects.get(pk=pk)
             profile.isActive = True
             profile.save()
@@ -3629,6 +3863,8 @@ class ActivateUser(LoginRequiredMixin, View):
 class DeactivateServiceApplication(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             theserviceApplication = ServiceApplication.objects.get(pk=pk)
             theserviceApplication.isActive = False
             theserviceApplication.save()
@@ -3654,6 +3890,8 @@ class DeactivateServiceApplication(LoginRequiredMixin, View):
 class DeactivateEventApplication(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             theeventApplication = EventApplication.objects.get(pk=pk)
             theeventApplication.isActive = False
             theeventApplication.save()
@@ -3686,6 +3924,8 @@ class DeactivateEventApplication(LoginRequiredMixin, View):
 class Deactivateds(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             services = Service.objects.filter(isActive=False)
             services_count = len(services)
             events = Event.objects.filter(isActive=False)
@@ -3708,6 +3948,8 @@ class Deactivateds(LoginRequiredMixin, View):
 class FeaturedServicesView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             featureds = Featured.objects.filter(itemType="service").order_by('-date')
             services = []
             currentTime = timezone.now()
@@ -3729,6 +3971,8 @@ class FeaturedServicesView(LoginRequiredMixin, View):
 class FeaturedEventsView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             featureds = Featured.objects.filter(itemType="event").order_by('-date')
             events = []
             currentTime = timezone.now()
@@ -3750,6 +3994,8 @@ class FeaturedEventsView(LoginRequiredMixin, View):
 class AddServiceFeatured(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             dateDiff = (datetime.now() - timedelta(days=1)).date()
             featureds = []
             featuredsToAdd = Featured.objects.filter(itemType="service").filter(date__gte=dateDiff)
@@ -3777,6 +4023,8 @@ class AddServiceFeatured(LoginRequiredMixin, View):
 class RemoveServiceFeatured(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             featured = Featured.objects.get(itemType="service", itemId=pk)
             featured.delete()
             theService = Service.objects.get(pk=pk)
@@ -3792,6 +4040,8 @@ class RemoveServiceFeatured(LoginRequiredMixin, View):
 class AddEventFeatured(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             dateDiff = (datetime.now() - timedelta(days=1)).date()
             featureds = []
             featuredsToAdd = Featured.objects.filter(itemType="event").filter(date__gte=dateDiff)
@@ -3818,6 +4068,8 @@ class AddEventFeatured(LoginRequiredMixin, View):
 class RemoveEventFeatured(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         if request.user.profile.isActive:
+            request.session["target_location"] = None
+            request.session["city"] = ""
             featured = Featured.objects.get(itemType="event", itemId=pk)
             featured.delete()
             theEvent = Event.objects.get(pk=pk)
@@ -3832,6 +4084,8 @@ class RemoveEventFeatured(LoginRequiredMixin, View):
 
 class RecommendationsView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
+        request.session["target_location"] = None
+        request.session["city"] = ""
         own_recommendations = get_recommendations(request)
         context = {
             "recommendations":own_recommendations,
@@ -3841,6 +4095,8 @@ class RecommendationsView(LoginRequiredMixin, View):
 
 class RecommendationApproveView(LoginRequiredMixin, View):
     def get(self, request, pk, *args, **kwargs):
+        request.session["target_location"] = None
+        request.session["city"] = ""
         wiki = Service.objects.get(pk=pk).wiki_description.split("as a(n) ")[1]
         Interest.objects.filter(user=request.user).filter(wiki_description=wiki).update(feedbackGiven=True, feedbackFactor = F('feedbackFactor') + 1)
         own_recommendations = get_recommendations(request)
@@ -3852,6 +4108,8 @@ class RecommendationApproveView(LoginRequiredMixin, View):
 
 class RecommendationDisapproveView(LoginRequiredMixin, View):
     def get(self, request, pk, *args, **kwargs):
+        request.session["target_location"] = None
+        request.session["city"] = ""
         wiki = Service.objects.get(pk=pk).wiki_description.split("as a(n) ")[1]
         Interest.objects.filter(user=request.user).filter(wiki_description=wiki).update(feedbackGiven=True, feedbackFactor=F('feedbackFactor') - 1)
         interest = Interest.objects.filter(user=request.user).filter(wiki_description=wiki)
@@ -3947,7 +4205,7 @@ def get_recommendations(request):
                 for service in sort_interests(followed_interests):
                     own_recommendations.append(service)
     return own_recommendations
-
+'''
 def find_location(request):
 
     form = MyLocation(request.GET)
@@ -3966,3 +4224,5 @@ def find_location(request):
         "search":search,
     }
     return render(request, "social/map.html", context)
+'''
+

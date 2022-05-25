@@ -1,45 +1,79 @@
+<head>
+    <script type="text/javascript" src="/admin/jsi18n/"></script>
+    <script type="text/javascript" src="/static/admin/js/vendor/jquery/jquery.js"></script>
+    <script type="text/javascript" src="/static/admin/js/calendar.js"></script>
+    <script type="text/javascript" src="/static/location_field/js/form.js"></script>
+    <script type="text/javascript" src="/static/admin/js/jquery.init.js"></script>
+    <script type="text/javascript" src="/static/admin/js/admin/DateTimeShortcuts.js"></script>
+    <script type="text/javascript" src="/static/admin/js/core.js"></script>
+    <script type="text/javascript" src="/static/admin/js/admin/RelatedObjectLookups.js"></script>
+    <script type="text/javascript" src="/static/admin/js/actions.js"></script>
+    <script type="text/javascript" src="/static/admin/js/urlify.js"></script>
+    <script type="text/javascript" src="/static/admin/js/prepopulate.js"></script>
+    <script type="text/javascript" src="/static/admin/js/vendor/xregexp/xregexp.js"></script>
+
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/static/admin/css/responsive.css">
+
+    <meta name="robots" content="NONE,NOARCHIVE">
+</head>
+
+
 {% extends 'landing/base.html' %}
 {% load crispy_forms_tags %}
 
 {% block content %}
     <div class="container">
-        <br/>
-        <div class="row">
-            <div class="container p-3 my-3 bg-secondary ">
-                {{ message }} <br>
-                Search by Map: <a style="text-decoration: none; color: darkblue;" href = "{% url 'mapsearch' %}">Go to Map </a> <br>
-                <form method="get">
+    <p  style="color:red">{{ message }}</p>
+    </div>
+    <div class="container">
+        <div class="container p-3 my-3 bg-secondary ">
+            <div class="col-md-5 col-sm-12">
+                <form method="GET" enctype='multipart/form-data'>
+
+
+                    <label for="{{ form.city.id_for_label }}">Location Name:</label>
+                    {{ form.city }}
+                    <div class="fieldWrapper">
+                        <label for="{{ form.location.id_for_label }}">Coordinates:</label>
+                        {{ form.location }}
+                    </div> <br>
+                    <label for="distance">Select Range:</label>
+                    <input type="number" id="distance" name="distance_target" min="5" max="150"  value="{{ request.GET.distance_target }}"><br>
 
                     <div class="form-group">
                         <label for="period type">Location:</label>
                         <select name="slocation" id="period type" onchange="this.form.submit()">
-                            <option value="all" {% if slocation == 'all' %}selected{% endif %}>Everywhere on Earth</option>
+                            <option value="all" {% if slocation == 'all' %}selected{% endif %}>All</option>
                             <option value="map" {% if slocation == 'map' %}selected{% endif %}>Use Map Coordinates</option>
-                            <option value="home" {% if slocation == 'home' %}selected{% endif %}>Home Address (10 km)</option>
+                            <option value="home" {% if slocation == 'home' %}selected{% endif %}>From Home Address (10 km)</option>
                         </select>
                     </div>
-
-                    <label for="admin-search">Search:</label>
-                    <input type="search" id="admin-search" name='query'
-                           aria-label="Search through site content"
-                           placeholder="keyword"
-                           value="{{ request.GET.query }}">
-
-                    <label for="sort-select">Sort by:</label>
-                    <select name="sorting" id="sort-select">
-                        <option value="">--Select--</option>
-                        <option value="createdate" {% if sorting == 'createdate' %}selected{% endif %}>Creation Date
-                        </option>
-                        <option value="name" {% if sorting == 'name' %}selected{% endif %}>Name</option>
-                        <option value="eventdate" {% if sorting == 'eventdate' %}selected={% endif %}>Delivery
-                            Date
-                        </option>
-                    </select>
+                    <div class="form-group">
+                        <label for="admin-search">Search:</label>
+                        <input type="search" id="admin-search" name='query'
+                               aria-label="Search through site content"
+                               placeholder="keyword"
+                               value="{{ request.GET.query }}"></div>
+                    <div class="form-group">
+                        <label for="sort-select">Sort by:</label>
+                        <select name="sorting" id="sort-select">
+                            <option value="">--Select--</option>
+                            <option value="createdate" {% if sorting == 'createdate' %}selected{% endif %}>Creation Date
+                            </option>
+                            <option value="name" {% if sorting == 'name' %}selected{% endif %}>Name</option>
+                            <option value="eventdate" {% if sorting == 'eventdate' %}selected={% endif %}>Delivery
+                                Date
+                            </option>
+                        </select>
+                    </div>
                     <div class="form-group">
                         <button type="submit" name="submit" value="submitted">Submit</button>
                     </div>
                 </form>
             </div>
+        </div> <br>
+
             <br/>
             {% if events_count != 0 %}
                 {% for event in page_obj %}
@@ -66,9 +100,9 @@
             {% else %}
                 <p class="row justify-content-center mt-3">No events found!</p>
             {% endif %}
-        </div>
+        </div> <br>
 
-    </div> <br>
+
 
      <div class="row">
         <div class="col-4 offset-4">
@@ -76,26 +110,26 @@
                 <ul class="pagination pagination-sm justify-content-center">
                     {% if page_obj.has_previous %}
                         <li class="page-item">
-                            <a href="?page=1&sorting={{ sorting }}&query={{ query }}"
+                            <a href="?page=1&sorting={{ sorting }}&query={{ query }}&slocation={{ slocation }}&distance_target={{ distance_target }}"
                                class="page-link">First</a>
                         </li>
 
                         <li class="page-item">
-                            <a href="?page={{ page_obj.previous_page_number }}&sorting={{ sorting }}&query={{ query }}&slocation={{ slocation }}"
+                            <a href="?page={{ page_obj.previous_page_number }}&sorting={{ sorting }}&query={{ query }}&slocation={{ slocation }}&distance_target={{ distance_target }}"
                                class="page-link">Previous</a>
                         </li>
 
                         {% if not page_obj.has_next and page_obj.previous_page_number > 1 %}
                             <li class="page-item ">
                                 <a class="page-link"
-                                   href="?page={{ page_obj.previous_page_number|add:'-1' }}&sorting={{ sorting }}&query={{ query }}&slocation={{ slocation }}">
+                                   href="?page={{ page_obj.previous_page_number|add:'-1' }}&sorting={{ sorting }}&query={{ query }}&slocation={{ slocation }}&distance_target={{ distance_target }}">
                                     {{ page_obj.previous_page_number|add:'-1' }}
                                 </a>
                             </li>
                         {% endif %}
                         <li>
                             <a class="page-link"
-                               href="?page={{ page_obj.previous_page_number }}&sorting={{ sorting }}&query={{ query }}&slocation={{ slocation }}">
+                               href="?page={{ page_obj.previous_page_number }}&sorting={{ sorting }}&query={{ query }}&slocation={{ slocation }}&distance_target={{ distance_target }}">
                                 {{ page_obj.previous_page_number }}
                             </a>
                         </li>
@@ -116,26 +150,26 @@
                     {% if page_obj.has_next %}
                         <li class="page-item">
                             <a class="page-link"
-                               href="?page={{ page_obj.next_page_number }}&sorting={{ sorting }}&query={{ query }}&slocation={{ slocation }}">
+                               href="?page={{ page_obj.next_page_number }}&sorting={{ sorting }}&query={{ query }}&slocation={{ slocation }}&distance_target={{ distance_target }}">
                                 {{ page_obj.next_page_number }}
                             </a>
                         </li>
                         {% if not page_obj.has_previous and page_obj.next_page_number < page_obj.paginator.num_pages %}
                             <li class="page-item ">
                                 <a class="page-link"
-                                   href="?page={{ page_obj.next_page_number|add:'1' }}&sorting={{ sorting }}&query={{ query }}&slocation={{ slocation }}">
+                                   href="?page={{ page_obj.next_page_number|add:'1' }}&sorting={{ sorting }}&query={{ query }}&slocation={{ slocation }}&distance_target={{ distance_target }}">
                                     {{ page_obj.next_page_number|add:'1' }}
                                 </a>
                             </li>
                         {% endif %}
                         <li class="page-item ">
                             <a class="page-link"
-                               href="?page={{ page_obj.next_page_number }}&sorting={{ sorting }}&query={{ query }}&slocation={{ slocation }}">Next</a>
+                               href="?page={{ page_obj.next_page_number }}&sorting={{ sorting }}&query={{ query }}&slocation={{ slocation }}&distance_target={{ distance_target }}">Next</a>
                         </li>
 
                         <li class="page-item ">
                             <a class="page-link"
-                               href="?page={{ page_obj.paginator.num_pages }}&sorting={{ sorting }}&query={{ query }}&slocation={{ slocation }}">Last</a>
+                               href="?page={{ page_obj.paginator.num_pages }}&sorting={{ sorting }}&query={{ query }}&slocation={{ slocation }}&distance_target={{ distance_target }}">Last</a>
                         </li>
                     {% else %}
                         <li class="page-item disabled">
