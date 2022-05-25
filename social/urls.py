@@ -14,7 +14,7 @@ from .views import ServiceCreateView, ServiceDetailView, ServiceEditView, Servic
     DeactivateEventApplication, Deactivateds, FeaturedServicesView, FeaturedEventsView, AddServiceFeatured, \
     RemoveServiceFeatured, AddEventFeatured, RemoveEventFeatured, SearchLogList, SearchLogListZero, SearchLogWordCloud, \
     ComplaintUserAdminSide, ComplaintsCreatedAbout, ComplaintsCreator, ComplaintsDoneByMe, RecommendationsView, \
-    RecommendationApproveView, RecommendationDisapproveView, find_location
+    RecommendationApproveView, RecommendationDisapproveView
 
 urlpatterns = [
     path('service/create', ServiceCreateView.as_view(), name='service-create'),
@@ -116,5 +116,4 @@ urlpatterns = [
     path('searchloglist', SearchLogList.as_view(), name='searchloglist'),
     path('searchloglistzero', SearchLogListZero.as_view(), name='searchloglistzero'),
     path('searchlogwordcloud', SearchLogWordCloud.as_view(), name='searchlogwordcloud'),
-    path('mapsearch', find_location, name='mapsearch'),
 ]
