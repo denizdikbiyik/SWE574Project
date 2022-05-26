@@ -1633,7 +1633,7 @@ class ServiceSearch(LoginRequiredMixin, View):
             # End of Map
 
             services_sorted = []
-            if "page" not in request.GET or request.session.get('services_sorted') is  None:
+            if "page" not in request.GET or request.session.get('services_sorted') is None or sorting != "None":
                 if sorting == "newest":
                     services_sorted = services_query.order_by('createddate')
                 elif sorting == "rating":
