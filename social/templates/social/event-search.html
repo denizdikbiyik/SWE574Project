@@ -107,6 +107,9 @@
                                         created</p>
                                     <p style="font-weight:bold;">{{ event.eventname }}</p>
                                     <p>Time: {{ event.eventdate }}</p>
+                                    {% if slocation == "map" or slocation == "home"%}
+                                    <p>Address: {{ event.event_address }}</p>
+                                    {% endif %}
                                     <a class="stretched-link" href="{% url 'event-detail' event.pk %}"></a>
                                 </div>
                             </div>
