@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 from faker import Faker
 from datetime import datetime
 from django.contrib.auth.models import User
-from social.models import UserProfile, Interest, Service, Event
+from social.models import UserProfile, Interest, Service, Event, Log, Tag
 import random
 from openpyxl import load_workbook
 
@@ -69,6 +69,17 @@ class Command(BaseCommand):
                                 15: 'istock-free-vegan.jpg',
                                 16: 'pexels-free-juggling.jpg'}
 
+        category_dict = {1: 'Sports',
+                         2: 'Board Games',
+                         3: 'Literature',
+                         4: 'Cooking',
+                         5: 'Entertainment',
+                         6: 'Music',
+                         7: 'Science',
+                         8: 'Technology',
+                         9: 'Art',
+                         10: 'Dance'}
+
         def load_interest_example():
             wb = load_workbook(filename='social/management/commands/interest_example.xlsx')
             ws = wb.active
@@ -85,10 +96,7 @@ class Command(BaseCommand):
                 loc_dict[row[0].value] = [str(c.value) for c in row[1:]]
             return loc_dict
 
-        locations_dict = load_locations_tr()
-        interest_dict = load_interest_example()
-
-        # This function return the list of the districts of a given city
+        # This function returns the list of the districts of a given city
         def get_district_of_city(city_no):
             district_key_list = []
             districts = locations_dict.items()
@@ -131,11 +139,14 @@ class Command(BaseCommand):
             profile.birth_date = birth_date
             profile.save()
 
-            interest_no = random.randint(1, 31)
-            new_interest = Interest.objects.create(user=user, name=interest_dict[interest_no][0],
-                                                   wiki_description=interest_dict[interest_no][1], implicit=False,
-                                                   origin='profile')
-            new_interest.save()
+            interest_count = random.randint(1, 5)
+            arr = random.sample(range(1, len(interest_dict)), interest_count)
+            for i in range(len(arr)):
+                interest_no = arr[i]
+                new_interest = Interest.objects.create(user=user, name=interest_dict[interest_no][0],
+                                                       wiki_description=interest_dict[interest_no][1], implicit=False,
+                                                       origin='profile')
+                new_interest.save()
 
         # This function makes random users follow other users
         def create_fake_following_data():
@@ -147,7 +158,16 @@ class Command(BaseCommand):
             user1 = UserProfile.objects.get(pk=user1_id)
             user1.followers.add(user2_id)
 
-        # This function creates random services
+        # This function creates the categories to be used in the service creation
+        def create_categories():
+            for i in range(len(category_dict)):
+                category = category_dict[i+1]
+                if len(Tag.objects.filter(tag=category)) == 0:
+                    last_user = User.objects.latest('id')
+                    tag = Tag.objects.create(tag=category, requester_id=last_user.id)
+                    tag.save()
+
+        # This function creates random services and their service creation logs
         def create_fake_service_data():
             name = fake_en.sentence()
             sentence_count = random.randint(1, 7)
@@ -165,18 +185,24 @@ class Command(BaseCommand):
             capacity = random.randint(1, 5)
             duration = random.randint(1, 3)
             service_date = fake.future_datetime(end_date="+60d")
-            wiki_no = random.randint(1, 31)
+            wiki_no = random.randint(1, 50)
             wiki_desc = interest_dict[wiki_no][0] + ' as a(n) ' + interest_dict[wiki_no][1]
             picture_no = random.randint(1, 16)
             picture = 'uploads/service_pictures/' + service_picture_dict[picture_no]
+            category_id = random.randint(1, Tag.objects.latest('id').id)
 
             new_service = Service.objects.create(createddate=create_date, description=desc, creater_id=user_id,
                                                  capacity=capacity, duration=duration, location=location, name=name,
                                                  servicedate=service_date, wiki_description=wiki_desc, city=city,
-                                                 picture=picture)
+                                                 picture=picture, category_id=category_id)
             new_service.save()
 
-        # This function creates random events
+            user = User(user_id)
+            log = Log.objects.create(operation="createservice", itemType="service", itemId=new_service.pk,
+                                     userId=user, date=create_date)
+            log.save()
+
+        # This function creates random events and their event creation logs
         def create_fake_event_data():
             name = fake_en.sentence()
             sentence_count = random.randint(1, 7)
@@ -194,7 +220,7 @@ class Command(BaseCommand):
             capacity = random.randint(5, 20)
             duration = random.randint(2, 6)
             event_date = fake.future_datetime(end_date="+60d")
-            wiki_no = random.randint(1, 31)
+            wiki_no = random.randint(1, 50)
             wiki_desc = interest_dict[wiki_no][0] + ' as a(n) ' + interest_dict[wiki_no][1]
             picture_no = random.randint(1, 16)
             picture = 'uploads/event_pictures/' + event_picture_dict[picture_no]
@@ -203,14 +229,25 @@ class Command(BaseCommand):
                                              event_wiki_description=wiki_desc, eventlocation=location,
                                              eventdate=event_date, eventcapacity=capacity, eventduration=duration,
                                              eventcreater_id=user_id, city=city, eventpicture=picture)
-            new_event.save()       
+            new_event.save()
+
+            user = User(user_id)
+            log = Log.objects.create(operation="createevent", itemType="event", itemId=new_event.pk,
+                                     userId=user, date=create_date)
+            log.save()
 
         if fakedata_count > 0:
+
+            locations_dict = load_locations_tr()
+            interest_dict = load_interest_example()
+
             for _ in range(fakedata_count):
                 create_fake_user_data()
 
             for _ in range(fakedata_count):
                 create_fake_following_data()
+            
+            create_categories()
 
             for _ in range(fakedata_count):
                 create_fake_service_data()
