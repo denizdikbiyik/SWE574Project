@@ -1176,7 +1176,7 @@ class ProfileView(View):
             ratings_average = UserRatings.objects.filter(rated=profile.user).aggregate(Avg('rating'))
             interest = request.GET.get("deleted")
             if interest:
-                Interest.objects.filter(user=user, wiki_description=interest, implicit=False).delete()
+                Interest.objects.filter(pk=interest).delete()
 
             if len(followers) == 0:
                 is_following = False

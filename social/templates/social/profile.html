@@ -168,7 +168,7 @@
                     {% if request.user != user %}
                         <span title="{{ interest.wiki_description }}" > <u>{{ interest.name }}</u></span>
                     {% else %}
-                        <span title="{{ interest.wiki_description }}" > <u>{{ interest.name }}</u> <button aria-label='delete item' title="remove" onClick="location.href='{% url 'profile' request.user.id %}?deleted={{ interest.wiki_description }}'" type='button'><b>-</b></button></span>
+                        <span title="{{ interest.wiki_description }}" > <u>{{ interest.name }}</u> <button aria-label='delete item' title="remove" onClick="location.href='{% url 'profile' request.user.id %}?deleted={{ interest.pk }}'" type='button'><b>-</b></button></span>
                     {% endif %}
                 {% endfor %}
             {% else %}
