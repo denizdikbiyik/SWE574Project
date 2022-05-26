@@ -336,10 +336,12 @@ class ServiceDetailView(View):
                         applicant_user_profile.reservehour = applicant_user_profile.reservehour - service.duration
                         applicant_user_profile.save()
                         if service.wiki_description is not None:
-                            definitions = service.wiki_description.split("as a(n) ")
+                            definitions = service.wiki_description.split(" as a(n) ")
                             if len(Interest.objects.filter(user=request.user, wiki_description=definitions[1])) == 0:
                                 new_interest = Interest.objects.create(user=request.user, name=definitions[0], wiki_description=definitions[1], implicit=True, origin='like')
                                 new_interest.save()
+                            else:
+                                Interest.objects.filter(user=request.user).filter(wiki_description=definitions[1]).update(feedbackFactor=F('feedbackFactor') + 1)
                         notification = NotifyUser.objects.create(notify=service.creater, notification=str(
                             new_application.applicant) + ' applied to service ' + str(new_application.service.name)+'.',
                                                                 offerType="service", offerPk=new_application.service.pk)
@@ -2658,10 +2660,12 @@ class ServiceLike(LoginRequiredMixin, View):
             service = Service.objects.get(pk=pk)
             like = Like.objects.create(itemType="service", itemId=pk, liked=request.user)
             if service.wiki_description is not None:
-                definitions = service.wiki_description.split("as a(n) ")
+                definitions = service.wiki_description.split(" as a(n) ")
                 if len(Interest.objects.filter(user=request.user, wiki_description=definitions[1])) == 0:
                     new_interest = Interest.objects.create(user=request.user, name=definitions[0], wiki_description=definitions[1], implicit= True, origin='like')
                     new_interest.save()
+                else:
+                    Interest.objects.filter(user=request.user).filter(wiki_description=definitions[1]).update(feedbackFactor=F('feedbackFactor') + 1)
             notification = NotifyUser.objects.create(notify=service.creater,
                                                     notification=str(request.user) + ' liked service ' + str(service.name)+'.',
                                                     offerType="service", offerPk=service.pk)
@@ -4139,7 +4143,7 @@ class RecommendationApproveView(LoginRequiredMixin, View):
     def get(self, request, pk, *args, **kwargs):
         request.session["target_location"] = None
         request.session["city"] = ""
-        wiki = Service.objects.get(pk=pk).wiki_description.split("as a(n) ")[1]
+        wiki = Service.objects.get(pk=pk).wiki_description.split(" as a(n) ")[1]
         Interest.objects.filter(user=request.user).filter(wiki_description=wiki).update(feedbackGiven=True, feedbackFactor = F('feedbackFactor') + 1)
         own_recommendations = get_recommendations(request)
         context = {
@@ -4152,7 +4156,7 @@ class RecommendationDisapproveView(LoginRequiredMixin, View):
     def get(self, request, pk, *args, **kwargs):
         request.session["target_location"] = None
         request.session["city"] = ""
-        wiki = Service.objects.get(pk=pk).wiki_description.split("as a(n) ")[1]
+        wiki = Service.objects.get(pk=pk).wiki_description.split(" as a(n) ")[1]
         Interest.objects.filter(user=request.user).filter(wiki_description=wiki).update(feedbackGiven=True, feedbackFactor=F('feedbackFactor') - 1)
         interest = Interest.objects.filter(user=request.user).filter(wiki_description=wiki)
         if len(interest)>0:
@@ -4213,7 +4217,8 @@ def get_recommendations(request):
                 wiki_description=interest.name + " as a(n) " + interest.wiki_description).exclude(
                 pk__in=list(interest.disapprovedServices.values_list("pk", flat=True))))
             for service in current_interest_list:
-                all_services.append(service)
+                if service not in all_services:
+                    all_services.append(service)
 
         all_services_sorted = []
 
@@ -4222,13 +4227,13 @@ def get_recommendations(request):
 
         while len(all_services) > 0:
             for interest in interests:
-                current_list = list(filter(lambda service: service.wiki_description == interest.name + " as a(n) " +interest.wiki_description, all_services))
-                if len(current_list) > interest.feedbackFactor:
+                current_list = list(filter(lambda service: service.wiki_description == interest.name + " as a(n) " + interest.wiki_description, all_services))
+                if len(current_list) >= interest.feedbackFactor:
                     for _ in range(interest.feedbackFactor):
                         selected_service = smart_sort(current_list)
                         all_services_sorted.append(selected_service)
-                        if selected_service in all_services:
-                            all_services.remove(selected_service)
+                        all_services.remove(selected_service)
+                        current_list.remove(selected_service)
                 elif len(current_list) > 0:
                     for service in current_list:
                         all_services_sorted.append(service)
@@ -4237,7 +4242,7 @@ def get_recommendations(request):
                     pass
         return all_services_sorted
 
-    own_recommendations = sort_interests(Interest.objects.filter(user=request.user).filter(feedbackFactor__gt=0).order_by('feedbackFactor'))
+    own_recommendations = sort_interests(Interest.objects.filter(user=request.user).filter(feedbackFactor__gt=0).order_by('-feedbackFactor'))
     if User.objects.get(pk=request.user.pk).date_joined > timezone.now() - timedelta(days=30):
         followed_list = []
         profiles = UserProfile.objects.filter(followers__id__exact=request.user.id)
