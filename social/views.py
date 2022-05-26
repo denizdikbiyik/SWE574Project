@@ -4145,6 +4145,9 @@ class RecommendationApproveView(LoginRequiredMixin, View):
         request.session["city"] = ""
         wiki = Service.objects.get(pk=pk).wiki_description.split(" as a(n) ")[1]
         Interest.objects.filter(user=request.user).filter(wiki_description=wiki).update(feedbackGiven=True, feedbackFactor = F('feedbackFactor') + 1)
+        interest = Interest.objects.filter(user=request.user).filter(wiki_description=wiki)
+        if len(interest) > 0:
+            interest[0].approvedServices.add(Service.objects.get(pk=pk))
         own_recommendations = get_recommendations(request)
         context = {
             "recommendations":own_recommendations,
@@ -4231,12 +4234,24 @@ def get_recommendations(request):
                 if len(current_list) >= interest.feedbackFactor:
                     for _ in range(interest.feedbackFactor):
                         selected_service = smart_sort(current_list)
-                        all_services_sorted.append(selected_service)
+                        approved = True
+                        if selected_service.pk in list(interest.approvedServices.values_list("pk", flat=True)):
+                            approved = False
+                        else:
+                            approved = True
+                        tup = (selected_service, approved)
+                        all_services_sorted.append(tup)
                         all_services.remove(selected_service)
                         current_list.remove(selected_service)
                 elif len(current_list) > 0:
                     for service in current_list:
-                        all_services_sorted.append(service)
+                        approved = True
+                        if service.pk in list(interest.approvedServices.values_list("pk", flat=True)):
+                            approved = False
+                        else:
+                            approved = True
+                        tup = (service, approved)
+                        all_services_sorted.append(tup)
                         all_services.remove(service)
                 else:
                     pass
