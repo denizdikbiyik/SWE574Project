@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser, User
+from django.db.models import Q
 from django.contrib.postgres.search import SearchVector, SearchQuery
 from django.shortcuts import render, get_object_or_404, redirect
 from psutil import users
@@ -42,6 +43,7 @@ def list_users(request):
             periods = request.GET.get("periods")
             beginning = request.GET.get("beginning")
             ending = request.GET.get("ending")
+            q = request.GET.get("q")
             #submit = request.GET.get("submitted")
             users= User.objects.all()
             period_message = ""
@@ -76,6 +78,13 @@ def list_users(request):
                     period_message = period["text"]
                     show_count = True
 
+            if q == None or q == "":
+                users = users
+            else:
+                users = users.filter(
+                    Q(username__icontains=q) | Q(username__icontains=q))
+
+
             if 'submit' in request.GET:
                 if periods != None or periods != None:
                     type = "default"
@@ -87,7 +96,7 @@ def list_users(request):
             user_count = users.count()
             object_list = users
             page_num = request.GET.get('page', 1)
-            paginator = Paginator(object_list, 6)  # 6 employees per page
+            paginator = Paginator(object_list, 10)  # 10 employees per page
             try:
                 page_obj = paginator.page(page_num)
             except PageNotAnInteger:
@@ -98,7 +107,7 @@ def list_users(request):
                 page_obj = paginator.page(paginator.num_pages)
             return render(request, 'dashboard_user_list/userlist.html',
                         {'page_obj': page_obj, "type": type, "periods": periods, "beginning": beginning, "ending": ending,
-                            "user_count": user_count, "user"
+                            "user_count": user_count, "q": q,
                         "is_admin": is_admin,  "period_message": period_message,
                         "show_count": show_count})
         else:

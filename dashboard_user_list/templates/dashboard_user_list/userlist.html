@@ -46,6 +46,12 @@
 
                         {% endif %}
                     </div>
+                    <div class="form-group">
+                        <label for="admin-search">Search:</label>
+                        <input type="search" id="admin-search" name="q"
+                            aria-label="Search through site content" placeholder="username"
+                            value="{{ request.GET.q }}">
+                    </div>
 
                 
                     <div class="form-group">
