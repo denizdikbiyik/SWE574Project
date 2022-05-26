@@ -122,6 +122,9 @@
                                         created</p>
                                     <p style="font-weight:bold;">{{ service.name }}</p>
                                     <p>Time: {{ service.servicedate }}</p>
+                                    {% if slocation == "map" or slocation == "home"%}
+                                    <p>Address: {{ service.address }}</p>
+                                    {% endif %}
                                     <a class="stretched-link" href="{% url 'service-detail' service.pk %}"></a>
                                 </div>
                             </div>
