@@ -22,17 +22,31 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
+    <div class="container">
+    <p >{{ message }}</p>
+    </div>
     <div class="container p-3 my-3 bg-secondary ">
-        {{ message }} <br>
-        <form method="get">
+        <form method="get" enctype='multipart/form-data'>
             <div class="form-group">
                 <label for="period type">Location:</label>
                 <select name="slocation" id="period type" onchange="this.form.submit()">
-                    <option value="all" {% if slocation == 'all' %}selected{% endif %}>Everywhere on Earth</option>
+                    <option value="all" {% if slocation == 'all' %}selected{% endif %}>All</option>
                     <option value="map" {% if slocation == 'map' %}selected{% endif %}>Use Map Coordinates</option>
-                    <option value="home" {% if slocation == 'home' %}selected{% endif %}>Home Address (10 km)</option>
+                    <option value="home" {% if slocation == 'home' %}selected{% endif %}>From Home Address (10 km)</option>
                 </select>
             </div>
+            {% if slocation == "map" %}
+            <label for="{{ form.city.id_for_label }}">Location Name:</label>
+            {{ form.city }}
+            <div class="fieldWrapper">
+                <label for="{{ form.location.id_for_label }}">Coordinates:</label>
+                {{ form.location }}
+            </div> <br>
+            <label for="distance">Select Range:</label>
+            <input type="number" id="distance" name="distance_target_s" min="5" max="150"  value="{{distance_target_s }}">
+            <br>
+            {% endif %}
+
             <label for="category-select">Categories:</label>
             <select name="category" id="category-select">
                 <option value="all">All</option>
@@ -128,26 +142,26 @@
                 <ul class="pagination pagination-sm justify-content-center">
                     {% if page_obj.has_previous %}
                         <li class="page-item">
-                            <a href="?page=1&services_count={{ services_count }}&currentTime={{ currentTime }}&alltags={{ alltags }}&query={{ query }}&cat_sel={{ cat_sel }}&sorting={{ sorting }}&slocation={{ slocation }}"
+                            <a href="?page=1&services_count={{ services_count }}&currentTime={{ currentTime }}&alltags={{ alltags }}&query={{ query }}&cat_sel={{ cat_sel }}&sorting={{ sorting }}&slocation={{ slocation }}&distance_target_s={{ distance_target_s }}"
                                class="page-link">First</a>
                         </li>
 
                         <li class="page-item">
-                            <a href="?page={{ page_obj.previous_page_number }}&services_count={{ services_count }}&currentTime={{ currentTime }}&alltags={{ alltags }}&query={{ query }}&cat_sel={{ cat_sel }}&sorting={{ sorting }}&slocation={{ slocation }}"
+                            <a href="?page={{ page_obj.previous_page_number }}&services_count={{ services_count }}&currentTime={{ currentTime }}&alltags={{ alltags }}&query={{ query }}&cat_sel={{ cat_sel }}&sorting={{ sorting }}&slocation={{ slocation }}&distance_target_s={{ distance_target_s }}"
                                class="page-link">Previous</a>
                         </li>
 
                         {% if not page_obj.has_next and page_obj.previous_page_number > 1 %}
                             <li class="page-item ">
                                 <a class="page-link"
-                                   href="?page={{ page_obj.previous_page_number|add:'-1' }}&services_count={{ services_count }}&currentTime={{ currentTime }}&alltags={{ alltags }}&query={{ query }}&cat_sel={{ cat_sel }}&sorting={{ sorting }}&slocation={{ slocation }}">
+                                   href="?page={{ page_obj.previous_page_number|add:'-1' }}&services_count={{ services_count }}&currentTime={{ currentTime }}&alltags={{ alltags }}&query={{ query }}&cat_sel={{ cat_sel }}&sorting={{ sorting }}&slocation={{ slocation }}&distance_target_s={{ distance_target_s }}">
                                     {{ page_obj.previous_page_number|add:'-1' }}
                                 </a>
                             </li>
                         {% endif %}
                         <li>
                             <a class="page-link"
-                               href="?page={{ page_obj.previous_page_number }}&services_count={{ services_count }}&currentTime={{ currentTime }}&alltags={{ alltags }}&query={{ query }}&cat_sel={{ cat_sel }}&sorting={{ sorting }}&slocation={{ slocation }}">
+                               href="?page={{ page_obj.previous_page_number }}&services_count={{ services_count }}&currentTime={{ currentTime }}&alltags={{ alltags }}&query={{ query }}&cat_sel={{ cat_sel }}&sorting={{ sorting }}&slocation={{ slocation }}&distance_target_s={{ distance_target_s }}">
                                 {{ page_obj.previous_page_number }}
                             </a>
                         </li>
@@ -168,26 +182,26 @@
                     {% if page_obj.has_next %}
                         <li class="page-item">
                             <a class="page-link"
-                               href="?page={{ page_obj.next_page_number }}&services_count={{ services_count }}&currentTime={{ currentTime }}&alltags={{ alltags }}&query={{ query }}&cat_sel={{ cat_sel }}&sorting={{ sorting }}&slocation={{ slocation }}">
+                               href="?page={{ page_obj.next_page_number }}&services_count={{ services_count }}&currentTime={{ currentTime }}&alltags={{ alltags }}&query={{ query }}&cat_sel={{ cat_sel }}&sorting={{ sorting }}&slocation={{ slocation }}&distance_target_s={{ distance_target_s }}">
                                 {{ page_obj.next_page_number }}
                             </a>
                         </li>
                         {% if not page_obj.has_previous and page_obj.next_page_number < page_obj.paginator.num_pages %}
                             <li class="page-item ">
                                 <a class="page-link"
-                                   href="?page={{ page_obj.next_page_number|add:'1' }}&services_count={{ services_count }}&currentTime={{ currentTime }}&alltags={{ alltags }}&query={{ query }}&cat_sel={{ cat_sel }}&sorting={{ sorting }}&slocation={{ slocation }}">
+                                   href="?page={{ page_obj.next_page_number|add:'1' }}&services_count={{ services_count }}&currentTime={{ currentTime }}&alltags={{ alltags }}&query={{ query }}&cat_sel={{ cat_sel }}&sorting={{ sorting }}&slocation={{ slocation }}&distance_target_s={{ distance_target_s }}">
                                     {{ page_obj.next_page_number|add:'1' }}
                                 </a>
                             </li>
                         {% endif %}
                         <li class="page-item ">
                             <a class="page-link"
-                               href="?page={{ page_obj.next_page_number }}&services_count={{ services_count }}&currentTime={{ currentTime }}&alltags={{ alltags }}&query={{ query }}&cat_sel={{ cat_sel }}&sorting={{ sorting }}&slocation={{ slocation }}">Next</a>
+                               href="?page={{ page_obj.next_page_number }}&services_count={{ services_count }}&currentTime={{ currentTime }}&alltags={{ alltags }}&query={{ query }}&cat_sel={{ cat_sel }}&sorting={{ sorting }}&slocation={{ slocation }}&distance_target_s={{ distance_target_s }}">Next</a>
                         </li>
 
                         <li class="page-item ">
                             <a class="page-link"
-                               href="?page={{ page_obj.paginator.num_pages }}&services_count={{ services_count }}&currentTime={{ currentTime }}&alltags={{ alltags }}&query={{ query }}&cat_sel={{ cat_sel }}&sorting={{ sorting }}&slocation={{ slocation }}">Last</a>
+                               href="?page={{ page_obj.paginator.num_pages }}&services_count={{ services_count }}&currentTime={{ currentTime }}&alltags={{ alltags }}&query={{ query }}&cat_sel={{ cat_sel }}&sorting={{ sorting }}&slocation={{ slocation }}&distance_target_s={{ distance_target_s }}">Last</a>
                         </li>
                     {% else %}
                         <li class="page-item disabled">

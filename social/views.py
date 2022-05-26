@@ -1569,7 +1569,6 @@ class ServiceSearch(LoginRequiredMixin, View):
         if request.user.profile.isActive:
             request.session["target_location"] = None
             request.session["city"] = ""
-            request.session["search"] = "servicesearch"
             query = self.request.GET.get('query')
             sorting = self.request.GET.get('sorting')
             category = self.request.GET.get('category')  # For combining with ServiceFilter() AT
@@ -1601,36 +1600,79 @@ class ServiceSearch(LoginRequiredMixin, View):
             else:
                 query=""
 
+
             # Map
-            message=""
+            message = ""
+            form = MyLocation(request.GET)
+            my_location = request.session.get("target_location_s")
+            my_city = request.session.get("city_s")
+            service = Service(location=my_location, city=my_city)
             slocation = request.GET.get("slocation")
+            distance_target_s = request.GET.get("distance_target_s")
+            request.session["distance_target_s"] = distance_target_s
+            if 'submit' in request.GET:
+                if form.is_valid():
+                    if slocation != "map":
+                        request.session["target_location_s"] = ""
+                        request.session["city_s"] = ""
+                        form = MyLocation(instance=service)
+                        distance_target_s = ""
+                    else:
+                        target_location_s = form.cleaned_data.get("location")
+                        city_s = form.cleaned_data.get("city")
+                        request.session["target_location_s"] = target_location_s
+                        request.session["city_s"] = city_s
+                        service = Service(location=target_location_s, city=city_s)
+                        form = MyLocation(instance=service)
+                        distance_target_s = distance_target_s
+                else:
+                    distance_target_s = ""
+            else:
+                form = MyLocation(instance=service)
+                distance_target_s = ""
+
             if "slocation" in request.GET:
                 if slocation == "map":
-                    if request.session.get("target_location") !=None or request.session.get("distance") !=None:
-                        target_location = str(request.session.get("target_location"))
-                        distance_target = int(request.session.get("distance"))
-                        services_location_pk = set()
-                        for service in services_query:
-                            service_location = service.location
-                            if distance(target_location, service_location).km <= distance_target:
-                                services_location_pk.add(service.pk)
-                        services_query = services_query.filter(Q(pk__in=services_location_pk))
-                    else:
-                        message="Please choose a location from map."
+                    if request.GET.get("distance_target_s") == "" or request.GET.get("distance_target_s") == None:
+                        message = "Please choose a range for the location."
                         services_query = services_query
+                    elif request.session.get("target_location_s") == None or request.session.get(
+                            "target_location_s") == "":
+                        message = "Please choose a range for the location."
+                        services_query = services_query
+                    else:
+                        if request.session.get("target_location_s") != None or request.GET.get(
+                                "distance_target_s") != "" or request.GET.get("distance_target_s") != None:
+                            target_location_s = str(request.session.get("target_location_s"))
+                            distance_target_s = int(request.session.get("distance_target_s"))
+                            service_location_pk = set()
+                            for service in services_query:
+                                service_location = service.location
+                                if distance(target_location_s, service_location).km <= distance_target_s:
+                                    service_location_pk.add(service.pk)
+                            services_query = services_query.filter(Q(pk__in=service_location_pk))
+                        else:
+                            services_query = services_query
                 elif slocation == "home":
-                    target_location = request.user.profile.location
-                    services_location_for_home_pk = set()
+                    target_location_s = request.user.profile.location
+                    service_location_for_home_pk = set()
                     for service in services_query:
                         service_location = service.location
-                        if distance(target_location, service_location).km <= 10:
-                            services_location_for_home_pk.add(service.pk)
-                    services_query = services_query.filter(Q(pk__in=services_location_for_home_pk))
+                        if distance(target_location_s, service_location).km <= 10:
+                            service_location_for_home_pk.add(service.pk)
+                    services_query = services_query.filter(Q(pk__in=service_location_for_home_pk))
+                    request.session["target_location_s"] = None
+                    request.session["city_s"] = None
+                    form = MyLocation(instance=service)
+                    distance_target = ""
                 else:
                     services_query = services_query
-                    request.session["target_location"]=None
-                    request.session["distance"]=None
+                    request.session["target_location_s"] = None
+                    request.session["city_s"] = None
+                    distance_target_s = ""
             # End of Map
+
+
 
             services_sorted = []
             if "page" not in request.GET or request.session.get('services_sorted') is None or sorting != "None":
@@ -1695,7 +1737,7 @@ class ServiceSearch(LoginRequiredMixin, View):
             # Pagination
             object_list = services_sorted
             page_num = request.GET.get('page', 1)
-            paginator = Paginator(object_list, 1)
+            paginator = Paginator(object_list, 10)
             try:
                 page_obj = paginator.page(page_num)
             except PageNotAnInteger:
@@ -1717,6 +1759,8 @@ class ServiceSearch(LoginRequiredMixin, View):
                 "slocation": slocation,
                 "message": message,
                 "query": query,
+                'form': form,
+                'distance_target_s': distance_target_s,
             }
             return render(request, 'social/service-search.html', context)
         else:
