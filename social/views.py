@@ -1674,10 +1674,10 @@ class ServiceSearch(LoginRequiredMixin, View):
                     distance_target_s = ""
             # End of Map
 
-
-
+            category_selected = not (category == "all" or category == None)
             services_sorted = []
-            if "page" not in request.GET or request.session.get('services_sorted') is None or sorting != "None":
+            sorts = ["newest", "rating", "name", "servicedate"]
+            if "page" not in request.GET or request.session.get('services_sorted') is None or sorting in sorts or category_selected:
                 if sorting == "newest":
                     services_sorted = services_query.order_by('createddate')
                 elif sorting == "rating":
