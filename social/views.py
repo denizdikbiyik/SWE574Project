@@ -1695,7 +1695,7 @@ class ServiceSearch(LoginRequiredMixin, View):
             # Pagination
             object_list = services_sorted
             page_num = request.GET.get('page', 1)
-            paginator = Paginator(object_list, 10)
+            paginator = Paginator(object_list, 1)
             try:
                 page_obj = paginator.page(page_num)
             except PageNotAnInteger:
@@ -1867,28 +1867,34 @@ class EventSearch(View):
             service = Service(location=my_location, city=my_city)
             slocation = request.GET.get("slocation")
             distance_target = request.GET.get("distance_target")
-
+            request.session["distance_target"] = distance_target
             if 'submit' in request.GET:
-                request.session["distance_target"] = distance_target
                 if form.is_valid():
-                    target_location = form.cleaned_data.get("location")
-                    city = form.cleaned_data.get("city")
-                    request.session["target_location"] = target_location
-                    request.session["city"] = city
-                    service = Service(location=target_location, city=city)
-                    form = MyLocation(instance=service)
+                    if slocation != "map":
+                        request.session["target_location"] = ""
+                        request.session["city"] = ""
+                        form = MyLocation(instance=service)
+                        distance_target=""
+                    else:
+                        target_location = form.cleaned_data.get("location")
+                        city = form.cleaned_data.get("city")
+                        request.session["target_location"] = target_location
+                        request.session["city"] = city
+                        service = Service(location=target_location, city=city)
+                        form = MyLocation(instance=service)
+                        distance_target=distance_target
+                else:
+                    distance_target =""
             else:
                 form = MyLocation(instance=service)
-
-
-
+                distance_target = ""
 
             if "slocation" in request.GET:
                 if slocation == "map":
                     if request.GET.get("distance_target") == "" or request.GET.get("distance_target") == None :
                         message = "Please choose a range for the location."
                         events = events
-                    elif request.session.get("target_location") == None:
+                    elif request.session.get("target_location") == None or request.session.get("target_location") == "":
                         message = "Please choose a range for the location."
                         events = events
                     else:
@@ -1902,7 +1908,6 @@ class EventSearch(View):
                                     event_location_pk.add(event.pk)
                             events = events.filter(Q(pk__in=event_location_pk))
                         else:
-
                             events = events
                 elif slocation == "home":
                     target_location = request.user.profile.location
@@ -1912,15 +1917,15 @@ class EventSearch(View):
                         if distance(target_location, event_location).km <= 10:
                             event_location_for_home_pk.add(event.pk)
                     events = events.filter(Q(pk__in=event_location_for_home_pk))
+                    request.session["target_location"] = None
+                    request.session["city"] = None
+                    form = MyLocation(instance=service)
+                    distance_target = ""
                 else:
                     events = events
                     request.session["target_location"] = None
                     request.session["city"] = None
-
-                    request.session["distance"] = None
-
-
-
+                    distance_target = ""
             # End of Map
 
             if "sorting" in request.GET:

@@ -24,55 +24,71 @@
 
 {% block content %}
     <div class="container">
-    <p  style="color:red">{{ message }}</p>
+    <p >{{ message }}</p>
     </div>
-    <div class="container">
-        <div class="container p-3 my-3 bg-secondary ">
-            <div class="col-md-5 col-sm-12">
-                <form method="GET" enctype='multipart/form-data'>
+    <div class="container p-3 my-3 bg-secondary ">
+        <form method="get" enctype='multipart/form-data'>
+            <div class="form-group">
+                <label for="period type">Location:</label>
+                <select name="slocation" id="period type" onchange="this.form.submit()">
+                    <option value="all" {% if slocation == 'all' %}selected{% endif %}>All</option>
+                    <option value="map" {% if slocation == 'map' %}selected{% endif %}>Use Map Coordinates</option>
+                    <option value="home" {% if slocation == 'home' %}selected{% endif %}>From Home Address (10 km)</option>
+                </select>
+            </div>
+            {% if slocation == "map" %}
+            <label for="{{ form.city.id_for_label }}">Location Name:</label>
+            {{ form.city }}
+            <div class="fieldWrapper">
+                <label for="{{ form.location.id_for_label }}">Coordinates:</label>
+                {{ form.location }}
+            </div> <br>
+            <label for="distance">Select Range:</label>
+            <input type="number" id="distance" name="distance_target" min="5" max="150"  value="{{distance_target }}">
+            <br>
+            {% endif %}
 
 
-                    <label for="{{ form.city.id_for_label }}">Location Name:</label>
-                    {{ form.city }}
-                    <div class="fieldWrapper">
-                        <label for="{{ form.location.id_for_label }}">Coordinates:</label>
-                        {{ form.location }}
-                    </div> <br>
-                    <label for="distance">Select Range:</label>
-                    <input type="number" id="distance" name="distance_target" min="5" max="150"  value="{{ request.GET.distance_target }}"><br>
 
-                    <div class="form-group">
-                        <label for="period type">Location:</label>
-                        <select name="slocation" id="period type" onchange="this.form.submit()">
-                            <option value="all" {% if slocation == 'all' %}selected{% endif %}>All</option>
-                            <option value="map" {% if slocation == 'map' %}selected{% endif %}>Use Map Coordinates</option>
-                            <option value="home" {% if slocation == 'home' %}selected{% endif %}>From Home Address (10 km)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="admin-search">Search:</label>
-                        <input type="search" id="admin-search" name='query'
-                               aria-label="Search through site content"
-                               placeholder="keyword"
-                               value="{{ request.GET.query }}"></div>
-                    <div class="form-group">
-                        <label for="sort-select">Sort by:</label>
-                        <select name="sorting" id="sort-select">
-                            <option value="">--Select--</option>
-                            <option value="createdate" {% if sorting == 'createdate' %}selected{% endif %}>Creation Date
-                            </option>
-                            <option value="name" {% if sorting == 'name' %}selected{% endif %}>Name</option>
-                            <option value="eventdate" {% if sorting == 'eventdate' %}selected={% endif %}>Delivery
+            <label for="admin-search">Search:</label>
+            <input type="search" id="admin-search" name='query'
+                   aria-label="Search through site content"
+                   placeholder="keyword"
+                   value="{{ request.GET.query }}">
+
+            <label for="sort-select">Sort by:</label>
+            <select name="sorting" id="sort-select">
+                <option value="">--Select--</option>
+                <option value="createdate" {% if sorting == 'createdate' %}selected{% endif %}>Creation Date
+                </option>
+                <option value="name" {% if sorting == 'name' %}selected{% endif %}>Name</option>
+                <option value="eventdate" {% if sorting == 'eventdate' %}selected={% endif %}>Delivery
                                 Date
                             </option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <button type="submit" name="submit" value="submitted">Submit</button>
-                    </div>
-                </form>
+            </select>
+            <div class="form-group">
+                <button type="submit" name="submit" value="submitted">Submit</button>
             </div>
-        </div> <br>
+        </form>
+    </div>
+
+
+     <div class="container">
+         <div class="row">
+            <div class="row">
+                <div class="col">
+                    <div class="row">
+                        <div class="col">
+                            <h5 style="text-align:center;">Events</h5>
+                        </div>
+                        <div class="col">
+
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
 
             <br/>
             {% if events_count != 0 %}
@@ -100,7 +116,12 @@
             {% else %}
                 <p class="row justify-content-center mt-3">No events found!</p>
             {% endif %}
-        </div> <br>
+        </div>
+
+
+
+
+     </div> <br>
 
 
 
