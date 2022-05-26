@@ -66,7 +66,15 @@ class Index(View):
             recommendations = get_recommendations(request)
             if len(recommendations)>0:
                 recommendation = recommendations[randrange(len(recommendations))]
-                context['recommendation'] = recommendation
+                defs = recommendation.wiki_description.split(" as a(n) ")
+                interest = Interest.objects.get(user=request.user, wiki_description=defs[1])
+                approved = True
+                if recommendation in list(interest.approvedServices.values_list("pk", flat=True)):
+                    approved = False
+                else:
+                    approved = True
+                tuple = (recommendation, approved)
+                context['recommendation'] = tuple
 
         return render(request, 'landing/index.html', context)
 

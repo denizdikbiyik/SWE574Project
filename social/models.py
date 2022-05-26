@@ -199,6 +199,7 @@ class Interest(models.Model):
     feedbackLiked = models.BooleanField(null=True, blank=True)
     feedbackFactor = models.IntegerField(default=1)
     disapprovedServices = models.ManyToManyField(Service, blank=True, related_name='disapprovedservices')
+    approvedServices = models.ManyToManyField(Service, blank=True, related_name='approvedservices')
 
 class Search(models.Model):
     date = models.DateTimeField(default=timezone.now)
