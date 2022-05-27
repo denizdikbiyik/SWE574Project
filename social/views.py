@@ -1743,7 +1743,7 @@ class ServiceSearch(LoginRequiredMixin, View):
             # Pagination
             object_list = services_sorted
             page_num = request.GET.get('page', 1)
-            paginator = Paginator(object_list, 1)
+            paginator = Paginator(object_list, 10)
             try:
                 page_obj = paginator.page(page_num)
             except PageNotAnInteger:
@@ -2005,7 +2005,7 @@ class EventSearch(View):
             # Pagination
             object_list = events
             page_num = request.GET.get('page', 1)
-            paginator = Paginator(object_list, 1)
+            paginator = Paginator(object_list, 10)
             try:
                 page_obj = paginator.page(page_num)
             except PageNotAnInteger:
@@ -3480,12 +3480,15 @@ class ComplaintUserEdit(LoginRequiredMixin, View):
             request.session["target_location"] = None
             request.session["city"] = ""
             complaint = UserComplaints.objects.get(pk=pk)
-            form = ComplaintForm(instance=complaint)
-            context = {
-                'form': form,
-                'complaint': complaint,
-            }
-            return render(request, 'social/complaint-edit.html', context)
+            if complaint.isSolved:
+                return redirect('complaintsolve', pk=complaint.pk)
+            else:
+                form = ComplaintForm(instance=complaint)
+                context = {
+                    'form': form,
+                    'complaint': complaint,
+                }
+                return render(request, 'social/complaint-edit.html', context)
         else:
             return redirect('index')
 
@@ -3495,24 +3498,27 @@ class ComplaintUserEdit(LoginRequiredMixin, View):
             request.session["city"] = ""
             form = ComplaintForm(request.POST)
             complaint = UserComplaints.objects.get(pk=pk)
-            if form.is_valid():
-                edit_complaint = form.save(commit=False)
-                complaint.feedback = edit_complaint.feedback
-                complaint.save()
-                log = Log.objects.create(operation="editcomplaint", itemType="user", itemId=complaint.complainted.pk,
-                                        userId=request.user)
-                allAdmins = UserProfile.objects.filter(isAdmin=True)
-                for admin in allAdmins:
-                    notification = NotifyUser.objects.create(notify=admin.user, notification=str(
-                        request.user) + ' edited complaint about ' + str(complaint.complainted)+'.', offerType="complaint",
-                                                            offerPk=complaint.pk)
-                    notified_user = UserProfile.objects.get(pk=admin.user)
-                    notified_user.unreadcount = notified_user.unreadcount + 1
-                    notified_user.save()
-            context = {
-                'form': form,
-            }
-            return redirect('complaintuser', pk=complaint.complainted.pk)
+            if complaint.isSolved:
+                return redirect('complaintsolve', pk=complaint.pk)
+            else:
+                if form.is_valid():
+                    edit_complaint = form.save(commit=False)
+                    complaint.feedback = edit_complaint.feedback
+                    complaint.save()
+                    log = Log.objects.create(operation="editcomplaint", itemType="user", itemId=complaint.complainted.pk,
+                                            userId=request.user)
+                    allAdmins = UserProfile.objects.filter(isAdmin=True)
+                    for admin in allAdmins:
+                        notification = NotifyUser.objects.create(notify=admin.user, notification=str(
+                            request.user) + ' edited complaint about ' + str(complaint.complainted)+'.', offerType="complaint",
+                                                                offerPk=complaint.pk)
+                        notified_user = UserProfile.objects.get(pk=admin.user)
+                        notified_user.unreadcount = notified_user.unreadcount + 1
+                        notified_user.save()
+                context = {
+                    'form': form,
+                }
+                return redirect('complaintuser', pk=complaint.complainted.pk)
         else:
             return redirect('index')
 
@@ -3523,11 +3529,14 @@ class ComplaintUserDelete(LoginRequiredMixin, View):
             request.session["target_location"] = None
             request.session["city"] = ""
             complaint = UserComplaints.objects.get(pk=pk)
-            form = ComplaintForm(instance=complaint)
-            context = {
-                'form': form,
-            }
-            return render(request, 'social/complaint-delete.html', context)
+            if complaint.isSolved:
+                return redirect('complaintsolve', pk=complaint.pk)
+            else:
+                form = ComplaintForm(instance=complaint)
+                context = {
+                    'form': form,
+                }
+                return render(request, 'social/complaint-delete.html', context)
         else:
             return redirect('index')
 
@@ -3536,29 +3545,32 @@ class ComplaintUserDelete(LoginRequiredMixin, View):
             request.session["target_location"] = None
             request.session["city"] = ""
             complaint = UserComplaints.objects.get(pk=pk)
-            complaint.isDeleted = True
-            complaint.save()
-            log = Log.objects.create(operation="deletecomplaint", itemType="user", itemId=complaint.complainted.pk,
-                                    userId=request.user)
+            if complaint.isSolved:
+                return redirect('complaintsolve', pk=complaint.pk)
+            else:
+                complaint.isDeleted = True
+                complaint.save()
+                log = Log.objects.create(operation="deletecomplaint", itemType="user", itemId=complaint.complainted.pk,
+                                        userId=request.user)
 
-            notificationsToRead = NotifyUser.objects.filter(offerType="complaint").filter(offerPk=complaint.pk)
-            for notification in notificationsToRead:
-                notification.hasRead = True
-                notification.save()
-                userNotified = UserProfile.objects.get(pk=notification.notify)
-                userNotified.unreadcount = userNotified.unreadcount - 1
-                userNotified.save()
+                notificationsToRead = NotifyUser.objects.filter(offerType="complaint").filter(offerPk=complaint.pk)
+                for notification in notificationsToRead:
+                    notification.hasRead = True
+                    notification.save()
+                    userNotified = UserProfile.objects.get(pk=notification.notify)
+                    userNotified.unreadcount = userNotified.unreadcount - 1
+                    userNotified.save()
 
-            allAdmins = UserProfile.objects.filter(isAdmin=True)
-            for admin in allAdmins:
-                notification = NotifyUser.objects.create(notify=admin.user,
-                                                        notification=str(request.user) + ' deleted complaint about ' + str(
-                                                            complaint.complainted)+'.', offerType="user",
-                                                        offerPk=complaint.complainted.pk)
-                notified_user = UserProfile.objects.get(pk=admin.user)
-                notified_user.unreadcount = notified_user.unreadcount + 1
-                notified_user.save()
-            return redirect('profile', pk=complaint.complainted.pk)
+                allAdmins = UserProfile.objects.filter(isAdmin=True)
+                for admin in allAdmins:
+                    notification = NotifyUser.objects.create(notify=admin.user,
+                                                            notification=str(request.user) + ' deleted complaint about ' + str(
+                                                                complaint.complainted)+'.', offerType="user",
+                                                            offerPk=complaint.complainted.pk)
+                    notified_user = UserProfile.objects.get(pk=admin.user)
+                    notified_user.unreadcount = notified_user.unreadcount + 1
+                    notified_user.save()
+                return redirect('profile', pk=complaint.complainted.pk)
         else:
             return redirect('index')
 
@@ -3587,12 +3599,15 @@ class ComplaintUserAdminSide(LoginRequiredMixin, View):
             form = ComplaintFormAdmin()
             record = UserComplaints.objects.get(pk=pk)
             isSolved = record.isSolved
-            context = {
-                'form': form,
-                'record': record,
-                'isSolved': isSolved,
-            }
-            return render(request, 'social/complaintAdminSide.html', context)
+            if record.isDeleted:
+                return redirect('complaints')
+            else:
+                context = {
+                    'form': form,
+                    'record': record,
+                    'isSolved': isSolved,
+                }
+                return render(request, 'social/complaintAdminSide.html', context)
         else:
             return redirect('index')
 
@@ -3602,29 +3617,35 @@ class ComplaintUserAdminSide(LoginRequiredMixin, View):
             request.session["city"] = ""
             form = ComplaintFormAdmin(request.POST)
             complaint = UserComplaints.objects.get(pk=pk)
-            if form.is_valid():
-                edit_complaint = form.save(commit=False)
-                complaint.solutionAction = edit_complaint.solutionAction
-                complaint.solutionText = edit_complaint.solutionText
-                complaint.adminDate = timezone.now()
-                complaint.isSolved = True
-                complaint.solutionAdmin = request.user
-                complaint.save()
-                log = Log.objects.create(operation="solvecomplaint", itemType="user", itemId=complaint.complainted.pk,
-                                        userId=request.user)
+            if complaint.isSolved:
+                return redirect('complaintsolve', pk=complaint.pk)
+            else:
+                if complaint.isDeleted:
+                    return redirect('complaints')
+                else:
+                    if form.is_valid():
+                        edit_complaint = form.save(commit=False)
+                        complaint.solutionAction = edit_complaint.solutionAction
+                        complaint.solutionText = edit_complaint.solutionText
+                        complaint.adminDate = timezone.now()
+                        complaint.isSolved = True
+                        complaint.solutionAdmin = request.user
+                        complaint.save()
+                        log = Log.objects.create(operation="solvecomplaint", itemType="user", itemId=complaint.complainted.pk,
+                                                userId=request.user)
 
-                notificationsToRead = NotifyUser.objects.filter(offerType="complaint").filter(offerPk=complaint.pk)
-                for notification in notificationsToRead:
-                    notification.hasRead = True
-                    notification.save()
-                    userNotified = UserProfile.objects.get(pk=notification.notify)
-                    userNotified.unreadcount = userNotified.unreadcount - 1
-                    userNotified.save()
+                        notificationsToRead = NotifyUser.objects.filter(offerType="complaint").filter(offerPk=complaint.pk)
+                        for notification in notificationsToRead:
+                            notification.hasRead = True
+                            notification.save()
+                            userNotified = UserProfile.objects.get(pk=notification.notify)
+                            userNotified.unreadcount = userNotified.unreadcount - 1
+                            userNotified.save()
 
-                notification = NotifyUser.objects.create(notify=complaint.complainter, notification=str(request.user) + ' solved your complaint about ' + str(complaint.complainted)+'.', offerType="user", offerPk=complaint.complainted.pk)
-                notified_user = UserProfile.objects.get(pk=complaint.complainter)
-                notified_user.unreadcount = notified_user.unreadcount + 1
-                notified_user.save()
+                        notification = NotifyUser.objects.create(notify=complaint.complainter, notification=str(request.user) + ' solved your complaint about ' + str(complaint.complainted)+'.', offerType="user", offerPk=complaint.complainted.pk)
+                        notified_user = UserProfile.objects.get(pk=complaint.complainter)
+                        notified_user.unreadcount = notified_user.unreadcount + 1
+                        notified_user.save()
             context = {
                 'form': form,
             }
