@@ -24,10 +24,17 @@
                                         <a>feedback: "{{ complaint.feedback }}"</a>           
                                     {% else %}
                                     {% endif %}
+
                                     about <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' complaint.complainted.pk %}">@{{ complaint.complainted.username }}</a>  
                                     <a>on {{ complaint.date }}</a>  
-                                    {% if complaint.isSolved %}
-                                        <a class="stretched-link" href="{% url 'complaintsolve' complaint.pk %}"></a> 
+                                    
+                                    {% if complaint.isDeleted %}
+                                    {% else %}
+                                        {% if complaint.isSolved %}
+                                            <a class="stretched-link" href="{% url 'complaintsolve' complaint.pk %}"></a> 
+                                        {% else %}
+                                            <a class="stretched-link" href="{% url 'complaintuser' complaint.complainted.pk %}"></a> 
+                                        {% endif %}
                                     {% endif %}                 
                                 </div> 
                                 <div class="col-md-2">

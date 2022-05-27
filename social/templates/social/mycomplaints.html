@@ -21,7 +21,11 @@
                                     on <a>{{ complaint.date }}</a>  
                                     {% if complaint.isDeleted %}
                                     {% else %}
-                                        <a class="stretched-link" href="{% url 'profile' complaint.complainted.pk %}"></a> 
+                                        {% if complaint.isSolved %}
+                                            <a class="stretched-link" href="{% url 'complaintsolve' complaint.pk %}"></a> 
+                                        {% else %}
+                                            <a class="stretched-link" href="{% url 'complaintuser' complaint.complainted.pk %}"></a> 
+                                        {% endif %}
                                     {% endif %}                  
                                 </div> 
                                 <div class="col-md-2">

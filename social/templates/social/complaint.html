@@ -29,7 +29,7 @@
                     {% for record in complaintRecord %}
                         <b>You already created.</b>
                         <p></p>
-                        <p><b>User:</b> {{ record.complainted }}</p>
+                        <p><b>User:</b> <a style="text-decoration: none;" class="text-primary" href="{% url 'profile' record.complainted.pk %}">@{{ record.complainted }}</a></p>
                         <p><b>Comment was:</b> {{ record.feedback }}</p>
                         {% if request.user.profile.isAdmin %}
                         {% else %}
