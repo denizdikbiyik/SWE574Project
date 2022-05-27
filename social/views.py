@@ -1739,7 +1739,7 @@ class ServiceSearch(LoginRequiredMixin, View):
             # Pagination
             object_list = services_sorted
             page_num = request.GET.get('page', 1)
-            paginator = Paginator(object_list, 1)
+            paginator = Paginator(object_list, 10)
             try:
                 page_obj = paginator.page(page_num)
             except PageNotAnInteger:
@@ -1977,7 +1977,7 @@ class EventSearch(View):
 
             if "sorting" in request.GET:
                 if sorting == "createdate":
-                    events=events.order_by("eventcreateddate")
+                    events=events.order_by("-eventcreateddate")
                 elif sorting == "name":
                     events = events.order_by(Lower("eventname"))
                 elif sorting == "eventdate":
@@ -2001,7 +2001,7 @@ class EventSearch(View):
             # Pagination
             object_list = events
             page_num = request.GET.get('page', 1)
-            paginator = Paginator(object_list, 1)
+            paginator = Paginator(object_list, 10)
             try:
                 page_obj = paginator.page(page_num)
             except PageNotAnInteger:
