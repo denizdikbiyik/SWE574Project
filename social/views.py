@@ -1575,6 +1575,8 @@ class ServiceSearch(LoginRequiredMixin, View):
             sorting = self.request.GET.get('sorting')
             category = self.request.GET.get('category')  # For combining with ServiceFilter() AT
             cat_sel = category
+            if "page" in request.GET:
+                cat_sel = request.GET.get('cat_sel')
             currentTime = timezone.now()
 
             services_query = Service.objects.filter(isDeleted=False).filter(isActive=True).filter(
@@ -1586,7 +1588,7 @@ class ServiceSearch(LoginRequiredMixin, View):
                 services_query = services_query.filter(category__tag=category)
 
             if "query" in request.GET:
-                if query == None or query == "":
+                if query is None or query == "":
                     services_query = services_query
                 else:
                     services_address_pk = set()
