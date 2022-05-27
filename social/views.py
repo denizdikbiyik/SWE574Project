@@ -1580,10 +1580,13 @@ class ServiceSearch(LoginRequiredMixin, View):
             services_query = Service.objects.filter(isDeleted=False).filter(isActive=True).filter(
                 servicedate__gte=currentTime)
 
-            if category == "all" or category == None:
-                services_query = services_query
+            if "category" in request.GET:
+                if category == "all":
+                    services_query = services_query
+                else:
+                    services_query = services_query.filter(category__tag=category)
             else:
-                services_query = services_query.filter(category__tag=category)
+                category="all"
 
             if "query" in request.GET:
                 if query == None or query == "":
@@ -1672,6 +1675,7 @@ class ServiceSearch(LoginRequiredMixin, View):
                     request.session["target_location_s"] = None
                     request.session["city_s"] = None
                     distance_target_s = ""
+
             # End of Map
 
             category_selected = not (category == "all" or category == None)
@@ -1739,7 +1743,7 @@ class ServiceSearch(LoginRequiredMixin, View):
             # Pagination
             object_list = services_sorted
             page_num = request.GET.get('page', 1)
-            paginator = Paginator(object_list, 10)
+            paginator = Paginator(object_list, 1)
             try:
                 page_obj = paginator.page(page_num)
             except PageNotAnInteger:
@@ -2001,7 +2005,7 @@ class EventSearch(View):
             # Pagination
             object_list = events
             page_num = request.GET.get('page', 1)
-            paginator = Paginator(object_list, 10)
+            paginator = Paginator(object_list, 1)
             try:
                 page_obj = paginator.page(page_num)
             except PageNotAnInteger:
