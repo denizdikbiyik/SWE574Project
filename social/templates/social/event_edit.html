@@ -43,7 +43,6 @@
         {% endif %}
         <a class="row justify-content-center mt-3 mb-3" href="{% url 'wikieditevent' event.pk %}">I want to add / edit  Wikidata description.</a>
         <div class="col-md-5 col-sm-12 border-bottom">
-        <div class="col-md-5 col-sm-12 border-bottom">
             <form method="POST" enctype='multipart/form-data'>
                 {% csrf_token %}
                 {{ form | crispy }}
