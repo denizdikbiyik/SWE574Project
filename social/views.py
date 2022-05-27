@@ -1614,7 +1614,7 @@ class ServiceSearch(LoginRequiredMixin, View):
             request.session["distance_target_s"] = distance_target_s
             if 'submit' in request.GET:
                 if form.is_valid():
-                    if slocation != "map":
+                    if slocation != "map" and slocation != "home":
                         request.session["target_location_s"] = ""
                         request.session["city_s"] = ""
                         form = MyLocation(instance=service)
@@ -1679,9 +1679,9 @@ class ServiceSearch(LoginRequiredMixin, View):
             sorts = ["newest", "rating", "name", "servicedate"]
             if "page" not in request.GET or request.session.get('services_sorted') is None or sorting in sorts or category_selected:
                 if sorting == "newest":
-                    services_sorted = services_query.order_by('createddate')
+                    services_sorted = services_query.order_by('-createddate')
                 elif sorting == "rating":
-                    services_sorted = self.highest_rated_picked(list(services_query.order_by('createddate')))
+                    services_sorted = self.highest_rated_picked(list(services_query.order_by('-createddate')))
                 elif sorting == "name":
                     services_sorted = services_query.order_by(Lower("name"))
                 elif sorting == "servicedate":
@@ -1739,7 +1739,7 @@ class ServiceSearch(LoginRequiredMixin, View):
             # Pagination
             object_list = services_sorted
             page_num = request.GET.get('page', 1)
-            paginator = Paginator(object_list, 10)
+            paginator = Paginator(object_list, 1)
             try:
                 page_obj = paginator.page(page_num)
             except PageNotAnInteger:
@@ -1763,6 +1763,7 @@ class ServiceSearch(LoginRequiredMixin, View):
                 "query": query,
                 'form': form,
                 'distance_target_s': distance_target_s,
+                'category': category,
             }
             return render(request, 'social/service-search.html', context)
         else:
@@ -2000,7 +2001,7 @@ class EventSearch(View):
             # Pagination
             object_list = events
             page_num = request.GET.get('page', 1)
-            paginator = Paginator(object_list, 10)
+            paginator = Paginator(object_list, 1)
             try:
                 page_obj = paginator.page(page_num)
             except PageNotAnInteger:
