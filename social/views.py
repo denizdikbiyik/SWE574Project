@@ -3690,7 +3690,7 @@ class ComplaintsDoneByMe(LoginRequiredMixin, View):
                 'complaints_count': complaints_count,
                 'complaints': complaints,
             }
-            return render(request, 'social/complaintsCreator.html', context)
+            return render(request, 'social/complaintsDoneByMe.html', context)
         else:
             return redirect('index')
 
