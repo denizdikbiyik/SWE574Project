@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 from faker import Faker
 from datetime import datetime
 from django.contrib.auth.models import User
-from social.models import UserProfile, Interest, Service, Event, Log, Tag
+from social.models import UserProfile, Interest, Service, Event, Log, Tag, NotifyUser
 import random
 from openpyxl import load_workbook
 
@@ -158,6 +158,17 @@ class Command(BaseCommand):
             user1 = UserProfile.objects.get(pk=user1_id)
             user1.followers.add(user2_id)
 
+            log = Log.objects.create(operation="follow", itemType="user", itemId=user2_id, userId=User(user1_id))
+            log.save()
+
+            notification = NotifyUser.objects.create(notify=User(user2_id),
+                                                     notification=str(User.objects.get(pk=user1_id)) + ' followed you.',
+                                                     offerType="user", offerPk=user1_id)
+            notification.save()
+            notified_user = UserProfile.objects.get(pk=user2_id)
+            notified_user.unreadcount = notified_user.unreadcount + 1
+            notified_user.save()
+
         # This function creates the categories to be used in the service creation
         def create_categories():
             for i in range(len(category_dict)):
@@ -182,8 +193,17 @@ class Command(BaseCommand):
                                                        datetime_end=datetime(2022, 5, 20))
             last_user = User.objects.latest('id')
             user_id = random.randint(1, last_user.id)
+            profile = UserProfile.objects.get(pk=user_id)
             capacity = random.randint(1, 5)
             duration = random.randint(1, 3)
+            total_credit = profile.reservehour + profile.credithour + duration
+            while total_credit > 15:
+                user_id = random.randint(1, last_user.id)
+                profile = UserProfile.objects.get(pk=user_id)
+                capacity = random.randint(1, 5)
+                duration = random.randint(1, 3)
+                total_credit = profile.reservehour + profile.credithour + duration
+
             service_date = fake.future_datetime(end_date="+60d")
             wiki_no = random.randint(1, 50)
             wiki_desc = interest_dict[wiki_no][0] + ' as a(n) ' + interest_dict[wiki_no][1]
@@ -196,6 +216,9 @@ class Command(BaseCommand):
                                                  servicedate=service_date, wiki_description=wiki_desc, city=city,
                                                  picture=picture, category_id=category_id)
             new_service.save()
+
+            profile.reservehour = profile.reservehour + duration
+            profile.save()
 
             user = User(user_id)
             log = Log.objects.create(operation="createservice", itemType="service", itemId=new_service.pk,
