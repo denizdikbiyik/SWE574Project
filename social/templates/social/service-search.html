@@ -52,7 +52,7 @@
                 <option value="all" {% if category == 'all' %}selected{% endif %}>All</option>
                 {% for cat in category_list %}
                     <option value="{{ cat }}"
-                            {% if cat == cat_sel %} selected {% endif %} >{{ cat }}</option>
+                            {% if cat == category %} selected {% endif %} >{{ cat }}</option>
                 {% endfor %}
             </select>
 
