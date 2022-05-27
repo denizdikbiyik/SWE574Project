@@ -49,10 +49,10 @@
 
             <label for="category-select">Categories:</label>
             <select name="category" id="category-select">
-                <option value="all">All</option>
+                <option value="all" {% if category == 'all' %}selected{% endif %}>All</option>
                 {% for cat in category_list %}
                     <option value="{{ cat }}"
-                            {% if cat == cat_sel %}selected="selected"{% endif %}>{{ cat }}</option>
+                            {% if cat == cat_sel %} selected {% endif %} >{{ cat }}</option>
                 {% endfor %}
             </select>
 
@@ -88,8 +88,6 @@
                             <h5 style="text-align:center;">Services</h5>
                         </div>
                         <div class="col">
-
-
                         </div>
                     </div>
                 </div>
@@ -145,26 +143,26 @@
                 <ul class="pagination pagination-sm justify-content-center">
                     {% if page_obj.has_previous %}
                         <li class="page-item">
-                            <a href="?page=1&services_count={{ services_count }}&currentTime={{ currentTime }}&alltags={{ alltags }}&query={{ query }}&cat_sel={{ cat_sel }}&sorting={{ sorting }}&slocation={{ slocation }}&distance_target_s={{ distance_target_s }}"
+                            <a href="?page=1&services_count={{ services_count }}&currentTime={{ currentTime }}&alltags={{ alltags }}&query={{ query }}&cat_sel={{ cat_sel }}&sorting={{ sorting }}&slocation={{ slocation }}&distance_target_s={{ distance_target_s }}&category={{ category }}"
                                class="page-link">First</a>
                         </li>
 
                         <li class="page-item">
-                            <a href="?page={{ page_obj.previous_page_number }}&services_count={{ services_count }}&currentTime={{ currentTime }}&alltags={{ alltags }}&query={{ query }}&cat_sel={{ cat_sel }}&sorting={{ sorting }}&slocation={{ slocation }}&distance_target_s={{ distance_target_s }}"
+                            <a href="?page={{ page_obj.previous_page_number }}&services_count={{ services_count }}&currentTime={{ currentTime }}&alltags={{ alltags }}&query={{ query }}&cat_sel={{ cat_sel }}&sorting={{ sorting }}&slocation={{ slocation }}&distance_target_s={{ distance_target_s }}&category={{ category }}"
                                class="page-link">Previous</a>
                         </li>
 
                         {% if not page_obj.has_next and page_obj.previous_page_number > 1 %}
                             <li class="page-item ">
                                 <a class="page-link"
-                                   href="?page={{ page_obj.previous_page_number|add:'-1' }}&services_count={{ services_count }}&currentTime={{ currentTime }}&alltags={{ alltags }}&query={{ query }}&cat_sel={{ cat_sel }}&sorting={{ sorting }}&slocation={{ slocation }}&distance_target_s={{ distance_target_s }}">
+                                   href="?page={{ page_obj.previous_page_number|add:'-1' }}&services_count={{ services_count }}&currentTime={{ currentTime }}&alltags={{ alltags }}&query={{ query }}&cat_sel={{ cat_sel }}&sorting={{ sorting }}&slocation={{ slocation }}&distance_target_s={{ distance_target_s }}&category={{ category }}">
                                     {{ page_obj.previous_page_number|add:'-1' }}
                                 </a>
                             </li>
                         {% endif %}
                         <li>
                             <a class="page-link"
-                               href="?page={{ page_obj.previous_page_number }}&services_count={{ services_count }}&currentTime={{ currentTime }}&alltags={{ alltags }}&query={{ query }}&cat_sel={{ cat_sel }}&sorting={{ sorting }}&slocation={{ slocation }}&distance_target_s={{ distance_target_s }}">
+                               href="?page={{ page_obj.previous_page_number }}&services_count={{ services_count }}&currentTime={{ currentTime }}&alltags={{ alltags }}&query={{ query }}&cat_sel={{ cat_sel }}&sorting={{ sorting }}&slocation={{ slocation }}&distance_target_s={{ distance_target_s }}&category={{ category }}">
                                 {{ page_obj.previous_page_number }}
                             </a>
                         </li>
@@ -185,26 +183,26 @@
                     {% if page_obj.has_next %}
                         <li class="page-item">
                             <a class="page-link"
-                               href="?page={{ page_obj.next_page_number }}&services_count={{ services_count }}&currentTime={{ currentTime }}&alltags={{ alltags }}&query={{ query }}&cat_sel={{ cat_sel }}&sorting={{ sorting }}&slocation={{ slocation }}&distance_target_s={{ distance_target_s }}">
+                               href="?page={{ page_obj.next_page_number }}&services_count={{ services_count }}&currentTime={{ currentTime }}&alltags={{ alltags }}&query={{ query }}&cat_sel={{ cat_sel }}&sorting={{ sorting }}&slocation={{ slocation }}&distance_target_s={{ distance_target_s }}&category={{ category }}">
                                 {{ page_obj.next_page_number }}
                             </a>
                         </li>
                         {% if not page_obj.has_previous and page_obj.next_page_number < page_obj.paginator.num_pages %}
                             <li class="page-item ">
                                 <a class="page-link"
-                                   href="?page={{ page_obj.next_page_number|add:'1' }}&services_count={{ services_count }}&currentTime={{ currentTime }}&alltags={{ alltags }}&query={{ query }}&cat_sel={{ cat_sel }}&sorting={{ sorting }}&slocation={{ slocation }}&distance_target_s={{ distance_target_s }}">
+                                   href="?page={{ page_obj.next_page_number|add:'1' }}&services_count={{ services_count }}&currentTime={{ currentTime }}&alltags={{ alltags }}&query={{ query }}&cat_sel={{ cat_sel }}&sorting={{ sorting }}&slocation={{ slocation }}&distance_target_s={{ distance_target_s }}&category={{ category }}">
                                     {{ page_obj.next_page_number|add:'1' }}
                                 </a>
                             </li>
                         {% endif %}
                         <li class="page-item ">
                             <a class="page-link"
-                               href="?page={{ page_obj.next_page_number }}&services_count={{ services_count }}&currentTime={{ currentTime }}&alltags={{ alltags }}&query={{ query }}&cat_sel={{ cat_sel }}&sorting={{ sorting }}&slocation={{ slocation }}&distance_target_s={{ distance_target_s }}">Next</a>
+                               href="?page={{ page_obj.next_page_number }}&services_count={{ services_count }}&currentTime={{ currentTime }}&alltags={{ alltags }}&query={{ query }}&cat_sel={{ cat_sel }}&sorting={{ sorting }}&slocation={{ slocation }}&distance_target_s={{ distance_target_s }}&category={{ category }}">Next</a>
                         </li>
 
                         <li class="page-item ">
                             <a class="page-link"
-                               href="?page={{ page_obj.paginator.num_pages }}&services_count={{ services_count }}&currentTime={{ currentTime }}&alltags={{ alltags }}&query={{ query }}&cat_sel={{ cat_sel }}&sorting={{ sorting }}&slocation={{ slocation }}&distance_target_s={{ distance_target_s }}">Last</a>
+                               href="?page={{ page_obj.paginator.num_pages }}&services_count={{ services_count }}&currentTime={{ currentTime }}&alltags={{ alltags }}&query={{ query }}&cat_sel={{ cat_sel }}&sorting={{ sorting }}&slocation={{ slocation }}&distance_target_s={{ distance_target_s }}&category={{ category }}">Last</a>
                         </li>
                     {% else %}
                         <li class="page-item disabled">
