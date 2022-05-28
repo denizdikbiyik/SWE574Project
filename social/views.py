@@ -1639,11 +1639,10 @@ class ServiceSearch(LoginRequiredMixin, View):
             if "slocation" in request.GET:
                 if slocation == "map":
                     if request.GET.get("distance_target_s") == "" or request.GET.get("distance_target_s") == None:
-                        message = "Please choose a range for the location."
-                        services_query = services_query
-                    elif request.session.get("target_location_s") == None or request.session.get(
+                        request.session["distance_target_s"] = "10"
+                    if request.session.get("target_location_s") == None or request.session.get(
                             "target_location_s") == "":
-                        message = "Please choose a range for the location."
+                        message = "Please choose a location from the map."
                         services_query = services_query
                     else:
                         if request.session.get("target_location_s") != None or request.GET.get(
@@ -1917,10 +1916,9 @@ class EventSearch(View):
             if "slocation" in request.GET:
                 if slocation == "map":
                     if request.GET.get("distance_target") == "" or request.GET.get("distance_target") == None :
-                        message = "Please choose a range for the location."
-                        events = events
-                    elif request.session.get("target_location") == None or request.session.get("target_location") == "":
-                        message = "Please choose a range for the location."
+                        request.session["distance_target"] = "10"
+                    if request.session.get("target_location") == None or request.session.get("target_location") == "":
+                        message = "Please choose a location from the map."
                         events = events
                     else:
                         if request.session.get("target_location") != None or request.GET.get("distance_target") !="" or request.GET.get("distance_target") !=None:

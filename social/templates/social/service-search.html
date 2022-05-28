@@ -23,7 +23,6 @@
 
 {% block content %}
     <div class="container">
-    <p >{{ message }}</p>
     </div>
     <div class="container p-3 my-3 bg-secondary ">
         <form method="get" enctype='multipart/form-data'>
@@ -41,7 +40,9 @@
             <div class="fieldWrapper">
                 <label for="{{ form.location.id_for_label }}">Coordinates:</label>
                 {{ form.location }}
-            </div> <br>
+            </div> 
+            <br>
+            <p style="color:white">{{ message }}</p>
             <label for="distance">Select Range:</label>
             <input type="number" id="distance" name="distance_target_s" min="5" max="150"  value="{{distance_target_s }}">
             <br>
