@@ -2499,7 +2499,7 @@ class ServiceDetailCommunicationView(View):
                 log = Log.objects.create(operation="createservicecommunication", itemType="service", itemId=service.pk,
                                         userId=request.user)
             applications = ServiceApplication.objects.filter(service=pk).filter(isDeleted=False).filter(
-                isActive=True).order_by('-date')
+                isActive=True).filter(approved=True).order_by('-date')
             for applicationToNotify in applications:
                 if applicationToNotify.applicant != request.user:
                     notification = NotifyUser.objects.create(notify=applicationToNotify.applicant,
@@ -2528,7 +2528,7 @@ class ServiceCommunicationDeleteView(LoginRequiredMixin, UserPassesTestMixin, De
             notified_user = UserProfile.objects.get(pk=service.creater)
             notified_user.unreadcount = notified_user.unreadcount + 1
             notified_user.save()
-        approvedApplications = ServiceApplication.objects.filter(approved=True).filter(isDeleted=False).filter(
+        approvedApplications = ServiceApplication.objects.filter(service=service_pk).filter(approved=True).filter(isDeleted=False).filter(
             isActive=True)
         for approvedApplication in approvedApplications:
             if self.request.user != approvedApplication.applicant:
@@ -2575,7 +2575,7 @@ class EventDetailCommunicationView(View):
                     notified_user.save()
                 log = Log.objects.create(operation="createeventcommunication", itemType="event", itemId=event.pk,
                                         userId=request.user)
-            applications = EventApplication.objects.filter(event=pk).filter(isDeleted=False).filter(isActive=True).order_by(
+            applications = EventApplication.objects.filter(event=pk).filter(isDeleted=False).filter(isActive=True).filter(approved=True).order_by(
                 '-date')
             for applicationToNotify in applications:
                 if applicationToNotify.applicant != request.user:
@@ -2605,7 +2605,7 @@ class EventCommunicationDeleteView(LoginRequiredMixin, UserPassesTestMixin, Dele
             notified_user = UserProfile.objects.get(pk=event.eventcreater)
             notified_user.unreadcount = notified_user.unreadcount + 1
             notified_user.save()
-        approvedApplications = EventApplication.objects.filter(approved=True).filter(isDeleted=False).filter(
+        approvedApplications = EventApplication.objects.filter(event=event_pk).filter(approved=True).filter(isDeleted=False).filter(
             isActive=True)
         for approvedApplication in approvedApplications:
             if self.request.user != approvedApplication.applicant:
