@@ -68,8 +68,7 @@ class Index(View):
                 recommendation = recommendations[randrange(len(recommendations))]
                 defs = recommendation.wiki_description.split(" as a(n) ")
                 interest = Interest.objects.get(user=request.user, wiki_description=defs[1])
-                approved = True
-                if recommendation in list(interest.approvedServices.values_list("pk", flat=True)):
+                if recommendation.pk in list(interest.approvedServices.values_list("pk", flat=True)):
                     approved = False
                 else:
                     approved = True
