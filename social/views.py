@@ -1695,7 +1695,7 @@ class ServiceSearch(LoginRequiredMixin, View):
                     i = 0
                     sub_date_sorted = self.sub_date_picked(services)
                     rating_sorted = self.rating_picked(services)
-                    follow_status_sorted = self.follow_status_picked(services, request.user.id)
+                    follow_status_sorted = self.follow_status_picked(services, request.user)
                     interest_sorted = self.interest_picked(services, list(Interest.objects.filter(user=request.user.id)))
 
                     while i < len(services):
@@ -1777,59 +1777,33 @@ class ServiceSearch(LoginRequiredMixin, View):
         def sub_date_sorted(service):
             return service.creater.date_joined
 
-        services_sub_date_sorted = sorted(search_results, reverse=True, key=sub_date_sorted)
-        return services_sub_date_sorted
+        return sorted(search_results, reverse=True, key=sub_date_sorted)
 
     def rating_picked(self, search_results):
-        ratings = []
-
         def rating_sorted(service):
-            past_ratings = UserRatings.objects.filter(service=service)
+            past_ratings = UserRatings.objects.filter(rated=service.creater)
             ratings_average = UserRatings.objects.filter(rated=service.creater).aggregate(Avg('rating'))['rating__avg']
             return ratings_average if (len(past_ratings) != 0) else 0
 
-        for service in search_results:
-            ratings.append(rating_sorted(service))
-
-        services_rating_sorted = sorted(search_results, reverse=True, key=rating_sorted)
-
-        return services_rating_sorted
+        return sorted(search_results, reverse=True, key=rating_sorted)
 
     def follow_status_picked(self, search_results, searcher):
-        follow_table = []
-
         def follow_status_sorted(service):
             profile = UserProfile.objects.get(pk=service.creater.id)
-            followers = profile.followers.all()
-            if searcher in followers:
-                return 1
-            else:
-                return 0
+            return True if searcher in profile.followers.all() else False
 
-        for service in search_results:
-            follow_table.append(follow_status_sorted(service))
-
-        services_follow_sorted = sorted(search_results, reverse=True, key=follow_status_sorted)
-
-        return services_follow_sorted
+        return sorted(search_results, reverse=True, key=follow_status_sorted)
 
     def interest_picked(self, search_results, user_interests):
-        interest_table = []
-
         def interest_sorted(service):
-            owner_interests = [interest.wiki_description for interest in
-                               Interest.objects.filter(user=service.creater.id)]
+            owner_interests = [interest.wiki_description for interest in Interest.objects.filter(user=service.creater.id)]
             num_of_common_interests = 0
             for interest in user_interests:
                 if interest.wiki_description in owner_interests:
                     num_of_common_interests += 1
             return num_of_common_interests
 
-        for service in search_results:
-            interest_table.append(interest_sorted(service))
-
-        services_interest_sorted = sorted(search_results, reverse=True, key=interest_sorted)
-        return services_interest_sorted
+        return sorted(search_results, reverse=True, key=interest_sorted)
 
     def highest_rated_picked(self, search_results):
         ratings = []
