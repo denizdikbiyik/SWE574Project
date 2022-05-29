@@ -3380,7 +3380,7 @@ class OnlineUsersList(LoginRequiredMixin, View):
         if request.user.profile.isActive:
             request.session["target_location"] = None
             request.session["city"] = ""
-            user_activity_objects = OnlineUserActivity.get_user_activities(timedelta(seconds=5))
+            user_activity_objects = OnlineUserActivity.get_user_activities(timedelta(seconds=60))
             number_of_active_users = user_activity_objects.count()
             activeUsers = (user for user in user_activity_objects)
             users = []
