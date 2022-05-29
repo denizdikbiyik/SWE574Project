@@ -3385,7 +3385,7 @@ class OnlineUsersList(LoginRequiredMixin, View):
             activeUsers = (user for user in user_activity_objects)
             users = []
             for user in activeUsers:
-                profile = UserProfile.objects.get(pk=user.pk)
+                profile = UserProfile.objects.get(pk=user.user_id)
                 users.append(profile)
 
             context = {
