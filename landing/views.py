@@ -61,20 +61,26 @@ class Index(View):
         }
 
         if request.user.is_anonymous:
-            pass
+            context['recommendation_count'] = 0
         else:
             recommendations = get_recommendations(request)
             if len(recommendations)>0:
                 recommendation = recommendations[randrange(len(recommendations))]
                 defs = recommendation.wiki_description.split(" as a(n) ")
-                interest = Interest.objects.get(user=request.user, wiki_description=defs[1])
-                if recommendation.pk in list(interest.approvedServices.values_list("pk", flat=True)):
-                    approved = False
+                interest = Interest.objects.filter(user=request.user, wiki_description=defs[1])
+                if len(interest) > 0:
+                    int = interest[0]
+                    if recommendation.pk in list(int.approvedServices.values_list("pk", flat=True)):
+                        approved = False
+                    else:
+                        approved = True
+                    tuple = (recommendation, approved)
+                    context['recommendation'] = tuple
+                    context['recommendation_count'] = 1
                 else:
-                    approved = True
-                tuple = (recommendation, approved)
-                context['recommendation'] = tuple
-
+                    context['recommendation_count'] = 0
+            else:
+                context['recommendation_count'] = 0
         return render(request, 'landing/index.html', context)
 
 def get_recommendations(request):
