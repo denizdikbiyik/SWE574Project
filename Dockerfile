@@ -9,7 +9,7 @@ EXPOSE 8000
 
 
 # Pillow dependencies
-RUN apk add --no-cache jpeg-dev zlib-dev
+RUN apk add --no-cache freetype-dev jpeg-dev zlib-dev
 RUN apk add --no-cache --virtual .build-deps build-base linux-headers \
     && pip install Pillow
 
