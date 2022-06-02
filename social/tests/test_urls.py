@@ -6,10 +6,11 @@ from social.views import ServiceCreateView, ServiceDetailView, ServiceEditView, 
     AllEventsView, CreatedServicesView, CreatedEventsView, AppliedServicesView, ConfirmServiceTaken, \
     ConfirmServiceGiven, RateUser, RateUserDelete, RateUserEdit, ServiceSearch, EventSearch, Notifications, \
     EventApplicationDeleteView, AppliedEventsView, RequestCreateView, CreatedRequestsView, RequestsFromMeView, \
-    RequestDetailView, RequestDeleteView, ServiceFilter, DashboardServiceDetailView, DashboardEventDetailView, RecommendationsView, RecommendationApproveView, RecommendationDisapproveView
+    RequestDetailView, RequestDeleteView, ServiceFilter, DashboardServiceDetailView, DashboardEventDetailView, RecommendationsView, RecommendationApproveView, RecommendationDisapproveView, AllUsersView, SearchLogWordCloud, SearchLogList, SearchLogListZero, MyLikes
 
 from django.contrib.auth.models import User
-from social.models import Service, UserProfile, Event, ServiceApplication, UserRatings, NotifyUser, EventApplication, Tag, Interest
+from social.models import Service, UserProfile, Event, ServiceApplication, UserRatings, NotifyUser, EventApplication, Tag, Interest, Log, Communication, Like, UserComplaints, Featured, Search
+    
 
 class URLTests(TestCase):
 
@@ -472,3 +473,19 @@ class URLTests(TestCase):
         test_recommendation.save()
         url = reverse('recommendations-disapprove', args=[str(test_recommendation.pk)])
         self.assertEquals(resolve(url).func.view_class, RecommendationDisapproveView)
+
+    def test_allusers_url_resolves(self):
+        url = reverse('allusers')
+        self.assertEquals(resolve(url).func.view_class, AllUsersView)
+
+    def test_wordcloud_url_resolves(self):
+        url = reverse('searchlogwordcloud')
+        self.assertEquals(resolve(url).func.view_class, SearchLogWordCloud)
+
+    def test_searchlogs_url_resolves(self):
+        url = reverse('searchloglist')
+        self.assertEquals(resolve(url).func.view_class, SearchLogList)
+
+    def test_hintsearchlogs_url_resolves(self):
+        url = reverse('searchloglistzero')
+        self.assertEquals(resolve(url).func.view_class, SearchLogListZero)
