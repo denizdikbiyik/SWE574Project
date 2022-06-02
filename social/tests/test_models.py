@@ -3,7 +3,7 @@ from django.test import TestCase
 
 from django.contrib.auth.models import User
 from social.models import Service, UserProfile, Event, ServiceApplication, UserRatings, NotifyUser, EventApplication, \
-    Tag
+    Tag, Interest
 
 
 class ServiceEventModelTest(TestCase):
@@ -50,3 +50,20 @@ class ServiceEventModelTest(TestCase):
 
     def tearDown(self):
         self.u1.delete()
+
+    def test_interest_model(self):
+        interest = Interest(
+            user = self.u1,
+            name = "test interest",
+            wiki_description = "test wiki description",
+            implicit = False,
+            active = True,
+            origin = 'profile',
+            feedbackGiven = False
+        )
+        self.assertEqual(interest.user, self.u1)
+        self.assertEqual(interest.name, "test interest")
+        self.assertEqual(interest.wiki_description, "test wiki description")
+        self.assertEqual(interest.active, True)
+        self.assertEqual(interest.origin, "profile")
+        self.assertEqual(interest.implicit, False)
