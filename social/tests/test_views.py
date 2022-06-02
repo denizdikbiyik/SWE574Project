@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.urls import reverse
-from social.models import Service, UserProfile, Event, ServiceApplication, UserRatings, NotifyUser, EventApplication, Tag, Log, Interest
+from social.models import Service, UserProfile, Event, ServiceApplication, UserRatings, NotifyUser, EventApplication, Tag, Log, Interest, Like, Featured, UserComplaints
 from social.forms import ServiceForm, EventForm, ServiceApplicationForm, RatingForm, EventApplicationForm, ProfileForm, RequestForm
 from social.views import ServiceCreateView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventCreateView, EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, AddFollower, RemoveFollower, ApplicationDeleteView, ApplicationEditView, FollowersListView, RemoveMyFollower, TimeLine, AllServicesView, AllEventsView, CreatedServicesView, CreatedEventsView, AppliedServicesView, ConfirmServiceTaken, ConfirmServiceGiven, RateUser, RateUserDelete, RateUserEdit, ServiceSearch, EventSearch, Notifications, EventApplicationDeleteView, AppliedEventsView, RequestCreateView, CreatedRequestsView, RequestsFromMeView, RequestDetailView, RequestDeleteView, ServiceFilter, AllUsersView, UsersServicesListView, UsersEventsListView, AddAdminView, RemoveAdminView, RecommendationsView
 from django.contrib.auth.models import User
@@ -336,3 +336,155 @@ class ProfileViewTests(TestCase):
         response = self.client.get(reverse('profile'))
         self.assertEqual(len(response.context['interests']), 2)
         self.assertEqual(response.status_code, 200)
+
+class FollowViewsTest(TestCase):
+    def test_add_follower(self):
+        test_user1 = User.objects.create_user(username='testuser1', password='1X<ISRUkw+tuK')
+        test_user2 = User.objects.create_user(username='testuser2', password='2HJ1vRV0Z&3iD')
+        test_user1.save()
+        test_user2.save()
+        login = self.client.login(username='testuser2', password='2HJ1vRV0Z&3iD')
+        response = self.client.post(reverse('add-follower', kwargs={'pk': test_user2.pk, 'followpk': test_user1.pk}))
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(len(User.objects.get(username='testuser1').profile.followers.filter(username='testuser2')), 1)
+
+    def test_remove_follower(self):
+        test_user1 = User.objects.create_user(username='testuser1', password='1X<ISRUkw+tuK')
+        test_user2 = User.objects.create_user(username='testuser2', password='2HJ1vRV0Z&3iD')
+        test_user1.save()
+        test_user2.save()
+        login = self.client.login(username='testuser2', password='2HJ1vRV0Z&3iD')
+        response1 = self.client.post(reverse('add-follower', kwargs={'pk': test_user2.pk, 'followpk': test_user1.pk}))
+        response2 = self.client.post(reverse('remove-follower', kwargs={'pk': test_user2.pk, 'followpk': test_user1.pk}))
+        self.assertEqual(response2.status_code, 302)
+        self.assertEqual(len(User.objects.get(username='testuser1').profile.followers.filter(username='testuser2')), 0)
+
+class LikeViewsTest(TestCase):
+    def test_like(self):
+        test_user1 = User.objects.create_user(username='testuser1', password='1X<ISRUkw+tuK')
+        test_user2 = User.objects.create_user(username='testuser2', password='2HJ1vRV0Z&3iD')
+        test_user1.save()
+        test_user2.save()
+        test_event = Event.objects.create(
+            eventcreater=test_user1, 
+            eventname="ServiceTest",
+            eventdescription="ServiceTestDescription", 
+            eventpicture='uploads/service_pictures/default.png',
+            eventlocation='41.0255493,28.9742571',
+            eventdate='2030-01-11 10:00:00+03',
+            eventcapacity=1,
+            eventduration=1
+        )
+        test_event.save()
+        login = self.client.login(username='testuser2', password='2HJ1vRV0Z&3iD')
+        response = self.client.post(reverse('event-like', kwargs={'pk': test_event.pk}))
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(len(Like.objects.filter(liked=test_user2.pk, itemType="event", itemId=test_event.pk)), 1)
+
+    def test_unlike(self):
+        test_user1 = User.objects.create_user(username='testuser1', password='1X<ISRUkw+tuK')
+        test_user2 = User.objects.create_user(username='testuser2', password='2HJ1vRV0Z&3iD')
+        test_user1.save()
+        test_user2.save()
+        test_event = Event.objects.create(
+            eventcreater=test_user1, 
+            eventname="ServiceTest",
+            eventdescription="ServiceTestDescription", 
+            eventpicture='uploads/service_pictures/default.png',
+            eventlocation='41.0255493,28.9742571',
+            eventdate='2030-01-11 10:00:00+03',
+            eventcapacity=1,
+            eventduration=1
+        )
+        test_event.save()
+        login = self.client.login(username='testuser2', password='2HJ1vRV0Z&3iD')
+        response1 = self.client.post(reverse('event-like', kwargs={'pk': test_event.pk}))
+        response2 = self.client.post(reverse('event-unlike', kwargs={'pk': test_event.pk}))
+        self.assertEqual(response2.status_code, 302)
+        self.assertEqual(len(Like.objects.filter(liked=test_user2.pk, itemType="event", itemId=test_event.pk)), 0)
+
+class FeaturedViewsTest(TestCase):
+    def test_featured(self):
+        test_user1 = User.objects.create_user(username='testuser1', password='1X<ISRUkw+tuK')
+        test_user2 = User.objects.create_user(username='testuser2', password='2HJ1vRV0Z&3iD')
+        test_user2.profile.isAdmin = True
+        test_user1.save()
+        test_user2.save()
+        test_event = Event.objects.create(
+            eventcreater=test_user1, 
+            eventname="ServiceTest",
+            eventdescription="ServiceTestDescription", 
+            eventpicture='uploads/service_pictures/default.png',
+            eventlocation='41.0255493,28.9742571',
+            eventdate='2030-01-11 10:00:00+03',
+            eventcapacity=1,
+            eventduration=1
+        )
+        test_event.save()
+        login = self.client.login(username='testuser2', password='2HJ1vRV0Z&3iD')
+        response = self.client.post(reverse('add-event-featured', kwargs={'pk': test_event.pk}))
+        self.assertEqual(len(Featured.objects.filter(itemType="event", itemId=test_event.pk)), 1)
+
+class ComplaintViewsTest(TestCase):
+    def test_complaint(self):
+        test_user1 = User.objects.create_user(username='testuser1', password='1X<ISRUkw+tuK')
+        test_user2 = User.objects.create_user(username='testuser2', password='2HJ1vRV0Z&3iD')
+        test_user3 = User.objects.create_user(username='testuser3', password='8AB1vRV0G&3oM')
+        test_user3.profile.isAdmin = True
+        test_user1.save()
+        test_user2.save()
+        test_user3.save()
+        login = self.client.login(username='testuser2', password='2HJ1vRV0Z&3iD')
+        test_complaint = UserComplaints.objects.create(
+            complainted=test_user1, 
+            complainter=test_user2,
+            feedback="Fake user"
+        )
+        test_complaint.save()
+        response = self.client.get(reverse('mycomplaints'))
+        self.assertEqual(str(response.context['user']), 'testuser2')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['complaints']), 1)
+
+class DeactivateViewsTest(TestCase):
+    def test_deactivated_event(self):
+        test_user1 = User.objects.create_user(username='testuser1', password='1X<ISRUkw+tuK')
+        test_user2 = User.objects.create_user(username='testuser2', password='2HJ1vRV0Z&3iD')
+        test_user2.profile.isAdmin = True
+        test_user1.save()
+        test_user2.save()
+        test_event = Event.objects.create(
+            eventcreater=test_user1, 
+            eventname="ServiceTest",
+            eventdescription="ServiceTestDescription", 
+            eventpicture='uploads/service_pictures/default.png',
+            eventlocation='41.0255493,28.9742571',
+            eventdate='2030-01-11 10:00:00+03',
+            eventcapacity=1,
+            eventduration=1
+        )
+        test_event.save()
+        login = self.client.login(username='testuser2', password='2HJ1vRV0Z&3iD')
+        response = self.client.post(reverse('deactivate-event', kwargs={'pk': test_event.pk}))
+        self.assertEqual(Event.objects.get(pk=test_event.pk).isActive, False)
+
+    def test_deactivated(self):
+        test_user1 = User.objects.create_user(username='testuser1', password='1X<ISRUkw+tuK')
+        test_user2 = User.objects.create_user(username='testuser2', password='2HJ1vRV0Z&3iD')
+        test_user2.profile.isAdmin = True
+        test_user1.save()
+        test_user2.save()
+        login = self.client.login(username='testuser2', password='2HJ1vRV0Z&3iD')
+        response = self.client.post(reverse('deactivate-user', kwargs={'pk': test_user1.pk}))
+        self.assertEqual(User.objects.get(username='testuser1').profile.isActive, False)
+
+    def test_activated(self):
+        test_user1 = User.objects.create_user(username='testuser1', password='1X<ISRUkw+tuK')
+        test_user2 = User.objects.create_user(username='testuser2', password='2HJ1vRV0Z&3iD')
+        test_user2.profile.isAdmin = True
+        test_user1.save()
+        test_user2.save()
+        login = self.client.login(username='testuser2', password='2HJ1vRV0Z&3iD')
+        response1 = self.client.post(reverse('deactivate-user', kwargs={'pk': test_user1.pk}))
+        response2 = self.client.post(reverse('activate-user', kwargs={'pk': test_user1.pk}))
+        self.assertEqual(User.objects.get(username='testuser1').profile.isActive, True)
