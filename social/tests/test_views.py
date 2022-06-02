@@ -1,8 +1,8 @@
 from django.test import TestCase
 from django.urls import reverse
-from social.models import Service, UserProfile, Event, ServiceApplication, UserRatings, NotifyUser, EventApplication, Tag, Log
+from social.models import Service, UserProfile, Event, ServiceApplication, UserRatings, NotifyUser, EventApplication, Tag, Log, Interest
 from social.forms import ServiceForm, EventForm, ServiceApplicationForm, RatingForm, EventApplicationForm, ProfileForm, RequestForm
-from social.views import ServiceCreateView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventCreateView, EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, AddFollower, RemoveFollower, ApplicationDeleteView, ApplicationEditView, FollowersListView, RemoveMyFollower, TimeLine, AllServicesView, AllEventsView, CreatedServicesView, CreatedEventsView, AppliedServicesView, ConfirmServiceTaken, ConfirmServiceGiven, RateUser, RateUserDelete, RateUserEdit, ServiceSearch, EventSearch, Notifications, EventApplicationDeleteView, AppliedEventsView, RequestCreateView, CreatedRequestsView, RequestsFromMeView, RequestDetailView, RequestDeleteView, ServiceFilter, AllUsersView, UsersServicesListView, UsersEventsListView, AddAdminView, RemoveAdminView
+from social.views import ServiceCreateView, ServiceDetailView, ServiceEditView, ServiceDeleteView, EventCreateView, EventDetailView, EventEditView, EventDeleteView, ProfileView, ProfileEditView, AddFollower, RemoveFollower, ApplicationDeleteView, ApplicationEditView, FollowersListView, RemoveMyFollower, TimeLine, AllServicesView, AllEventsView, CreatedServicesView, CreatedEventsView, AppliedServicesView, ConfirmServiceTaken, ConfirmServiceGiven, RateUser, RateUserDelete, RateUserEdit, ServiceSearch, EventSearch, Notifications, EventApplicationDeleteView, AppliedEventsView, RequestCreateView, CreatedRequestsView, RequestsFromMeView, RequestDetailView, RequestDeleteView, ServiceFilter, AllUsersView, UsersServicesListView, UsersEventsListView, AddAdminView, RemoveAdminView, RecommendationsView
 from django.contrib.auth.models import User
 import datetime
 from django.utils import timezone
@@ -224,7 +224,7 @@ class DashboardViewTests(TestCase):
         test_service_application.save()
         test_service_application2.save()
 
-        login = self.client.login(username='testuser1', password='1X<ISRUkw+tuK')
+        self.client.login(username='testuser1', password='1X<ISRUkw+tuK')
         response = self.client.get(reverse('dashboard-service-detail', kwargs={'pk':test_service.pk}))
         self.assertEqual(str(response.context['application_number']), '2')
         self.assertEqual(response.status_code, 200)
@@ -266,3 +266,73 @@ class DashboardViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue('is_active' in response.context)
         self.assertTrue('isDeleted' in response.context)
+
+class RecommendationViewTests(TestCase):
+    def user_with_recommendations_is_shown_recommendations(self):
+        test_user1 = User.objects.create_user(username='testuser1', password='1X<ISRUkw+tuK')
+        test_user1.profile.isAdmin = True
+        test_user1.save()
+        test_user2 = User.objects.create_user(username='testuser2', password='1X<ISRUkw+tuL')
+        test_user2.profile.isAdmin = True
+        test_user2.save()
+
+        test_interest = Interest.objects.create(user=test_user1, implicit=True, name="test",wiki_description="testing description")
+        test_interest.save()
+
+        test_recommendation1 = Service.objects.create(
+            creater=test_user2,
+            createddate=timezone.now,
+            name="ServiceTest1",
+            description="ServiceTestDescription",
+            wiki_description="test as a(n) testing description",
+            picture='uploads/service_pictures/default.png',
+            location='41.0255493,28.9742571',
+            servicedate=timezone.now + timezone.timedelta(days=2),
+            capacity=1,
+            duration=1,
+            is_given=False,
+            is_taken=False
+        )
+        test_recommendation1.save()
+
+        test_recommendation2 = Service.objects.create(
+            creater=test_user2,
+            createddate=timezone.now,
+            name="ServiceTest2",
+            description="ServiceTestDescription",
+            wiki_description="test as a(n) testing description",
+            picture='uploads/service_pictures/default.png',
+            location='41.0255493,28.9742571',
+            servicedate=timezone.now + timezone.timedelta(days=2),
+            capacity=1,
+            duration=1,
+            is_given=False,
+            is_taken=False
+        )
+        test_recommendation2.save()
+
+        self.client.login(username='testuser1', password='1X<ISRUkw+tuK')
+        response = self.client.get(reverse('recommendations'))
+        self.assertEqual(response.context['recommendations_count'], 2)
+        self.assertEqual(response.status_code, 200)
+
+
+class ProfileViewTests(TestCase):
+    def user_has_proper_number_of_interests(self):
+        test_user1 = User.objects.create_user(username='testuser1', password='1X<ISRUkw+tuK')
+        test_user1.profile.isAdmin = True
+        test_user1.save()
+
+        test_interest = Interest.objects.create(user=test_user1, implicit=True, name="test", wiki_description="testing description")
+        test_interest.save()
+
+        test_interest2 = Interest.objects.create(user=test_user1, implicit=False, name="test2", wiki_description="testing2 description")
+        test_interest2.save()
+
+        test_interest3 = Interest.objects.create(user=test_user1, implicit=False, name="test3", wiki_description="testing2 description")
+        test_interest3.save()
+
+        self.client.login(username='testuser1', password='1X<ISRUkw+tuK')
+        response = self.client.get(reverse('profile'))
+        self.assertEqual(len(response.context['interests']), 2)
+        self.assertEqual(response.status_code, 200)

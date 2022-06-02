@@ -6,10 +6,10 @@ from social.views import ServiceCreateView, ServiceDetailView, ServiceEditView, 
     AllEventsView, CreatedServicesView, CreatedEventsView, AppliedServicesView, ConfirmServiceTaken, \
     ConfirmServiceGiven, RateUser, RateUserDelete, RateUserEdit, ServiceSearch, EventSearch, Notifications, \
     EventApplicationDeleteView, AppliedEventsView, RequestCreateView, CreatedRequestsView, RequestsFromMeView, \
-    RequestDetailView, RequestDeleteView, ServiceFilter, DashboardServiceDetailView, DashboardEventDetailView
+    RequestDetailView, RequestDeleteView, ServiceFilter, DashboardServiceDetailView, DashboardEventDetailView, RecommendationsView, RecommendationApproveView, RecommendationDisapproveView
 
 from django.contrib.auth.models import User
-from social.models import Service, UserProfile, Event, ServiceApplication, UserRatings, NotifyUser, EventApplication, Tag
+from social.models import Service, UserProfile, Event, ServiceApplication, UserRatings, NotifyUser, EventApplication, Tag, Interest
 
 class URLTests(TestCase):
 
@@ -420,3 +420,55 @@ class URLTests(TestCase):
         url = reverse('dashboard-service-detail', args=[str(test_user1.pk)])
         self.assertEquals(resolve(url).func.view_class, DashboardServiceDetailView)
 
+    def test_recommendations_url_resolves(self):
+        url = reverse('recommendations')
+        self.assertEquals(resolve(url).func.view_class, RecommendationsView)
+
+    def test_recommendations_approve_url_resolves(self):
+        test_user1 = User.objects.create_user(username='testuser1', password='1X<ISRUkw+tuK')
+        test_user1.profile.isAdmin = True
+        test_user1.save()
+        test_interest = Interest.objects.create(user=test_user1, implicit=True, name="test1", wiki_description="testing description")
+        test_interest.save()
+        test_recommendation = Service.objects.create(
+            creater=test_user1,
+            createddate='2022-01-01 10:00:00+03',
+            name="ServiceTest",
+            description="ServiceTestDescription",
+            wiki_description="test1 as a(n) testing description",
+            picture='uploads/service_pictures/default.png',
+            location='41.0255493,28.9742571',
+            servicedate='2030-01-01 10:00:00+03',
+            capacity=1,
+            duration=1,
+            is_given=False,
+            is_taken=False
+        )
+        test_recommendation.save()
+        url = reverse('recommendations-approve', args=[str(test_recommendation.pk)])
+        self.assertEquals(resolve(url).func.view_class, RecommendationApproveView)
+
+    def test_recommendations_disapprove_url_resolves(self):
+        test_user1 = User.objects.create_user(username='testuser1', password='1X<ISRUkw+tuK')
+        test_user1.profile.isAdmin = True
+        test_user1.save()
+        test_interest = Interest.objects.create(user=test_user1, implicit=True, name="test1",
+                                                wiki_description="testing description")
+        test_interest.save()
+        test_recommendation = Service.objects.create(
+            creater=test_user1,
+            createddate='2022-01-01 10:00:00+03',
+            name="ServiceTest",
+            description="ServiceTestDescription",
+            wiki_description="test1 as a(n) testing description",
+            picture='uploads/service_pictures/default.png',
+            location='41.0255493,28.9742571',
+            servicedate='2030-01-01 10:00:00+03',
+            capacity=1,
+            duration=1,
+            is_given=False,
+            is_taken=False
+        )
+        test_recommendation.save()
+        url = reverse('recommendations-disapprove', args=[str(test_recommendation.pk)])
+        self.assertEquals(resolve(url).func.view_class, RecommendationDisapproveView)
